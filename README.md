@@ -24,9 +24,7 @@
 ```
 ---
 ```
-
-my_apps3.html: success
-my_apps4_vue.html: success
+my_apps
 ```
 ---
 
