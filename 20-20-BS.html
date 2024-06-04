@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>20x20 Table with Bootstrap</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+        }
+
+        .table-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        table {
+            width: 100%;
+            height: 100%;
+            border-collapse: collapse;
+        }
+
+        td {
+            border: 1px solid black;
+            text-align: center;
+            vertical-align: middle;
+            padding: 10px;
+            /* Adjust padding as needed */
+        }
+    </style>
+</head>
+
+<body>
+    <div class="table-container">
+        <table class="table table-bordered" id="myTable"></table>
+    </div>
+
+    <script>
+        const table = document.getElementById('myTable');
+        const rows = 20;
+        const cols = 20;
+
+        for (let i = 0; i < rows; i++) {
+            const row = table.insertRow();
+            for (let j = 0; j < cols; j++) {
+                const cell = row.insertCell();
+            }
+        }
+    </script>
+</body>
+
+</html>
