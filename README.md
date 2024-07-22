@@ -1,6 +1,6 @@
 # tz_html_works
 
-https://tztechno.github.io/tz_html_works/garbge/garbage_muko2.html
+https://tztechno.github.io/tz_html_works/garbage/garbage_muko2.html
 
 ### latest
 ---
