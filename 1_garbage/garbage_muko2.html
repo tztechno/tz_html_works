@@ -1,6 +1,4 @@
-<!DOCTYPE html>
 <html lang="ja">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,18 +7,17 @@
         body {
             font-family: Arial, sans-serif;
         }
-
         h2 {
             margin: 20px;
             font-size: 1.5em;
         }
     </style>
 </head>
-
 <body>
     <h1>今日のゴミ出し</h1>
     <h2 id="todayInfo"></h2>
     <h2 id="tomorrowInfo"></h2>
+    <h2 id="dayaftertomorrowInfo"></h2>
 
     <script>
         function getFormattedDate(date) {
@@ -47,18 +44,19 @@
 
             const schedule = {
                 1: ['プラスチック類'], // 月曜日
-                2: ['燃やすごみ'], // 火曜日
-                3: [], // 水曜日
-                4: [], // 木曜日
-                5: ['燃やすごみ'], // 金曜日
-                6: [], // 土曜日
-                0: []  // 日曜日
+                2: ['燃やすごみ'],    // 火曜日
+                3: [],               // 水曜日
+                4: [],               // 木曜日
+                5: ['燃やすごみ'],    // 金曜日
+                6: [],               // 土曜日
+                0: []                // 日曜日
             };
 
             if (day === 3) { // 水曜日
                 if (weekOfMonth === 2 || weekOfMonth === 4) schedule[3].push('かん・びん');
                 if (weekOfMonth === 1 || weekOfMonth === 3) schedule[3].push('小型不燃ごみ');
             }
+
             if (day === 4) { // 木曜日
                 if (weekOfMonth === 1 || weekOfMonth === 3) schedule[4].push('紙・布');
                 if (weekOfMonth === 2 || weekOfMonth === 4) schedule[4].push('ペットボトル');
@@ -70,5 +68,4 @@
         displayDates();
     </script>
 </body>
-
 </html>
