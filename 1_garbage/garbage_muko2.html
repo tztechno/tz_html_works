@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MUKO2 今日のゴミ出し</title>
+    <title>今日のゴミ出し</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -18,7 +18,7 @@
 </head>
 
 <body>
-    <h1>MUKO2 今日のゴミ出し</h1>
+    <h1>今日のゴミ出し</h1>
     <h2 id="todayInfo"></h2>
     <h2 id="tomorrowInfo"></h2>
 
@@ -31,10 +31,13 @@
         function displayDates() {
             const today = new Date();
             const tomorrow = new Date(today);
+            const dayaftertomorrow = new Date(today);
             tomorrow.setDate(today.getDate() + 1);
+            dayaftertomorrow.setDate(today.getDate() + 2);
 
             document.getElementById('todayInfo').textContent = `今日(${getFormattedDate(today)}): ${getGarbage(today)}`;
             document.getElementById('tomorrowInfo').textContent = `明日(${getFormattedDate(tomorrow)}): ${getGarbage(tomorrow)}`;
+            document.getElementById('dayaftertomorrowInfo').textContent = `明後日(${getFormattedDate(dayaftertomorrow)}): ${getGarbage(dayaftertomorrow)}`;
         }
 
         function getGarbage(date) {
