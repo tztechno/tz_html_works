@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo List</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@IshiiStpete" />
+    <meta name="twitter:title" content="simple todo list">
+    <meta name="twitter:image" content="https://raw.githubusercontent.com/tztechno/vercel_todo/main/todo.png">
+    
+</head>
+
+<body>
+    <div id="app">
+        <h1>Todo List</h1>
+        <textarea v-model="newTodos" placeholder="Enter multiple todos, each on a new line"></textarea>
+        <button @click="addTodos">Add Todos</button>
+        <ul>
+            <li v-for="(todo, index) in todos" :key="index">
+                <input type="checkbox" v-model="todo.done" />
+                <span :style="{ textDecoration: todo.done ? 'line-through' : 'none' }">{{ todo.text }}</span>&nbsp;
+                <button @click="removeTodo(index)">Remove</button>
+            </li>
+        </ul>
+    </div>
+    <script>
+        const app = Vue.createApp({
+            data() {
+                return {
+                    newTodos: '',
+                    todos: []
+                };
+            },
+            mounted() {
+                const savedTodos = localStorage.getItem('todos');
+                if (savedTodos) {
+                    this.todos = JSON.parse(savedTodos);
+                }
+            },
+            watch: {
+                todos: {
+                    deep: true,
+                    handler(newTodos) {
+                        localStorage.setItem('todos', JSON.stringify(newTodos));
+                    }
+                }
+            },
+            methods: {
+                addTodos() {
+                    const todosArray = this.newTodos.trim().split('\n').filter(todo => todo.trim() !== '');
+                    todosArray.forEach(todoText => {
+                        this.todos.push({ text: todoText, done: false });
+                    });
+                    this.newTodos = '';
+                },
+                removeTodo(index) {
+                    this.todos.splice(index, 1);
+                }
+            }
+        });
+        app.mount('#app');
+    </script>
+</body>
+
+</html>
