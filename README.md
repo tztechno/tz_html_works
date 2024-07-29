@@ -8,6 +8,11 @@ https://tztechno.github.io/tz_html_works/0_todo/QA_list.html
 
 https://tztechno.github.io/tz_html_works/0_todo/ToDo_list.html
 
+https://tztechno.github.io/tz_html_works/0_todo/QA2_list.html
+
+https://tztechno.github.io/tz_html_works/0_todo/ToDo2_list.html
+
+
 ### latest
 ---
 ```
