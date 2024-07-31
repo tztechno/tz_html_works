@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QA List</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@IshiiStpete" />
+    <meta name="twitter:title" content="simple QA list">
+    <meta name="twitter:image" content="https://raw.githubusercontent.com/tztechno/vercel_todo/main/todo.png">
+
+</head>
+
+<body>
+    <div id="app">
+        <h1>QA List</h1>
+        <textarea v-model="newQAs" placeholder="Enter Q;A pairs, each on a new line"></textarea>
+        <button @click="addQAs">Add QAs</button>
+        <button @click="saveToFile">Save to File</button>
+        <ul>
+            <li v-for="(qa, index) in qas" :key="index">
+                <button @click="removeQA(index)">D</button>
+                {{ qa.question }}&nbsp;
+                <button @click="showAnswer(index)">A</button>&nbsp;
+                <span v-if="qa.showAnswer">{{ qa.answer }}</span>
+            </li>
+        </ul>
+    </div>
+    <script>
+        const app = Vue.createApp({
+            data() {
+                return {
+                    newQAs: '',
+                    qas: []
+                };
+            },
+            mounted() {
+                const savedQAs = localStorage.getItem('qas');
+                if (savedQAs) {
+                    this.qas = JSON.parse(savedQAs);
+                }
+            },
+            watch: {
+                qas: {
+                    deep: true,
+                    handler(newQAs) {
+                        localStorage.setItem('qas', JSON.stringify(newQAs));
+                    }
+                }
+            },
+            methods: {
+                addQAs() {
+                    const qasArray = this.newQAs.trim().split('\n').filter(qa => qa.trim() !== '');
+                    qasArray.forEach(qaText => {
+                        const [question, answer] = qaText.split(';');
+                        if (question && answer) {
+                            this.qas.push({ question: question.trim(), answer: answer.trim(), showAnswer: false });
+                        }
+                    });
+                    this.newQAs = '';
+                },
+                showAnswer(index) {
+                    this.qas[index].showAnswer = !this.qas[index].showAnswer;
+                },
+                removeQA(index) {
+                    this.qas.splice(index, 1);
+                },
+                saveToFile() {
+                    const qasText = this.qas.map(qa => `${qa.question}; ${qa.answer}`).join('\n');
+                    const blob = new Blob([qasText], { type: 'text/plain' });
+                    const url = URL.createObjectURL(blob);
+                    const timestamp = new Date().toISOString().replace(/[:.]/g, '-'); // 時刻を含むファイル名を生成
+                    const filename = `qas-${timestamp}.txt`;
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                }
+            }
+        });
+        app.mount('#app');
+    </script>
+</body>
+
+</html>
