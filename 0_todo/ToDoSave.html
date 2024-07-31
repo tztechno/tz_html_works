@@ -20,6 +20,7 @@
         <textarea v-model="newTodos" placeholder="Enter multiple todos, each on a new line"></textarea>
         <button @click="addTodos">Add Todos</button>
         <button @click="saveToFile">Save to File</button>
+        <button @click="resetTodos">Reset</button> <!-- Reset button added -->
         <ul>
             <li v-for="(todo, index) in todos" :key="index">
                 <input type="checkbox" v-model="todo.done" />
@@ -74,6 +75,9 @@
                     a.click();
                     document.body.removeChild(a);
                     URL.revokeObjectURL(url);
+                },
+                resetTodos() {
+                    this.todos = [];
                 }
             }
         });
