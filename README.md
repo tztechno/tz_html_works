@@ -4,13 +4,9 @@ https://tztechno.github.io/tz_html_works/1_garbage/garbage_muko2.html
 
 https://tztechno.github.io/tz_html_works/1_garbage/garbage_abow.html
 
-https://tztechno.github.io/tz_html_works/0_todo/QA_list.html
+https://tztechno.github.io/tz_html_works/0_todo/QASave.html
 
-https://tztechno.github.io/tz_html_works/0_todo/ToDo_list.html
-
-https://tztechno.github.io/tz_html_works/0_todo/QA2_list.html
-
-https://tztechno.github.io/tz_html_works/0_todo/ToDo2_list.html
+https://tztechno.github.io/tz_html_works/0_todo/ToDoSave.html
 
 
 ### latest
