@@ -20,6 +20,7 @@
         <textarea v-model="newQAs" placeholder="Enter Q;A pairs, each on a new line"></textarea>
         <button @click="addQAs">Add QAs</button>
         <button @click="saveToFile">Save to File</button>
+        <button @click="resetQAs">Reset</button> <!-- Reset button added -->
         <ul>
             <li v-for="(qa, index) in qas" :key="index">
                 <button @click="removeQA(index)">D</button>
@@ -81,6 +82,9 @@
                     a.click();
                     document.body.removeChild(a);
                     URL.revokeObjectURL(url);
+                },
+                resetQAs() {
+                    this.qas = [];
                 }
             }
         });
@@ -89,3 +93,4 @@
 </body>
 
 </html>
+
