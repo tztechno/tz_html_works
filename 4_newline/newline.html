@@ -27,8 +27,8 @@
             // テキストエリアから入力を取得
             const inputText = document.getElementById('inputText').value;
 
-            // 文章を改行で分割
-            const paragraphs = inputText.split(/、|。/).filter(paragraph => paragraph.trim() !== "");
+            // 日本語の「。」と英語の「.」で分割し、空の段落を除外
+            const paragraphs = inputText.split(/。|\.|[\r\n]+/).filter(paragraph => paragraph.trim() !== "");
 
             // 各段落の後に改行を追加
             const formattedText = paragraphs.join('\n\n');
@@ -39,3 +39,4 @@
     </script>
 </body>
 </html>
+
