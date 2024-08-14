@@ -35,15 +35,24 @@
 
     <script>
         // CSVファイルからデータを取得してパースする関数
-        async function fetchCSV(url) {
+    async function fetchCSV(url) {
+        try {
             const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
             const text = await response.text();
-            const rows = text.split('\n').slice(1); // ヘッダー行を除く
+            console.log("CSV content:", text); // CSVの内容をログに出力
+            const rows = text.split('\n').slice(1);
             return rows.map(row => {
                 const cols = row.split(',');
-                return { category: cols[0].trim(), link: cols[2].trim() }; // 1st column for category, 3th for link
+                return { category: cols[0].trim(), link: cols[2].trim() };
             }).filter(item => item.link);
+        } catch (error) {
+            console.error("Error fetching CSV:", error);
+            throw error; // エラーを再スローして上位で捕捉できるようにする
         }
+    }
 
         // 画像を表示する関数
         function displayImagesByCategory(imagesByCategory) {
@@ -86,6 +95,7 @@
                 });
 
                 displayImagesByCategory(imagesByCategory);
+                
             } catch (error) {
                 console.error("Error loading or parsing CSV file: ", error);
             }
