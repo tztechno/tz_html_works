@@ -41,7 +41,7 @@
             const rows = text.split('\n').slice(1); // ヘッダー行を除く
             return rows.map(row => {
                 const cols = row.split(',');
-                return { category: cols[0].trim(), link: cols[3].trim() }; // 1st column for category, 4th for link2
+                return { category: cols[0].trim(), link: cols[2].trim() }; // 1st column for category, 3th for link
             }).filter(item => item.link);
         }
 
