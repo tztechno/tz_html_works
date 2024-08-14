@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>横に並ぶ2つの枠</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            display: flex;
+            width: 100%;
+            height: 100%;
+        }
+
+        .box {
+            flex: 1;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .box1 {
+            background-color: #f0f0f0;
+            border-right: 1px solid #ccc;
+        }
+
+        .box2 {
+            background-color: #e0e0e0;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            flex: 1;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="box box1">
+            <h2>枠1</h2>
+            <iframe id="spreadsheet1"
+                src="https://docs.google.com/forms/d/e/1FAIpQLSckNuLxtuzt2WBrZqDMHr1QbK-4lFb_DmIk_5LauF-WCK-sNA/viewform?usp=sharing"></iframe>
+        </div>
+        <div class="box box2">
+            <h2>枠2</h2>
+            <iframe id="spreadsheet2"
+                src="https://docs.google.com/spreadsheets/d/1l_9lIO_gnH4haVsXxUZ9x0VjquNDQ4wPzBY6cs_pnD8/edit?usp=drive_link"></iframe>
+        </div>
+        </div>
+        </body>
+        
+        </html>
