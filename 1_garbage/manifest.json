@@ -1,7 +1,7 @@
 {
   "name": "My PWA App",
   "short_name": "PWA App",
-  "start_url": "/garbage2_muko2.html",
+  "start_url": "/garbage3_muko2.html",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#000000",
