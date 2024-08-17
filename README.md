@@ -1,8 +1,15 @@
 # tz_html_works
 
+パターンをtemplate化
+ver.2.0
+https://tztechno.github.io/tz_html_works/1_garbage/garbage2_muko2.html
+
+ver.1.0
 https://tztechno.github.io/tz_html_works/1_garbage/garbage_muko2.html
 
+ver.1.0
 https://tztechno.github.io/tz_html_works/1_garbage/garbage_abow.html
+
 
 https://tztechno.github.io/tz_html_works/0_todo/QASave.html
 
