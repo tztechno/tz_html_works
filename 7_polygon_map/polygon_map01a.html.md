@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Leaflet Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+</head>
+
+<body>
+    <div id="map" style="height: 600px;"></div>
+
+    <script>
+        const map = L.map('map').setView([35.681236, 139.767125], 13);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+        }).addTo(map);
+
+        // Google Apps ScriptのURL
+        fetch('https://script.google.com/macros/s/AKfycbxvLCORafD-bNLpOMPhH0IcKKvPih4RmQMfyehU7GhxTpbDMHCaZF1_Cj7GvYhY5ZkeMA/exec')
+            .then(response => response.json())
+            .then(data => {
+                L.geoJSON(data).addTo(map);
+            });
+    </script>
+</body>
+
+</html>
