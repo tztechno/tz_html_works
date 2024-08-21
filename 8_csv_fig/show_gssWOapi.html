@@ -7,25 +7,22 @@
     <title>Stock Data Chart</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        // Google Sheets APIの設定
-        const API_KEY = 'YOUR_API_KEY';  // ここにGoogle Sheets APIキーを入力
-        const SHEET_ID = '15DK7WIsMZXLVl5iCuJAgZ8l_IDgzMXZmUih0_4Vl3zc'; // ここにGoogle SheetsのIDを入力
-        const RANGE = 'Sheet1!A:B'; // スプレッドシートのシート名と範囲を指定
+        // CSVファイルのURL
+        const csvUrl = 'https://docs.google.com/spreadsheets/d/15DK7WIsMZXLVl5iCuJAgZ8l_IDgzMXZmUih0_4Vl3zc/export?format=csv';
 
-        async function fetchSheetData() {
-            const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${RANGE}?key=${API_KEY}`;
-            const response = await fetch(url);
-            const data = await response.json();
-            return data.values;
+        async function fetchCSVData() {
+            const response = await fetch(csvUrl);
+            const data = await response.text();
+            return data;
         }
 
-        function parseSheetData(sheetData) {
+        function parseCSVData(csvData) {
+            const rows = csvData.split('\n').slice(1); // ヘッダーをスキップ
             const dates = [];
             const opens = [];
 
-            sheetData.forEach((row, index) => {
-                if (index === 0) return; // ヘッダー行をスキップ
-                const [date, open] = row;
+            rows.forEach(row => {
+                const [date, open] = row.split(',');
                 if (date && open) {
                     dates.push(date);
                     opens.push(parseFloat(open));
@@ -71,8 +68,8 @@
         }
 
         document.addEventListener('DOMContentLoaded', async () => {
-            const sheetData = await fetchSheetData();
-            const { dates, opens } = parseSheetData(sheetData);
+            const csvData = await fetchCSVData();
+            const { dates, opens } = parseCSVData(csvData);
             createChart(dates, opens);
         });
     </script>
