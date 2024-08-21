@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Data Chart</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Google Sheets APIの設定
+        const API_KEY = 'YOUR_API_KEY';  // ここにGoogle Sheets APIキーを入力
+        const SHEET_ID = '15DK7WIsMZXLVl5iCuJAgZ8l_IDgzMXZmUih0_4Vl3zc'; // ここにGoogle SheetsのIDを入力
+        const RANGE = 'Sheet1!A:B'; // スプレッドシートのシート名と範囲を指定
+
+        async function fetchSheetData() {
+            const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${RANGE}?key=${API_KEY}`;
+            const response = await fetch(url);
+            const data = await response.json();
+            return data.values;
+        }
+
+        function parseSheetData(sheetData) {
+            const dates = [];
+            const opens = [];
+
+            sheetData.forEach((row, index) => {
+                if (index === 0) return; // ヘッダー行をスキップ
+                const [date, open] = row;
+                if (date && open) {
+                    dates.push(date);
+                    opens.push(parseFloat(open));
+                }
+            });
+
+            return { dates, opens };
+        }
+
+        function createChart(dates, opens) {
+            const ctx = document.getElementById('myChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: dates,
+                    datasets: [{
+                        label: 'Open Value',
+                        data: opens,
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Date'
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Open Value'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const sheetData = await fetchSheetData();
+            const { dates, opens } = parseSheetData(sheetData);
+            createChart(dates, opens);
+        });
+    </script>
+</head>
+
+<body>
+    <h1>Stock Data Chart</h1>
+    <canvas id="myChart" width="400" height="200"></canvas>
+</body>
+
+</html>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Data Chart</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <h1>Stock Data Chart</h1>
+    <canvas id="myChart" width="400" height="200"></canvas>
+
+    <script>
+        // CSVファイルのパス
+        const csvFilePath = './stock_data.csv';
+
+        // CSVデータを取得してパースする関数
+        async function fetchCSVData() {
+            const response = await fetch(csvFilePath);
+            const data = await response.text();
+            return data;
+        }
+
+        // CSVデータをパースしてチャートに反映させる
+        function parseCSVData(csvData) {
+            const rows = csvData.split('\n').slice(1); // ヘッダーをスキップ
+            const dates = [];
+            const opens = [];
+
+            rows.forEach(row => {
+                const [date, open] = row.split(',');
+                if (date && open) {
+                    dates.push(date);
+                    opens.push(parseFloat(open));
+                }
+            });
+
+            return { dates, opens };
+        }
+
+        // チャートを描画する関数
+        function createChart(dates, opens) {
+            const ctx = document.getElementById('myChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: dates,
+                    datasets: [{
+                        label: 'Open Value',
+                        data: opens,
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Date'
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Open Value'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // データを取得してチャートを作成
+        fetchCSVData().then(csvData => {
+            const { dates, opens } = parseCSVData(csvData);
+            createChart(dates, opens);
+        });
+    </script>
+</body>
+
+</html>

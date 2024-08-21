@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Data Chart</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const apiUrl = 'https://script.google.com/macros/s/AKfycbxKciVpo9fkPyzDlmjNlnCNPVQpmjZeuIEiu64vmOHrBXADFti4wR9v_Obb1jFrY8yraw/exec'; // Google Apps ScriptのURL
+
+        async function fetchJSONData() {
+            try {
+                const response = await fetch(apiUrl);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                console.error('Error fetching JSON data:', error);
+                return [];
+            }
+        }
+
+        function formatDateString(dateString) {
+            const date = new Date(dateString);
+            // 日付部分のみを取得（年-月-日）
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0'); // 月は0始まりなので+1
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        function createChart(data) {
+            const dates = data.map(item => formatDateString(item.date));
+            const opens = data.map(item => item.open);
+
+            const ctx = document.getElementById('myChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: dates,
+                    datasets: [{
+                        label: 'Open Value',
+                        data: opens,
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Date'
+                            },
+                            ticks: {
+                                autoSkip: true, // 自動的に間引く
+                                maxTicksLimit: 10, // 表示する最大の目盛り数を設定
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Open Value'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const jsonData = await fetchJSONData();
+            if (jsonData.length) {
+                createChart(jsonData);
+            }
+        });
+    </script>
+</head>
+
+<body>
+    <h1>Stock Data Chart</h1>
+    <canvas id="myChart" width="400" height="200"></canvas>
+</body>
+
+</html>
