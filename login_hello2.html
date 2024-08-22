@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Page</title>
+    <script>
+        async function login() {
+            // 外部JSONファイルから認証情報を取得
+            const response = await fetch('users.json');
+            const users = await response.json();
+
+            var username = document.getElementById("username").value;
+            var password = document.getElementById("password").value;
+
+            // 認証フラグ
+            let authenticated = false;
+
+            // ユーザー情報をチェック
+            users.forEach(user => {
+                if (username === user.username && password === user.password) {
+                    authenticated = true;
+                }
+            });
+
+            if (authenticated) {
+                document.getElementById("message").innerText = "Login successful! Welcome to Hello World page.";
+                document.getElementById("login-form").style.display = "none";
+                document.getElementById("hello-world").style.display = "block";
+            } else {
+                document.getElementById("message").innerText = "Invalid credentials, please try again.";
+            }
+        }
+    </script>
+</head>
+
+<body>
+    <h1>Login</h1>
+    <form id="login-form" onsubmit="event.preventDefault(); login();">
+        <label for="username">Username:</label>
+        <input type="text" id="username" required><br>
+        <label for="password">Password:</label>
+        <input type="password" id="password" required><br>
+        <input type="submit" value="Login">
+    </form>
+    <p id="message"></p>
+
+    <div id="hello-world" style="display:none;">
+        <h1>Hello World!</h1>
+    </div>
+</body>
+
+</html>
