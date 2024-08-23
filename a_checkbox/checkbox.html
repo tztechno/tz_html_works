@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>チェック表生成 with LocalStorage</title>
+    <title>チェック表生成</title>
     <style>
         table {
             border-collapse: collapse;
@@ -47,6 +47,8 @@
             const savedText = localStorage.getItem('textboxContent');
             if (savedText) {
                 document.getElementById('textbox').value = savedText;
+                generateTable(); // テーブルを生成してからチェックボックスを復元
+                restoreCheckboxStates();
             }
         };
 
@@ -74,22 +76,38 @@
             });
             tableHtml += '</tr></thead><tbody>';
             
-            dates.forEach(date => {
+            dates.forEach((date, dateIndex) => {
                 tableHtml += `<tr><td>${date}</td>`;
-                items.forEach(() => {
-                    tableHtml += '<td><input type="checkbox"></td>';
+                items.forEach((_, itemIndex) => {
+                    const checkboxId = `checkbox-${dateIndex}-${itemIndex}`;
+                    tableHtml += `<td><input type="checkbox" id="${checkboxId}" onclick="saveCheckboxState('${checkboxId}')"></td>`;
                 });
                 tableHtml += '</tr>';
             });
             
             tableHtml += '</tbody></table>';
             tableContainer.innerHTML = tableHtml;
+            
+            restoreCheckboxStates(); // チェックボックスの状態を復元
+        }
+
+        function saveCheckboxState(checkboxId) {
+            const checkbox = document.getElementById(checkboxId);
+            localStorage.setItem(checkboxId, checkbox.checked);
+        }
+
+        function restoreCheckboxStates() {
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach(checkbox => {
+                const savedState = localStorage.getItem(checkbox.id);
+                checkbox.checked = savedState === 'true';
+            });
         }
 
         function resetTable() {
             document.getElementById('textbox').value = '';
             document.getElementById('tableContainer').innerHTML = '';
-            localStorage.removeItem('textboxContent'); // localStorageからデータを削除
+            localStorage.clear(); // localStorageからすべてのデータを削除
         }
     </script>
 </body>
