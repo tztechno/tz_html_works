@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>チェック表生成 with LocalStorage</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            table-layout: fixed; /* 列幅を均等にする */
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 8px;
+            text-align: center;
+            overflow: hidden; /* コンテンツがはみ出さないようにする */
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+        td {
+            text-align: center;
+        }
+        textarea {
+            width: 100%;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+    <p>Check Box LS</p>
+    
+    <textarea id="textbox" rows="3" placeholder="項目を入力してください"></textarea>
+    <br><br>
+    <button onclick="generateTable()">生成</button>
+    <button onclick="resetTable()">リセット</button>
+    <br><br>
+    <div id="tableContainer"></div>
+
+    <script>
+        // ページロード時にlocalStorageからデータを復元
+        window.onload = function() {
+            const savedText = localStorage.getItem('textboxContent');
+            if (savedText) {
+                document.getElementById('textbox').value = savedText;
+                generateTable(); // テーブルを生成してからチェックボックスを復元
+                restoreCheckboxStates();
+            }
+        };
+
+        function generateTable() {
+            const textbox = document.getElementById('textbox');
+            const tableContainer = document.getElementById('tableContainer');
+            const items = textbox.value.split('\n').filter(item => item.trim() !== '');
+
+            // テキストエリアの内容をlocalStorageに保存
+            localStorage.setItem('textboxContent', textbox.value);
+            
+            // 現在の日付を取得
+            const today = new Date();
+            const dates = [];
+            for (let i = 0; i < 7; i++) {
+                const date = new Date(today);
+                date.setDate(today.getDate() + i);
+                dates.push(date.toISOString().split('T')[0]); // YYYY-MM-DD形式
+            }
+            
+            // テーブルを生成
+            let tableHtml = '<table><thead><tr><th>日付</th>';
+            items.forEach(item => {
+                tableHtml += `<th>${item}</th>`;
+            });
+            tableHtml += '</tr></thead><tbody>';
+            
+            dates.forEach((date, dateIndex) => {
+                tableHtml += `<tr><td>${date}</td>`;
+                items.forEach((_, itemIndex) => {
+                    const checkboxId = `checkbox-${dateIndex}-${itemIndex}`;
+                    tableHtml += `<td><input type="checkbox" id="${checkboxId}" onclick="saveCheckboxState('${checkboxId}')"></td>`;
+                });
+                tableHtml += '</tr>';
+            });
+            
+            tableHtml += '</tbody></table>';
+            tableContainer.innerHTML = tableHtml;
+            
+            restoreCheckboxStates(); // チェックボックスの状態を復元
+        }
+
+        function saveCheckboxState(checkboxId) {
+            const checkbox = document.getElementById(checkboxId);
+            localStorage.setItem(checkboxId, checkbox.checked);
+        }
+
+        function restoreCheckboxStates() {
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach(checkbox => {
+                const savedState = localStorage.getItem(checkbox.id);
+                checkbox.checked = savedState === 'true';
+            });
+        }
+
+        function resetTable() {
+            document.getElementById('textbox').value = '';
+            document.getElementById('tableContainer').innerHTML = '';
+            localStorage.clear(); // localStorageからすべてのデータを削除
+        }
+    </script>
+</body>
+</html>
