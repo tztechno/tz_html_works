@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Splitter</title>
+</head>
+
+<body>
+    <h2>Text Splitter</h2>
+    <textarea id="textbox" rows="4" cols="50" placeholder="Enter your text here..."></textarea><br><br>
+    <button onclick="splitText()">Split Text</button>
+    <button onclick="resetText()">Reset</button>
+
+    <h3>Output:</h3>
+    <div id="output"></div>
+
+    <script>
+        function splitText() {
+            let text = document.getElementById("textbox").value;
+            // Replace double quotes with a unique delimiter to handle them as delimiters
+            text = text.replace(/"/g, '|');
+            // Split the text by spaces, commas, periods, full-width spaces, and the unique delimiter
+            const splitText = text.split(/[\s,\.|\u3000]+/);
+            // Filter out empty strings, remove duplicates, and join with line breaks
+            const uniqueText = [...new Set(splitText.filter(word => word.trim() !== ''))];
+            const result = uniqueText.join("\n");
+            document.getElementById("output").innerText = result;
+        }
+
+        function resetText() {
+            document.getElementById("textbox").value = "";
+            document.getElementById("output").innerText = "";
+        }
+    </script>
+</body>
+
+</html>
