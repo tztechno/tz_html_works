@@ -78,8 +78,12 @@
             dates.forEach((date, dateIndex) => {
                 tableHtml += `<tr><td>${date}</td>`;
                 items.forEach((_, itemIndex) => {
-                    const checkboxId = `checkbox-${dateIndex}-${itemIndex}`;
-                    tableHtml += `<td><input type="checkbox" id="${checkboxId}" onclick="saveCheckboxState('${checkboxId}')"></td>`;
+                    const checkboxId1 = `checkbox1-${dateIndex}-${itemIndex}`;
+                    const checkboxId2 = `checkbox2-${dateIndex}-${itemIndex}`;
+                    tableHtml += `<td>
+                        <input type="checkbox" id="${checkboxId1}" onclick="saveCheckboxState('${checkboxId1}')">
+                        <input type="checkbox" id="${checkboxId2}" onclick="saveCheckboxState('${checkboxId2}')">
+                    </td>`;
                 });
                 tableHtml += '</tr>';
             });
@@ -111,3 +115,4 @@
     </script>
 </body>
 </html>
+
