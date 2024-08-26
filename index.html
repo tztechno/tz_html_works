@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Send to Google Sheets</title>
+</head>
+
+<body>
+    <form id="myForm">
+        <label for="textbox">Enter Text:</label>
+        <input type="text" id="textbox" name="textboxContent">
+        <button type="submit">Submit</button>
+    </form>
+
+    <script>
+        document.getElementById('myForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            var textboxContent = document.getElementById('textbox').value;
+            var webapp = 'https://script.google.com/macros/s/AKfycbzMNZer2OvESBBZnl7Bje7lJi__ulAvnQe6BmlRDETd5U-G_66zjXK_o01Uw0KqChQ-/exec'
+            fetch(webapp, {
+                method: 'POST',
+                body: new URLSearchParams({ 'textboxContent': textboxContent })
+            })
+                .then(response => response.text())
+                .then(result => {
+                    console.log(result);
+                    alert('Data submitted successfully!');
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        });
+    </script>
+</body>
+
+</html>
