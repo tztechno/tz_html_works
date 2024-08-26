@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>お絵描きキャンバス</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        canvas {
+            border: 1px solid black;
+        }
+        #controls {
+            margin-top: 10px;
+        }
+        button {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>お絵描きキャンバス</h1>
+    <canvas id="drawingCanvas"></canvas>
+    <div id="controls">
+        <button id="eraser">消しゴム</button>
+        <button id="saveImage">画像保存</button>
+        <button id="resetCanvas">リセット</button>
+    </div>
+    <script>
+        const canvas = document.getElementById('drawingCanvas');
+        const ctx = canvas.getContext('2d');
+        let isDrawing = false;
+        let isErasing = false;
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth * 0.9;
+            canvas.height = window.innerHeight * 0.9;
+            resetCanvas();  // Resize時にキャンバスをクリアします
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        window.addEventListener('load', resizeCanvas);
+
+        // Drawing Event Listeners (Mouse)
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseout', stopDrawing);
+
+        // Drawing Event Listeners (Touch)
+        canvas.addEventListener('touchstart', startDrawingTouch);
+        canvas.addEventListener('touchmove', drawTouch);
+        canvas.addEventListener('touchend', stopDrawing);
+        canvas.addEventListener('touchcancel', stopDrawing);
+
+        // Control Buttons
+        document.getElementById('eraser').addEventListener('click', toggleEraser);
+        document.getElementById('saveImage').addEventListener('click', saveImage);
+        document.getElementById('resetCanvas').addEventListener('click', resetCanvas);
+
+        function startDrawing(event) {
+            isDrawing = true;
+            ctx.beginPath();
+            ctx.moveTo(event.offsetX, event.offsetY);
+        }
+
+        function draw(event) {
+            if (!isDrawing) return;
+            ctx.lineWidth = isErasing ? 20 : 2;  // Eraser is thicker than the pen
+            ctx.strokeStyle = isErasing ? 'white' : 'black';
+            ctx.lineTo(event.offsetX, event.offsetY);
+            ctx.stroke();
+        }
+
+        function startDrawingTouch(event) {
+            isDrawing = true;
+            const touch = event.touches[0];
+            const rect = canvas.getBoundingClientRect();
+            ctx.beginPath();
+            ctx.moveTo(touch.clientX - rect.left, touch.clientY - rect.top);
+            event.preventDefault();  // タッチスクロールを防ぐ
+        }
+
+        function drawTouch(event) {
+            if (!isDrawing) return;
+            const touch = event.touches[0];
+            const rect = canvas.getBoundingClientRect();
+            ctx.lineWidth = isErasing ? 20 : 2;
+            ctx.strokeStyle = isErasing ? 'white' : 'black';
+            ctx.lineTo(touch.clientX - rect.left, touch.clientY - rect.top);
+            ctx.stroke();
+            event.preventDefault();  // タッチスクロールを防ぐ
+        }
+
+        function stopDrawing() {
+            isDrawing = false;
+            ctx.closePath();
+        }
+
+        function toggleEraser() {
+            isErasing = !isErasing;
+            const eraserButton = document.getElementById('eraser');
+            eraserButton.textContent = isErasing ? 'ペンに戻す' : '消しゴム';
+        }
+
+        function saveImage() {
+            const link = document.createElement('a');
+            const currentDate = new Date();
+            const timeString = currentDate.toISOString().replace(/[:.-]/g, '').slice(0, 15);
+            link.download = `${timeString}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+
+        function resetCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+    </script>
+</body>
+</html>
