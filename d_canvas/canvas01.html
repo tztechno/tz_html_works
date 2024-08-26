@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>お絵描きキャンバス</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+        }
+
+        #controls {
+            margin-top: 10px;
+        }
+
+        button {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <p>お絵描きキャンバス</p>
+    <canvas id="drawingCanvas" width="1200" height="500"></canvas>
+    <div id="controls">
+        <button id="eraser">消しゴム</button>
+        <button id="saveImage">画像保存</button>
+        <button id="resetCanvas">リセット</button>
+    </div>
+    <script>
+        const canvas = document.getElementById('drawingCanvas');
+        const ctx = canvas.getContext('2d');
+        let isDrawing = false;
+        let isErasing = false;
+
+        // Drawing Event Listeners
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseout', stopDrawing);
+
+        // Control Buttons
+        document.getElementById('eraser').addEventListener('click', toggleEraser);
+        document.getElementById('saveImage').addEventListener('click', saveImage);
+        document.getElementById('resetCanvas').addEventListener('click', resetCanvas);
+
+        function startDrawing(event) {
+            isDrawing = true;
+            ctx.beginPath();
+            ctx.moveTo(event.offsetX, event.offsetY);
+        }
+
+        function draw(event) {
+            if (!isDrawing) return;
+            ctx.lineWidth = isErasing ? 20 : 2;  // Eraser is thicker than the pen
+            ctx.strokeStyle = isErasing ? 'white' : 'black';
+            ctx.lineTo(event.offsetX, event.offsetY);
+            ctx.stroke();
+        }
+
+        function stopDrawing() {
+            isDrawing = false;
+            ctx.closePath();
+        }
+
+        function toggleEraser() {
+            isErasing = !isErasing;
+            const eraserButton = document.getElementById('eraser');
+            eraserButton.textContent = isErasing ? 'ペンに戻す' : '消しゴム';
+        }
+
+        function saveImage() {
+            const link = document.createElement('a');
+            const currentDate = new Date();
+            const timeString = currentDate.toISOString().replace(/[:.-]/g, '').slice(0, 15);
+            link.download = `${timeString}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+
+        function resetCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+    </script>
+</body>
+
+</html>
