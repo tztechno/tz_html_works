@@ -16,6 +16,8 @@ https://tztechno.github.io/tz_html_works/a_checkbox/checkbox.html
 
 https://tztechno.github.io/tz_html_works/b_split_text/split_text.html
 
+https://tztechno.github.io/tz_html_works/c_canvas/index.html
+
 
 ### latest
 ---
