@@ -1,13 +1,11 @@
 <!DOCTYPE html>
 <html lang="ja">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>お絵描きキャンバス</title>
     <style>
-        body,
-        html {
+        body, html {
             margin: 0;
             padding: 0;
             height: 100%;
@@ -17,23 +15,19 @@
             align-items: center;
             flex-direction: column;
         }
-
         canvas {
             border: 1px solid black;
         }
-
         #controls {
             margin-top: 10px;
         }
-
         button {
             margin-right: 10px;
         }
     </style>
 </head>
-
 <body>
-    <p>お絵描きキャンバス</p>
+    <h1>お絵描きキャンバス</h1>
     <canvas id="drawingCanvas"></canvas>
     <div id="controls">
         <button id="eraser">消しゴム</button>
@@ -55,11 +49,17 @@
         window.addEventListener('resize', resizeCanvas);
         window.addEventListener('load', resizeCanvas);
 
-        // Drawing Event Listeners
+        // Drawing Event Listeners (Mouse)
         canvas.addEventListener('mousedown', startDrawing);
         canvas.addEventListener('mousemove', draw);
         canvas.addEventListener('mouseup', stopDrawing);
         canvas.addEventListener('mouseout', stopDrawing);
+
+        // Drawing Event Listeners (Touch)
+        canvas.addEventListener('touchstart', startDrawingTouch);
+        canvas.addEventListener('touchmove', drawTouch);
+        canvas.addEventListener('touchend', stopDrawing);
+        canvas.addEventListener('touchcancel', stopDrawing);
 
         // Control Buttons
         document.getElementById('eraser').addEventListener('click', toggleEraser);
@@ -78,6 +78,26 @@
             ctx.strokeStyle = isErasing ? 'white' : 'black';
             ctx.lineTo(event.offsetX, event.offsetY);
             ctx.stroke();
+        }
+
+        function startDrawingTouch(event) {
+            isDrawing = true;
+            const touch = event.touches[0];
+            const rect = canvas.getBoundingClientRect();
+            ctx.beginPath();
+            ctx.moveTo(touch.clientX - rect.left, touch.clientY - rect.top);
+            event.preventDefault();  // タッチスクロールを防ぐ
+        }
+
+        function drawTouch(event) {
+            if (!isDrawing) return;
+            const touch = event.touches[0];
+            const rect = canvas.getBoundingClientRect();
+            ctx.lineWidth = isErasing ? 20 : 2;
+            ctx.strokeStyle = isErasing ? 'white' : 'black';
+            ctx.lineTo(touch.clientX - rect.left, touch.clientY - rect.top);
+            ctx.stroke();
+            event.preventDefault();  // タッチスクロールを防ぐ
         }
 
         function stopDrawing() {
@@ -105,5 +125,4 @@
         }
     </script>
 </body>
-
 </html>
