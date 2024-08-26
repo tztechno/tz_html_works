@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webカメラの映像を表示</title>
+</head>
+<body>
+    <h1>Webカメラの映像を表示</h1>
+    <video id="webcam" autoplay playsinline></video>
+
+    <script>
+        const video = document.getElementById('webcam');
+
+        // Webカメラの映像を取得する関数
+        async function startWebcam() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = stream;
+            } catch (error) {
+                console.error('Webカメラの映像を取得できませんでした:', error);
+            }
+        }
+
+        // ページがロードされたらWebカメラの映像を表示
+        window.addEventListener('load', startWebcam);
+    </script>
+</body>
+</html>
