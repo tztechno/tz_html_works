@@ -59,7 +59,9 @@
                 }).addTo(map);
 
                 // テキスト情報を更新
-                positionText.textContent = `Latitude: ${latitude}, Longitude: ${longitude}`;
+                positionText.textContent = `Latitude: ${latitude.toFixed(3)}, Longitude: ${longitude.toFixed(3)}`;
+                timestampText.textContent = `Timestamp: ${formattedTimestamp}`;
+ 
                 timestampText.textContent = `Timestamp: ${formattedTimestamp}`;
             } catch (error) {
                 console.error('Error fetching ISS data:', error);
