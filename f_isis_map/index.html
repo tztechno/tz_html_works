@@ -45,7 +45,8 @@
         // ISSの位置データをAPIから取得する関数
         async function fetchISSData() {
             try {
-                const response = await fetch('https://api.open-notify.org/iss-now.json'); // https
+                
+                const response = await fetch('https://api.wheretheiss.at/v1/satellites/25544'); // https
                 
                 const data = await response.json();
                 const { latitude, longitude } = data.iss_position;
