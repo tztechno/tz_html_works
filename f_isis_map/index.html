@@ -21,7 +21,6 @@
 </head>
 
 <body>
-
     <div id="map"></div>
     <div id="info">
         <p id="position">Latitude: N/A, Longitude: N/A</p>
@@ -42,28 +41,26 @@
         const positionText = document.getElementById('position');
         const timestampText = document.getElementById('timestamp');
 
-        // ISSの位置データをAPIから取得する関数
+        // ISSの位置データを新しいAPIから取得する関数
         async function fetchISSData() {
             try {
-                
-                const response = await fetch('https://api.wheretheiss.at/v1/satellites/25544'); // https
-                
+                const response = await fetch('https://api.wheretheiss.at/v1/satellites/25544');
                 const data = await response.json();
-                const { latitude, longitude } = data.iss_position;
-                const timestamp = new Date(data.timestamp * 1000).toLocaleString(); // タイムスタンプを日時形式に変換
+                const { latitude, longitude, timestamp } = data;
+                const formattedTimestamp = new Date(timestamp * 1000).toLocaleString(); // タイムスタンプを日時形式に変換
 
-                // 地図に赤いドットを追加
-                const latLng = [parseFloat(latitude), parseFloat(longitude)];
+                // 地図に半透明の赤いドットを追加
+                const latLng = [latitude, longitude];
                 L.circle(latLng, {
                     color: 'red',
                     fillColor: 'red',
-                    fillOpacity: 0.4,
-                    radius: 10000 // ドットの大きさ
+                    fillOpacity: 0.5, // 半透明設定
+                    radius: 50000 // ドットの大きさ
                 }).addTo(map);
 
                 // テキスト情報を更新
                 positionText.textContent = `Latitude: ${latitude}, Longitude: ${longitude}`;
-                timestampText.textContent = `Timestamp: ${timestamp}`;
+                timestampText.textContent = `Timestamp: ${formattedTimestamp}`;
             } catch (error) {
                 console.error('Error fetching ISS data:', error);
                 positionText.textContent = 'Error fetching data';
