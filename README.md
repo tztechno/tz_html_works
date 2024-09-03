@@ -18,7 +18,7 @@ https://tztechno.github.io/tz_html_works/b_split_text/split_text.html
 
 https://tztechno.github.io/tz_html_works/d_canvas/index.html
 
-https://tztechno.github.io/tz_html_works/f_isis_map/now_isis.html    ISIS location Map
+https://tztechno.github.io/tz_html_works/f_isis_map/index.html     ISIS location Map
 
 https://tztechno.github.io/tz_html_works/g_bitcoin_fig/index.html    Current Bitcoin Price
 
