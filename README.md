@@ -22,6 +22,8 @@ https://tztechno.github.io/tz_html_works/f_iss_map/index.html     ISS location M
 
 https://tztechno.github.io/tz_html_works/g_bitcoin_fig/index.html    Current Bitcoin Price
 
+https://tztechno.github.io/tz_html_works/h_USDJPY_fig/index.html    Current USDJPY Price
+
 
 
 
