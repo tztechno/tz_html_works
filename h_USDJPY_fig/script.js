@@ -7,7 +7,7 @@ const labels = [];
 const data = [];
 
 // APIキーを設定
-const API_KEY = 'ZVX8JE1ZFJWFS0TU'; // ここにAlpha VantageのAPIキーを入力してください
+const API_KEY = 'ZVX8JE1ZFJWFS0TU'; // ここにAlpha VantageのAPIキーを入力してください https://www.alphavantage.co/
 
 // USD/JPYの為替レートを取得する関数
 async function getUsdJpyPrice() {
