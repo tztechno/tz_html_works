@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>訪問者記録フォーム</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        label {
+            display: block;
+            margin: 10px 0 5px;
+        }
+
+        input,
+        textarea,
+        button {
+            display: block;
+            margin-bottom: 10px;
+            padding: 8px;
+            box-sizing: border-box;
+            width: 100%;
+            /* 初期幅 */
+            max-width: 300px;
+            /* 各入力フィールドの初期最大幅 */
+        }
+
+        .double-width {
+            max-width: 600px;
+            /* 2倍の幅 */
+        }
+
+        .triple-width {
+            max-width: 900px;
+            /* 3倍の幅 */
+        }
+
+        .time-inputs {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .time-inputs label {
+            margin: 0;
+            white-space: nowrap;
+        }
+
+        .time-inputs input {
+            min-width: 70px;
+            /* 時間フィールドの最小幅 */
+            flex: 1;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2>訪問者記録フォーム</h2>
+
+    <form id="visitorForm">
+        <label for="visitorName">訪問者:</label>
+        <input type="text" id="visitorName" name="visitorName" class="double-width" required>
+
+        <label for="visitDate">日付:</label>
+        <input type="date" id="visitDate" name="visitDate" required>
+
+        <div class="time-inputs">
+            <label for="startTime">開始時間:</label>
+            <input type="time" id="startTime" name="startTime" required>
+
+            <label for="endTime">終了時間:</label>
+            <input type="time" id="endTime" name="endTime" required>
+        </div>
+
+        <label for="visitPlace">訪問先:</label>
+        <input type="text" id="visitPlace" name="visitPlace" class="double-width" required>
+
+        <label for="visitContent">内容:</label>
+        <textarea id="visitContent" name="visitContent" rows="4" class="triple-width" required></textarea>
+
+        <button type="button" onclick="saveData()">保存</button>
+    </form>
+
+    <script>
+        function saveData() {
+            // 入力されたデータを取得
+            const visitorName = document.getElementById('visitorName').value;
+            const visitDate = document.getElementById('visitDate').value;
+            const startTime = document.getElementById('startTime').value;
+            const endTime = document.getElementById('endTime').value;
+            const visitPlace = document.getElementById('visitPlace').value;
+            const visitContent = document.getElementById('visitContent').value;
+
+            // 保存するテキスト内容を構築
+            const textToSave = `訪問者: ${visitorName}\n日付: ${visitDate}\n開始時間: ${startTime}\n終了時間: ${endTime}\n訪問先: ${visitPlace}\n内容: ${visitContent}\n`;
+
+            // Blobを使ってテキストファイルとして保存
+            const blob = new Blob([textToSave], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = '訪問記録.txt';  // 保存するファイル名
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+    </script>
+
+</body>
+
+</html>
