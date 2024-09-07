@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>訪問者記録フォーム</title>
+    <title>トリミング予約フォーム</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -55,16 +55,24 @@
             /* 時間フィールドの最小幅 */
             flex: 1;
         }
+
+        .select-width {
+            width: 100%; /* または必要に応じて具体的なピクセル値 */
+            max-width: 300px; /* 必要に応じて調整 */
+            height: 40px; /* 高さを設定、必要に応じて調整 */
+            font-size: 16px; /* フォントサイズを調整して見た目を整える */
+        }
+
     </style>
 </head>
 
 <body>
 
-    <h2>訪問者記録フォーム</h2>
+    <h2>トリミング予約フォーム</h2>
 
     <form id="visitorForm">
-        <label for="visitorName">訪問者:</label>
-        <input type="text" id="visitorName" name="visitorName" class="double-width" required>
+        <label for="doctorName">担当者:</label>
+        <input type="text" id="doctorName" name="doctorName" class="double-width" required>
 
         <label for="visitDate">日付:</label>
         <input type="date" id="visitDate" name="visitDate" required>
@@ -77,8 +85,18 @@
             <input type="time" id="endTime" name="endTime" required>
         </div>
 
-        <label for="visitPlace">訪問先:</label>
-        <input type="text" id="visitPlace" name="visitPlace" class="double-width" required>
+        <label for="deskName">使用デスク:</label>
+        <select id="deskName" name="deskName" class="select-width" required>
+            <option value="-">-</option>
+            <option value="A">A</option>
+            <option value="B">B</option>
+            <option value="C">C</option>
+            <option value="D">D</option>
+            <option value="E">E</option>
+        </select>
+
+        <label for="visitorName">お客様:</label>
+        <input type="text" id="visitorName" name="visitorName" class="double-width" required>
 
         <label for="visitContent">内容:</label>
         <textarea id="visitContent" name="visitContent" rows="4" class="triple-width" required></textarea>
@@ -89,22 +107,23 @@
     <script>
         function saveData() {
             // 入力されたデータを取得
-            const visitorName = document.getElementById('visitorName').value;
+            const doctorName = document.getElementById('doctorName').value;
             const visitDate = document.getElementById('visitDate').value;
             const startTime = document.getElementById('startTime').value;
             const endTime = document.getElementById('endTime').value;
-            const visitPlace = document.getElementById('visitPlace').value;
+            const deskName = document.getElementById('deskName').value;
+            const visitorName = document.getElementById('visitorName').value;
             const visitContent = document.getElementById('visitContent').value;
 
             // 保存するテキスト内容を構築
-            const textToSave = `訪問者: ${visitorName}\n日付: ${visitDate}\n開始時間: ${startTime}\n終了時間: ${endTime}\n訪問先: ${visitPlace}\n内容: ${visitContent}\n`;
+            const textToSave = `担当者: ${doctorName}\n日付: ${visitDate}\n開始時間: ${startTime}\n終了時間: ${endTime}\nデスク: ${deskName}\nお客様: ${visitorName}\n内容: ${visitContent}\n`;
 
             // Blobを使ってテキストファイルとして保存
             const blob = new Blob([textToSave], { type: 'text/plain' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = '訪問記録.txt';  // 保存するファイル名
+            a.download = '予約記録.txt';  // 保存するファイル名
             a.click();
             URL.revokeObjectURL(url);
         }
