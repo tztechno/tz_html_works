@@ -24,7 +24,9 @@ https://tztechno.github.io/tz_html_works/g_bitcoin_fig/index.html    Current Bit
 
 https://tztechno.github.io/tz_html_works/h_USDJPY_fig/index.html    Current USDJPY Price
 
+https://tztechno.github.io/tz_html_works/i_4currency_4stock/currency.html 
 
+https://tztechno.github.io/tz_html_works/i_4currency_4stock/stock.html 
 
 
 
