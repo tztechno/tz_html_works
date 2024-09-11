@@ -1,9 +1,15 @@
 // List of Japanese stocks to display
-const stocks = [
+const stocks_JP = [
     { symbol: '7203.T', name: 'Toyota', id: 'stockChart1' },  // トヨタ自動車
     { symbol: '6758.T', name: 'Sony', id: 'stockChart2' },    // ソニー
     { symbol: '9984.T', name: 'SoftBank', id: 'stockChart3' }, // ソフトバンク
     { symbol: '6501.T', name: 'Hitachi', id: 'stockChart4' }   // 日立製作所
+];
+const stocks = [
+    { symbol: 'AAPL', name: 'Apple', id: 'stockChart1' },     // Apple Inc.
+    { symbol: 'MSFT', name: 'Microsoft', id: 'stockChart2' }, // Microsoft Corporation
+    { symbol: 'AMZN', name: 'Amazon', id: 'stockChart3' },    // Amazon.com Inc.
+    { symbol: 'GOOGL', name: 'Google', id: 'stockChart4' }    // Alphabet Inc. (Google)
 ];
 
 // Array to hold chart instances and data
