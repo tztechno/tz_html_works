@@ -103,7 +103,7 @@ async function updateCharts() {
 currencyPairs.forEach(initChart);
 
 // Set interval to update all charts every minute
-setInterval(updateCharts, 60000); // Update every 1 minute
+setInterval(updateCharts, 300000); // Update every 1 minute
 
 // Initial update to populate data immediately
 updateCharts();
