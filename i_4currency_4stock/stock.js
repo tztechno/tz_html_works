@@ -14,7 +14,7 @@ const stocks = [
 
 // Array to hold chart instances and data
 const charts = [];
-const API_KEY = 'S1OnG7CZeRFuZepJDZKSomf77MAhBj2S'; // Replace with your Alpha Vantage API key
+const API_KEY = 'bb25c312-b7fc-4340-a451-5fe001989bd3'; // Replace with your Alpha Vantage API key
 
 // Function to fetch stock price data
 async function getStockPrice(symbol) {
