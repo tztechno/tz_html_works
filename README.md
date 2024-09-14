@@ -26,7 +26,7 @@ https://tztechno.github.io/tz_html_works/h_USDJPY_fig/index.html    Current USDJ
 
 https://tztechno.github.io/tz_html_works/i_4currency_4stock/currency.html    OK
 
-https://tztechno.github.io/tz_html_works/i_4currency_4stock/stock.html     NOT WORK
+https://tztechno.github.io/tz_html_works/j_custom_graph/graph.html
 
 
 
