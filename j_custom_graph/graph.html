@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LocalStorageで複数グラフを描画</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .container {
+            max-width: 86vw;
+            max-height: 86vh;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        canvas {
+            display: block;
+            margin: 20px auto;
+            width: 100%;
+            height: auto;
+        }
+
+        .graph-controls {
+            margin-bottom: 20px;
+        }
+
+        #resetButton1,
+        #resetButton2,
+        #resetButton3,
+        #inputValue1,
+        #inputValue2,
+        #inputValue3,
+        #submitButton1,
+        #submitButton2,
+        #submitButton3,
+        #titleInput1,
+        #titleInput2,
+        #titleInput3,
+        #updateTitleButton1,
+        #updateTitleButton2,
+        #updateTitleButton3 {
+            margin: 10px;
+            padding: 10px;
+            font-size: 16px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .resetButton {
+            background-color: #f44336;
+        }
+
+        .resetButton:hover {
+            background-color: #d32f2f;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- 体重グラフ -->
+        <div class="graph-controls">
+            <input type="number" id="inputValue1" placeholder="値を入力 (A)">
+            <button type="button" id="submitButton1">グラフAを更新</button>
+            <button type="button" id="resetButton1" class="resetButton">グラフAのデータ削除</button>
+            <input type="text" id="titleInput1" placeholder="タイトルを入力 (A)">
+            <button type="button" id="updateTitleButton1">タイトルを更新</button>
+        </div>
+        <canvas id="chartA"></canvas>
+
+        <!-- 株価グラフ -->
+        <div class="graph-controls">
+            <input type="number" id="inputValue2" placeholder="値を入力 (B)">
+            <button type="button" id="submitButton2">グラフBを更新</button>
+            <button type="button" id="resetButton2" class="resetButton">グラフBのデータ削除</button>
+            <input type="text" id="titleInput2" placeholder="タイトルを入力 (B)">
+            <button type="button" id="updateTitleButton2">タイトルを更新</button>
+        </div>
+        <canvas id="chartB"></canvas>
+
+        <!-- 順位グラフ -->
+        <div class="graph-controls">
+            <input type="number" id="inputValue3" placeholder="値を入力 (C)">
+            <button type="button" id="submitButton3">グラフCを更新</button>
+            <button type="button" id="resetButton3" class="resetButton">グラフCのデータ削除</button>
+            <input type="text" id="titleInput3" placeholder="タイトルを入力 (C)">
+            <button type="button" id="updateTitleButton3">タイトルを更新</button>
+        </div>
+        <canvas id="chartC"></canvas>
+    </div>
+
+    <script>
+        // データを保存する関数
+        function saveData(key, value) {
+            const timestamp = new Date().toLocaleTimeString(); // 時刻を取得
+            let data = JSON.parse(localStorage.getItem(key)) || [];
+            data.push({ time: timestamp, value: value });
+            localStorage.setItem(key, JSON.stringify(data));
+        }
+
+        // LocalStorageからデータを取得してグラフを描画する関数
+        function updateChart(chart, key) {
+            const storedData = JSON.parse(localStorage.getItem(key)) || [];
+            const labels = storedData.map(item => item.time);
+            const values = storedData.map(item => item.value);
+            chart.data.labels = labels;
+            chart.data.datasets[0].data = values;
+            chart.update();
+        }
+
+        // グラフ初期化関数
+        function createChart(ctx, title) {
+            return new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: '値',
+                        data: [],
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 2,
+                        fill: false
+                    }]
+                },
+                options: {
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: title
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: '時刻'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: '値'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ページが読み込まれたときにグラフを初期化
+        window.onload = function () {
+            // グラフA（体重）の初期化
+            const ctxA = document.getElementById('chartA').getContext('2d');
+            const chartA = createChart(ctxA, 'A');
+
+            // グラフB（株価）の初期化
+            const ctxB = document.getElementById('chartB').getContext('2d');
+            const chartB = createChart(ctxB, 'B');
+
+            // グラフC（順位）の初期化
+            const ctxC = document.getElementById('chartC').getContext('2d');
+            const chartC = createChart(ctxC, 'C');
+
+            // 各グラフの更新
+            updateChart(chartA, 'dataA');
+            updateChart(chartB, 'dataB');
+            updateChart(chartC, 'dataC');
+
+            // グラフA更新ボタンの処理
+            document.getElementById('submitButton1').addEventListener('click', function () {
+                const inputValue1 = document.getElementById('inputValue1').value;
+                if (inputValue1) {
+                    saveData('dataA', Number(inputValue1));
+                    updateChart(chartA, 'dataA');
+                    document.getElementById('inputValue1').value = '';
+                }
+            });
+
+            // グラフB更新ボタンの処理
+            document.getElementById('submitButton2').addEventListener('click', function () {
+                const inputValue2 = document.getElementById('inputValue2').value;
+                if (inputValue2) {
+                    saveData('dataB', Number(inputValue2));
+                    updateChart(chartB, 'dataB');
+                    document.getElementById('inputValue2').value = '';
+                }
+            });
+
+            // グラフC更新ボタンの処理
+            document.getElementById('submitButton3').addEventListener('click', function () {
+                const inputValue3 = document.getElementById('inputValue3').value;
+                if (inputValue3) {
+                    saveData('dataC', Number(inputValue3));
+                    updateChart(chartC, 'dataC');
+                    document.getElementById('inputValue3').value = '';
+                }
+            });
+
+            // グラフAリセットボタンの処理
+            document.getElementById('resetButton1').addEventListener('click', function () {
+                localStorage.removeItem('dataA');
+                chartA.data.labels = [];
+                chartA.data.datasets[0].data = [];
+                chartA.update();
+            });
+
+            // グラフBリセットボタンの処理
+            document.getElementById('resetButton2').addEventListener('click', function () {
+                localStorage.removeItem('dataB');
+                chartB.data.labels = [];
+                chartB.data.datasets[0].data = [];
+                chartB.update();
+            });
+
+            // グラフCリセットボタンの処理
+            document.getElementById('resetButton3').addEventListener('click', function () {
+                localStorage.removeItem('dataC');
+                chartC.data.labels = [];
+                chartC.data.datasets[0].data = [];
+                chartC.update();
+            });
+
+            // グラフAタイトル更新ボタンの処理
+            document.getElementById('updateTitleButton1').addEventListener('click', function () {
+                const newTitle = document.getElementById('titleInput1').value;
+                chartA.options.plugins.title.text = newTitle || 'A';
+                chartA.update();
+            });
+
+            // グラフBタイトル更新ボタンの処理
+            document.getElementById('updateTitleButton2').addEventListener('click', function () {
+                const newTitle = document.getElementById('titleInput2').value;
+                chartB.options.plugins.title.text = newTitle || 'B';
+                chartB.update();
+            });
+
+            // グラフCタイトル更新ボタンの処理
+            document.getElementById('updateTitleButton3').addEventListener('click', function () {
+                const newTitle = document.getElementById('titleInput3').value;
+                chartC.options.plugins.title.text = newTitle || 'C';
+                chartC.update();
+            });
+        }
+    </script>
+</body>
+
+</html>
