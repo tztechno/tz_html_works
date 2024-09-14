@@ -1,52 +1,71 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LocalStorageでグラフを描画</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* グラフとリセットボタンのレイアウト調整 */
         .container {
-            max-width: 800px; /* グラフが画面からはみ出さないように幅を制限 */
-            margin: 0 auto; /* 画面中央に配置 */
-            text-align: center; /* ボタンとグラフを中央に */
+            max-width: 86vw;   /* 横幅を画面幅の 86% まで制限 */
+            max-height: 86vh;  /* 高さを画面高さの 86% まで制限 */
+            margin: 0 auto;    /* 横方向に中央揃え */
+            text-align: center;/* テキストとインライン要素を中央揃え */
         }
 
         canvas {
-            width: 100%; /* グラフを親コンテナの幅に合わせる */
-            height: auto; /* アスペクト比を保持して高さを自動調整 */
+            display: block;    /* キャンバスをブロック要素として扱う */
+            margin: 0 auto;    /* キャンバスを中央揃え */
+            width: 100%;       /* 親コンテナの幅に応じてサイズを調整 */
+            height: auto;      /* 高さはアスペクト比に基づいて自動調整 */
         }
 
-        /* リセットボタンのスタイル */
+        /* フォームとリセットボタンのスタイル */
+        #resetButton,
+        #inputValue,
+        #submitButton {
+            margin: 10px;
+            padding: 10px;
+            font-size: 16px;
+        }
+
         #resetButton {
-            margin-bottom: 20px; /* グラフとの間に余白をつける */
-            padding: 10px 20px;
             background-color: #f44336;
             color: white;
             border: none;
             cursor: pointer;
-            font-size: 16px;
         }
 
         #resetButton:hover {
             background-color: #d32f2f;
         }
+
+        #submitButton {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        #submitButton:hover {
+            background-color: #45a049;
+        }
     </style>
 </head>
+
 <body>
     <div class="container">
-        <!-- データリセットボタン -->
-        <button id="resetButton">全データ削除</button>
-        
+        <!-- 入力フォームとリセットボタン -->
+        <form id="dataForm">
+            <input type="number" id="inputValue" placeholder="値を入力">
+            <button type="submit" id="submitButton">グラフを更新</button>
+            <button type="button" id="resetButton">全データ削除</button>
+        </form>
+
         <!-- グラフ -->
         <canvas id="myChart"></canvas>
     </div>
-
-    <form id="dataForm" class="container">
-        <input type="number" id="inputValue" placeholder="値を入力">
-        <button type="submit">保存してグラフを更新</button>
-    </form>
 
     <script>
         // データを保存する関数
@@ -124,5 +143,5 @@
         }
     </script>
 </body>
-</html>
 
+</html>
