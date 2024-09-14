@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LocalStorageでグラフを描画</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <h1>値を入力してグラフを表示</h1>
+
+    <!-- 入力フォーム -->
+    <form id="dataForm">
+        <input type="number" id="inputValue" placeholder="値を入力">
+        <button type="submit">保存してグラフを更新</button>
+    </form>
+
+    <!-- グラフ -->
+    <canvas id="myChart"></canvas>
+
+    <!-- データリセットボタン -->
+    <button id="resetButton">全データ削除</button>
+
+    <script>
+        // データを保存する関数
+        function saveData(value) {
+            const timestamp = new Date().toLocaleTimeString(); // 時刻を取得
+            let data = JSON.parse(localStorage.getItem('graphData')) || [];
+            data.push({ time: timestamp, value: value });
+            localStorage.setItem('graphData', JSON.stringify(data));
+        }
+
+        // LocalStorageからデータを取得してグラフを描画する関数
+        function updateChart(chart) {
+            const storedData = JSON.parse(localStorage.getItem('graphData')) || [];
+            const labels = storedData.map(item => item.time);
+            const values = storedData.map(item => item.value);
+            chart.data.labels = labels;
+            chart.data.datasets[0].data = values;
+            chart.update();
+        }
+
+        // ページが読み込まれたときにグラフを初期化
+        window.onload = function () {
+            const ctx = document.getElementById('myChart').getContext('2d');
+            const chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: '入力値',
+                        data: [],
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 2,
+                        fill: false
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: '時刻'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: '値'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // グラフの更新
+            updateChart(chart);
+
+            // フォームが送信された時の処理
+            document.getElementById('dataForm').addEventListener('submit', function (event) {
+                event.preventDefault();
+                const inputValue = document.getElementById('inputValue').value;
+                if (inputValue) {
+                    saveData(Number(inputValue));
+                    updateChart(chart);
+                    document.getElementById('inputValue').value = ''; // 入力欄をクリア
+                }
+            });
+
+            // 全データを削除するリセットボタンの処理
+            document.getElementById('resetButton').addEventListener('click', function () {
+                localStorage.removeItem('graphData');  // LocalStorageからデータ削除
+                chart.data.labels = [];  // グラフのラベルをクリア
+                chart.data.datasets[0].data = [];  // グラフのデータをクリア
+                chart.update();  // グラフを更新
+            });
+        }
+    </script>
+</body>
+
+</html>
