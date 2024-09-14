@@ -1,27 +1,52 @@
 <!DOCTYPE html>
 <html lang="ja">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LocalStorageでグラフを描画</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* グラフとリセットボタンのレイアウト調整 */
+        .container {
+            max-width: 800px; /* グラフが画面からはみ出さないように幅を制限 */
+            margin: 0 auto; /* 画面中央に配置 */
+            text-align: center; /* ボタンとグラフを中央に */
+        }
+
+        canvas {
+            width: 100%; /* グラフを親コンテナの幅に合わせる */
+            height: auto; /* アスペクト比を保持して高さを自動調整 */
+        }
+
+        /* リセットボタンのスタイル */
+        #resetButton {
+            margin-bottom: 20px; /* グラフとの間に余白をつける */
+            padding: 10px 20px;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        #resetButton:hover {
+            background-color: #d32f2f;
+        }
+    </style>
 </head>
-
 <body>
-    <h1>値を入力してグラフを表示</h1>
+    <div class="container">
+        <!-- データリセットボタン -->
+        <button id="resetButton">全データ削除</button>
+        
+        <!-- グラフ -->
+        <canvas id="myChart"></canvas>
+    </div>
 
-    <!-- 入力フォーム -->
-    <form id="dataForm">
+    <form id="dataForm" class="container">
         <input type="number" id="inputValue" placeholder="値を入力">
         <button type="submit">保存してグラフを更新</button>
     </form>
-
-    <!-- グラフ -->
-    <canvas id="myChart"></canvas>
-
-    <!-- データリセットボタン -->
-    <button id="resetButton">全データ削除</button>
 
     <script>
         // データを保存する関数
@@ -99,5 +124,5 @@
         }
     </script>
 </body>
-
 </html>
+
