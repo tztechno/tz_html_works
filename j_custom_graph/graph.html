@@ -4,10 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LocalStorageで複数グラフを描画</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
-    <script src="https://cdn.jsdelivr.net/npm/date-fns"></script>
+    <title>メモリ内でデータを保存し複数グラフを描画</title>
     <style>
         .container {
             max-width: 86vw;
@@ -72,7 +69,7 @@
     <div class="container">
         <!-- 体重グラフ -->
         <div class="graph-controls">
-            <input type="number" id="inputValue1" placeholder="値を入力 (A)">
+            <input type="number" id="inputValue1" placeholder="値を入力 (A)" step="0.1">
             <button type="button" id="submitButton1">グラフAを更新</button>
             <button type="button" id="resetButton1" class="resetButton">グラフAのデータ削除</button>
             <input type="text" id="titleInput1" placeholder="タイトルを入力 (A)">
@@ -82,7 +79,7 @@
 
         <!-- 株価グラフ -->
         <div class="graph-controls">
-            <input type="number" id="inputValue2" placeholder="値を入力 (B)">
+            <input type="number" id="inputValue2" placeholder="値を入力 (B)" step="0.01">
             <button type="button" id="submitButton2">グラフBを更新</button>
             <button type="button" id="resetButton2" class="resetButton">グラフBのデータ削除</button>
             <input type="text" id="titleInput2" placeholder="タイトルを入力 (B)">
@@ -92,7 +89,7 @@
 
         <!-- 順位グラフ -->
         <div class="graph-controls">
-            <input type="number" id="inputValue3" placeholder="値を入力 (C)">
+            <input type="number" id="inputValue3" placeholder="値を入力 (C)" step="1">
             <button type="button" id="submitButton3">グラフCを更新</button>
             <button type="button" id="resetButton3" class="resetButton">グラフCのデータ削除</button>
             <input type="text" id="titleInput3" placeholder="タイトルを入力 (C)">
@@ -101,22 +98,30 @@
         <canvas id="chartC"></canvas>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <script src="https://cdn.jsdelivr.net/npm/date-fns"></script>
     <script>
+        // メモリ内にデータを保存するためのオブジェクト
+        const memoryStorage = {
+            dataA: [],
+            dataB: [],
+            dataC: [],
+            titleA: 'グラフA',
+            titleB: 'グラフB',
+            titleC: 'グラフC'
+        };
+
         // データを保存する関数
         function saveData(key, value) {
             const timestamp = new Date().toISOString(); // ISO形式の日時を取得
-            let data = JSON.parse(localStorage.getItem(key)) || [];
-            data.push({ time: timestamp, value: value });
-            localStorage.setItem(key, JSON.stringify(data));
+            memoryStorage[key].push({ time: timestamp, value: value });
         }
 
-        // LocalStorageからデータを取得してグラフを描画する関数
+        // データを取得してグラフを描画する関数
         function updateChart(chart, key) {
-            const storedData = JSON.parse(localStorage.getItem(key)) || [];
-            const labels = storedData.map(item => new Date(item.time));
-            const values = storedData.map(item => item.value);
-            chart.data.labels = labels;
-            chart.data.datasets[0].data = values;
+            const data = memoryStorage[key].map(item => ({ x: new Date(item.time), y: parseFloat(item.value) }));
+            chart.data.datasets[0].data = data;
             chart.update();
         }
 
@@ -125,7 +130,6 @@
             return new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: [],
                     datasets: [{
                         label: '値',
                         data: [],
@@ -135,6 +139,7 @@
                     }]
                 },
                 options: {
+                    responsive: true,
                     plugins: {
                         title: {
                             display: true,
@@ -160,7 +165,8 @@
                             title: {
                                 display: true,
                                 text: '値'
-                            }
+                            },
+                            beginAtZero: true
                         }
                     }
                 }
@@ -168,18 +174,18 @@
         }
 
         // ページが読み込まれたときにグラフを初期化
-        window.onload = function () {
+        document.addEventListener('DOMContentLoaded', function () {
             // グラフA（体重）の初期化
             const ctxA = document.getElementById('chartA').getContext('2d');
-            const chartA = createChart(ctxA, getTitle('A'));
+            const chartA = createChart(ctxA, memoryStorage.titleA);
 
             // グラフB（株価）の初期化
             const ctxB = document.getElementById('chartB').getContext('2d');
-            const chartB = createChart(ctxB, getTitle('B'));
+            const chartB = createChart(ctxB, memoryStorage.titleB);
 
             // グラフC（順位）の初期化
             const ctxC = document.getElementById('chartC').getContext('2d');
-            const chartC = createChart(ctxC, getTitle('C'));
+            const chartC = createChart(ctxC, memoryStorage.titleC);
 
             // 各グラフの更新
             updateChart(chartA, 'dataA');
@@ -189,8 +195,8 @@
             // グラフA更新ボタンの処理
             document.getElementById('submitButton1').addEventListener('click', function () {
                 const inputValue1 = document.getElementById('inputValue1').value;
-                if (inputValue1) {
-                    saveData('dataA', Number(inputValue1));
+                if (inputValue1 !== "") {
+                    saveData('dataA', parseFloat(inputValue1));
                     updateChart(chartA, 'dataA');
                     document.getElementById('inputValue1').value = '';
                 }
@@ -199,8 +205,8 @@
             // グラフB更新ボタンの処理
             document.getElementById('submitButton2').addEventListener('click', function () {
                 const inputValue2 = document.getElementById('inputValue2').value;
-                if (inputValue2) {
-                    saveData('dataB', Number(inputValue2));
+                if (inputValue2 !== "") {
+                    saveData('dataB', parseFloat(inputValue2));
                     updateChart(chartB, 'dataB');
                     document.getElementById('inputValue2').value = '';
                 }
@@ -209,8 +215,8 @@
             // グラフC更新ボタンの処理
             document.getElementById('submitButton3').addEventListener('click', function () {
                 const inputValue3 = document.getElementById('inputValue3').value;
-                if (inputValue3) {
-                    saveData('dataC', Number(inputValue3));
+                if (inputValue3 !== "") {
+                    saveData('dataC', parseFloat(inputValue3));
                     updateChart(chartC, 'dataC');
                     document.getElementById('inputValue3').value = '';
                 }
@@ -218,24 +224,21 @@
 
             // グラフAリセットボタンの処理
             document.getElementById('resetButton1').addEventListener('click', function () {
-                localStorage.removeItem('dataA');
-                chartA.data.labels = [];
+                memoryStorage.dataA = [];
                 chartA.data.datasets[0].data = [];
                 chartA.update();
             });
 
             // グラフBリセットボタンの処理
             document.getElementById('resetButton2').addEventListener('click', function () {
-                localStorage.removeItem('dataB');
-                chartB.data.labels = [];
+                memoryStorage.dataB = [];
                 chartB.data.datasets[0].data = [];
                 chartB.update();
             });
 
             // グラフCリセットボタンの処理
             document.getElementById('resetButton3').addEventListener('click', function () {
-                localStorage.removeItem('dataC');
-                chartC.data.labels = [];
+                memoryStorage.dataC = [];
                 chartC.data.datasets[0].data = [];
                 chartC.update();
             });
@@ -244,35 +247,30 @@
             document.getElementById('updateTitleButton1').addEventListener('click', function () {
                 const newTitle = document.getElementById('titleInput1').value;
                 if (newTitle) {
+                    memoryStorage.titleA = newTitle;
                     chartA.options.plugins.title.text = newTitle;
                     chartA.update();
-                    localStorage.setItem('titleA', newTitle);
                 }
             });
 
             document.getElementById('updateTitleButton2').addEventListener('click', function () {
                 const newTitle = document.getElementById('titleInput2').value;
                 if (newTitle) {
+                    memoryStorage.titleB = newTitle;
                     chartB.options.plugins.title.text = newTitle;
                     chartB.update();
-                    localStorage.setItem('titleB', newTitle);
                 }
             });
 
             document.getElementById('updateTitleButton3').addEventListener('click', function () {
                 const newTitle = document.getElementById('titleInput3').value;
                 if (newTitle) {
+                    memoryStorage.titleC = newTitle;
                     chartC.options.plugins.title.text = newTitle;
                     chartC.update();
-                    localStorage.setItem('titleC', newTitle);
                 }
             });
-        };
-
-        // タイトルを取得する関数
-        function getTitle(graph) {
-            return localStorage.getItem(`title${graph}`) || `グラフ${graph}`;
-        }
+        });
     </script>
 </body>
 
