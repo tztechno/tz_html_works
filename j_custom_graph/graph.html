@@ -58,7 +58,7 @@
 <body>
     <div class="container">
         <div class="graph-controls">
-            <input type="number" id="inputValue" placeholder="値を入力" step="0.1">
+            <input type="number" id="inputValue" placeholder="値を入力" step="1">
             <button type="button" id="submitButton">input</button>
             <button type="button" id="resetButton" class="resetButton">reset</button>
             <input type="text" id="titleInput" placeholder="タイトルを入力">
@@ -96,6 +96,16 @@
                 y: parseFloat(item.value)
             }));
             chart.data.datasets[0].data = data;
+
+            // y軸のスケールを調整
+            const maxValue = Math.max(...data.map(item => item.y));
+            const minValue = Math.min(...data.map(item => item.y));
+            const range = maxValue - minValue;
+            const padding = range * 0.1; // 10%のパディングを追加
+
+            chart.options.scales.y.min = Math.max(0, minValue - padding);
+            chart.options.scales.y.max = maxValue + padding;
+
             chart.update();
         }
 
