@@ -102,7 +102,7 @@
     <script>
         // データを保存する関数
         function saveData(key, value) {
-            const timestamp = new Date().toLocaleTimeString(); // 時刻を取得
+            const timestamp = new Date().toISOString(); // ISO形式の日時を取得
             let data = JSON.parse(localStorage.getItem(key)) || [];
             data.push({ time: timestamp, value: value });
             localStorage.setItem(key, JSON.stringify(data));
@@ -141,6 +141,11 @@
                     },
                     scales: {
                         x: {
+                            type: 'time',  // X軸を時間に設定
+                            time: {
+                                unit: 'minute', // 表示単位を設定（例: 分単位）
+                                tooltipFormat: 'YYYY-MM-DD HH:mm:ss', // ツールチップのフォーマット
+                            },
                             title: {
                                 display: true,
                                 text: '時刻'
@@ -155,16 +160,6 @@
                     }
                 }
             });
-        }
-
-        // タイトルをLocalStorageに保存する関数
-        function saveTitle(key, title) {
-            localStorage.setItem(key + '_title', title);
-        }
-
-        // タイトルをLocalStorageから取得する関数
-        function getTitle(key) {
-            return localStorage.getItem(key + '_title') || key;
         }
 
         // ページが読み込まれたときにグラフを初期化
@@ -240,29 +235,38 @@
                 chartC.update();
             });
 
-            // グラフAタイトル更新ボタンの処理
+            // タイトル更新ボタンの処理
             document.getElementById('updateTitleButton1').addEventListener('click', function () {
                 const newTitle = document.getElementById('titleInput1').value;
-                chartA.options.plugins.title.text = newTitle || 'A';
-                saveTitle('A', newTitle || 'A');
-                chartA.update();
+                if (newTitle) {
+                    chartA.options.plugins.title.text = newTitle;
+                    chartA.update();
+                    localStorage.setItem('titleA', newTitle);
+                }
             });
 
-            // グラフBタイトル更新ボタンの処理
             document.getElementById('updateTitleButton2').addEventListener('click', function () {
                 const newTitle = document.getElementById('titleInput2').value;
-                chartB.options.plugins.title.text = newTitle || 'B';
-                saveTitle('B', newTitle || 'B');
-                chartB.update();
+                if (newTitle) {
+                    chartB.options.plugins.title.text = newTitle;
+                    chartB.update();
+                    localStorage.setItem('titleB', newTitle);
+                }
             });
 
-            // グラフCタイトル更新ボタンの処理
             document.getElementById('updateTitleButton3').addEventListener('click', function () {
                 const newTitle = document.getElementById('titleInput3').value;
-                chartC.options.plugins.title.text = newTitle || 'C';
-                saveTitle('C', newTitle || 'C');
-                chartC.update();
+                if (newTitle) {
+                    chartC.options.plugins.title.text = newTitle;
+                    chartC.update();
+                    localStorage.setItem('titleC', newTitle);
+                }
             });
+        };
+
+        // タイトルを取得する関数
+        function getTitle(graph) {
+            return localStorage.getItem(`title${graph}`) || `グラフ${graph}`;
         }
     </script>
 </body>
