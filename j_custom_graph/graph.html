@@ -17,7 +17,7 @@
             display: block;
             margin: 20px auto;
             width: 100%;
-            height: 400px; /* グラフの高さを設定 */
+            height: 400px;
         }
 
         .graph-controls {
@@ -69,6 +69,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
     <script>
         // データとタイトルをlocalStorageから取得する関数
         function loadFromLocalStorage(key, defaultValue) {
@@ -83,7 +84,7 @@
 
         // データを保存する関数
         function saveData(value) {
-            const timestamp = new Date().toISOString(); // ISO形式の日時を取得
+            const timestamp = new Date().toISOString();
             const data = loadFromLocalStorage('graphData', []);
             data.push({ time: timestamp, value: value });
             saveToLocalStorage('graphData', data);
@@ -127,7 +128,7 @@
                                 unit: 'minute',
                                 tooltipFormat: 'yyyy-MM-dd HH:mm:ss',
                                 displayFormats: {
-                                    minute: 'yyyy-MM-dd HH:mm'  // 日付と時刻を表示
+                                    minute: 'yyyy-MM-dd HH:mm'
                                 }
                             },
                             title: {
@@ -165,23 +166,23 @@
                 if (inputValue !== "") {
                     saveData(parseFloat(inputValue));
                     updateChart(chart);
-                    document.getElementById('inputValue').value = ''; // 入力欄をクリア
+                    document.getElementById('inputValue').value = '';
                 }
             });
 
             // グラフリセットボタンの処理
             document.getElementById('resetButton').addEventListener('click', function () {
-                localStorage.removeItem('graphData'); // localStorageからデータ削除
-                updateChart(chart); // グラフを更新
+                localStorage.removeItem('graphData');
+                updateChart(chart);
             });
 
             // タイトル更新ボタンの処理
             document.getElementById('updateTitleButton').addEventListener('click', function () {
                 const newTitle = document.getElementById('titleInput').value;
                 if (newTitle) {
-                    saveToLocalStorage('chartTitle', newTitle); // タイトルをlocalStorageに保存
-                    chart.options.plugins.title.text = newTitle; // グラフのタイトルを更新
-                    chart.update(); // グラフを再描画
+                    saveToLocalStorage('chartTitle', newTitle);
+                    chart.options.plugins.title.text = newTitle;
+                    chart.update();
                 }
             });
         });
@@ -189,4 +190,3 @@
 </body>
 
 </html>
-
