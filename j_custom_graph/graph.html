@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>グラフのデータを記憶</title>
+    <title>グラフのデータとタイトルを記憶</title>
     <style>
         .container {
             max-width: 86vw;
@@ -17,7 +17,7 @@
             display: block;
             margin: 20px auto;
             width: 100%;
-            height: auto;
+            height: 400px; /* グラフの高さを設定 */
         }
 
         .graph-controls {
@@ -26,7 +26,9 @@
 
         #inputValue,
         #submitButton,
-        #resetButton {
+        #resetButton,
+        #titleInput,
+        #updateTitleButton {
             margin: 10px;
             padding: 10px;
             font-size: 16px;
@@ -59,40 +61,46 @@
             <input type="number" id="inputValue" placeholder="値を入力" step="0.1">
             <button type="button" id="submitButton">グラフを更新</button>
             <button type="button" id="resetButton" class="resetButton">グラフのデータ削除</button>
+            <br>
+            <input type="text" id="titleInput" placeholder="タイトルを入力">
+            <button type="button" id="updateTitleButton">タイトルを更新</button>
         </div>
         <canvas id="chart"></canvas>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        // グラフデータをlocalStorageから取得する関数
-        function loadDataFromLocalStorage() {
-            const storedData = localStorage.getItem('graphData');
-            return storedData ? JSON.parse(storedData) : [];
+        // データとタイトルをlocalStorageから取得する関数
+        function loadFromLocalStorage(key, defaultValue) {
+            const storedValue = localStorage.getItem(key);
+            return storedValue ? JSON.parse(storedValue) : defaultValue;
         }
 
-        // グラフデータをlocalStorageに保存する関数
-        function saveDataToLocalStorage(data) {
-            localStorage.setItem('graphData', JSON.stringify(data));
+        // データをlocalStorageに保存する関数
+        function saveToLocalStorage(key, value) {
+            localStorage.setItem(key, JSON.stringify(value));
         }
 
         // データを保存する関数
         function saveData(value) {
             const timestamp = new Date().toISOString(); // ISO形式の日時を取得
-            const data = loadDataFromLocalStorage();
+            const data = loadFromLocalStorage('graphData', []);
             data.push({ time: timestamp, value: value });
-            saveDataToLocalStorage(data);
+            saveToLocalStorage('graphData', data);
         }
 
-        // データを取得してグラフを描画する関数
+        // グラフを更新する関数
         function updateChart(chart) {
-            const data = loadDataFromLocalStorage().map(item => ({ x: new Date(item.time), y: parseFloat(item.value) }));
+            const data = loadFromLocalStorage('graphData', []).map(item => ({
+                x: new Date(item.time),
+                y: parseFloat(item.value)
+            }));
             chart.data.datasets[0].data = data;
             chart.update();
         }
 
-        // グラフ初期化関数
-        function createChart(ctx) {
+        // グラフの初期化関数
+        function createChart(ctx, title) {
             return new Chart(ctx, {
                 type: 'line',
                 data: {
@@ -109,7 +117,7 @@
                     plugins: {
                         title: {
                             display: true,
-                            text: 'データ記憶グラフ'
+                            text: title
                         }
                     },
                     scales: {
@@ -139,12 +147,16 @@
             });
         }
 
+        // ページが読み込まれたときの処理
         document.addEventListener('DOMContentLoaded', function () {
+            // タイトルとデータをlocalStorageから取得
+            const initialTitle = loadFromLocalStorage('chartTitle', 'デフォルトタイトル');
+
             // グラフの初期化
             const ctx = document.getElementById('chart').getContext('2d');
-            const chart = createChart(ctx);
+            const chart = createChart(ctx, initialTitle);
 
-            // ページが読み込まれた際にグラフを更新
+            // ページ読み込み時にグラフを更新
             updateChart(chart);
 
             // グラフ更新ボタンの処理
@@ -153,14 +165,24 @@
                 if (inputValue !== "") {
                     saveData(parseFloat(inputValue));
                     updateChart(chart);
-                    document.getElementById('inputValue').value = '';
+                    document.getElementById('inputValue').value = ''; // 入力欄をクリア
                 }
             });
 
             // グラフリセットボタンの処理
             document.getElementById('resetButton').addEventListener('click', function () {
                 localStorage.removeItem('graphData'); // localStorageからデータ削除
-                updateChart(chart);
+                updateChart(chart); // グラフを更新
+            });
+
+            // タイトル更新ボタンの処理
+            document.getElementById('updateTitleButton').addEventListener('click', function () {
+                const newTitle = document.getElementById('titleInput').value;
+                if (newTitle) {
+                    saveToLocalStorage('chartTitle', newTitle); // タイトルをlocalStorageに保存
+                    chart.options.plugins.title.text = newTitle; // グラフのタイトルを更新
+                    chart.update(); // グラフを再描画
+                }
             });
         });
     </script>
