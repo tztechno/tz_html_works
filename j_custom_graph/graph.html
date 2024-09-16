@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LocalStorageで複数グラフを描画</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <script src="https://cdn.jsdelivr.net/npm/date-fns"></script>
     <style>
         .container {
             max-width: 86vw;
@@ -111,7 +113,7 @@
         // LocalStorageからデータを取得してグラフを描画する関数
         function updateChart(chart, key) {
             const storedData = JSON.parse(localStorage.getItem(key)) || [];
-            const labels = storedData.map(item => item.time);
+            const labels = storedData.map(item => new Date(item.time));
             const values = storedData.map(item => item.value);
             chart.data.labels = labels;
             chart.data.datasets[0].data = values;
@@ -141,10 +143,13 @@
                     },
                     scales: {
                         x: {
-                            type: 'time',  // X軸を時間に設定
+                            type: 'time',
                             time: {
-                                unit: 'minute', // 表示単位を設定（例: 分単位）
-                                tooltipFormat: 'YYYY-MM-DD HH:mm:ss', // ツールチップのフォーマット
+                                unit: 'minute',
+                                tooltipFormat: 'yyyy-MM-dd HH:mm:ss',
+                                displayFormats: {
+                                    minute: 'HH:mm'
+                                }
                             },
                             title: {
                                 display: true,
