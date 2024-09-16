@@ -102,20 +102,35 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
     <script src="https://cdn.jsdelivr.net/npm/date-fns"></script>
     <script>
+        // ローカルストレージからデータを取得
+        function loadFromLocalStorage() {
+            const dataA = JSON.parse(localStorage.getItem('dataA') || '[]');
+            const dataB = JSON.parse(localStorage.getItem('dataB') || '[]');
+            const dataC = JSON.parse(localStorage.getItem('dataC') || '[]');
+            const titleA = localStorage.getItem('titleA') || 'グラフA';
+            const titleB = localStorage.getItem('titleB') || 'グラフB';
+            const titleC = localStorage.getItem('titleC') || 'グラフC';
+            return { dataA, dataB, dataC, titleA, titleB, titleC };
+        }
+
+        // ローカルストレージにデータを保存
+        function saveToLocalStorage() {
+            localStorage.setItem('dataA', JSON.stringify(memoryStorage.dataA));
+            localStorage.setItem('dataB', JSON.stringify(memoryStorage.dataB));
+            localStorage.setItem('dataC', JSON.stringify(memoryStorage.dataC));
+            localStorage.setItem('titleA', memoryStorage.titleA);
+            localStorage.setItem('titleB', memoryStorage.titleB);
+            localStorage.setItem('titleC', memoryStorage.titleC);
+        }
+
         // メモリ内にデータを保存するためのオブジェクト
-        const memoryStorage = {
-            dataA: [],
-            dataB: [],
-            dataC: [],
-            titleA: 'グラフA',
-            titleB: 'グラフB',
-            titleC: 'グラフC'
-        };
+        const memoryStorage = loadFromLocalStorage();
 
         // データを保存する関数
         function saveData(key, value) {
-            const timestamp = new Date().toISOString(); // ISO形式の日時を取得
+            const timestamp = new Date().toISOString();
             memoryStorage[key].push({ time: timestamp, value: value });
+            saveToLocalStorage();  // データが変更されたらローカルストレージに保存
         }
 
         // データを取得してグラフを描画する関数
@@ -153,7 +168,7 @@
                                 unit: 'minute',
                                 tooltipFormat: 'yyyy-MM-dd HH:mm:ss',
                                 displayFormats: {
-                                    minute: 'yyyy-MM-dd HH:mm'  // 日付と時刻を表示
+                                    minute: 'yyyy-MM-dd HH:mm'
                                 }
                             },
                             title: {
@@ -175,24 +190,17 @@
 
         // ページが読み込まれたときにグラフを初期化
         document.addEventListener('DOMContentLoaded', function () {
-            // グラフA（体重）の初期化
             const ctxA = document.getElementById('chartA').getContext('2d');
             const chartA = createChart(ctxA, memoryStorage.titleA);
-
-            // グラフB（株価）の初期化
             const ctxB = document.getElementById('chartB').getContext('2d');
             const chartB = createChart(ctxB, memoryStorage.titleB);
-
-            // グラフC（順位）の初期化
             const ctxC = document.getElementById('chartC').getContext('2d');
             const chartC = createChart(ctxC, memoryStorage.titleC);
 
-            // 各グラフの更新
             updateChart(chartA, 'dataA');
             updateChart(chartB, 'dataB');
             updateChart(chartC, 'dataC');
 
-            // グラフA更新ボタンの処理
             document.getElementById('submitButton1').addEventListener('click', function () {
                 const inputValue1 = document.getElementById('inputValue1').value;
                 if (inputValue1 !== "") {
@@ -202,7 +210,6 @@
                 }
             });
 
-            // グラフB更新ボタンの処理
             document.getElementById('submitButton2').addEventListener('click', function () {
                 const inputValue2 = document.getElementById('inputValue2').value;
                 if (inputValue2 !== "") {
@@ -212,7 +219,6 @@
                 }
             });
 
-            // グラフC更新ボタンの処理
             document.getElementById('submitButton3').addEventListener('click', function () {
                 const inputValue3 = document.getElementById('inputValue3').value;
                 if (inputValue3 !== "") {
@@ -222,52 +228,51 @@
                 }
             });
 
-            // グラフAリセットボタンの処理
             document.getElementById('resetButton1').addEventListener('click', function () {
                 memoryStorage.dataA = [];
-                chartA.data.datasets[0].data = [];
-                chartA.update();
+                saveToLocalStorage();
+                updateChart(chartA, 'dataA');
             });
 
-            // グラフBリセットボタンの処理
             document.getElementById('resetButton2').addEventListener('click', function () {
                 memoryStorage.dataB = [];
-                chartB.data.datasets[0].data = [];
-                chartB.update();
+                saveToLocalStorage();
+                updateChart(chartB, 'dataB');
             });
 
-            // グラフCリセットボタンの処理
             document.getElementById('resetButton3').addEventListener('click', function () {
                 memoryStorage.dataC = [];
-                chartC.data.datasets[0].data = [];
-                chartC.update();
+                saveToLocalStorage();
+                updateChart(chartC, 'dataC');
             });
 
-            // タイトル更新ボタンの処理
             document.getElementById('updateTitleButton1').addEventListener('click', function () {
-                const newTitle = document.getElementById('titleInput1').value;
-                if (newTitle) {
-                    memoryStorage.titleA = newTitle;
-                    chartA.options.plugins.title.text = newTitle;
+                const titleInput1 = document.getElementById('titleInput1').value;
+                if (titleInput1 !== "") {
+                    memoryStorage.titleA = titleInput1;
+                    chartA.options.plugins.title.text = memoryStorage.titleA;
                     chartA.update();
+                    saveToLocalStorage();
                 }
             });
 
             document.getElementById('updateTitleButton2').addEventListener('click', function () {
-                const newTitle = document.getElementById('titleInput2').value;
-                if (newTitle) {
-                    memoryStorage.titleB = newTitle;
-                    chartB.options.plugins.title.text = newTitle;
+                const titleInput2 = document.getElementById('titleInput2').value;
+                if (titleInput2 !== "") {
+                    memoryStorage.titleB = titleInput2;
+                    chartB.options.plugins.title.text = memoryStorage.titleB;
                     chartB.update();
+                    saveToLocalStorage();
                 }
             });
 
             document.getElementById('updateTitleButton3').addEventListener('click', function () {
-                const newTitle = document.getElementById('titleInput3').value;
-                if (newTitle) {
-                    memoryStorage.titleC = newTitle;
-                    chartC.options.plugins.title.text = newTitle;
+                const titleInput3 = document.getElementById('titleInput3').value;
+                if (titleInput3 !== "") {
+                    memoryStorage.titleC = titleInput3;
+                    chartC.options.plugins.title.text = memoryStorage.titleC;
                     chartC.update();
+                    saveToLocalStorage();
                 }
             });
         });
@@ -275,3 +280,4 @@
 </body>
 
 </html>
+
