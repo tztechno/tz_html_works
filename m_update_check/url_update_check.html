@@ -16,6 +16,10 @@
 <body>
     <p>URL監視システム</p>
 
+    <!-- URLを入力できるテキストボックス -->
+    <label for="urlInput">監視するURLを入力してください:</label>
+    <input type="text" id="urlInput" class="double-width" placeholder="https://example.com"><br><br>
+
     <!-- ボタンを使って監視の開始・停止を管理 -->
     <button id="startButton">監視開始</button>
     <button id="stopButton" disabled>監視停止</button>
@@ -29,14 +33,34 @@
     <script>
         let intervalId;
         let previousContent = ''; // 前回のページ内容を保存
-        const urlToCheck = 'https://coconala.com/requests/categories/11?categoryId=11&page=1'; // チェックしたいURLを指定
+        let urlToCheck = ''; // 監視するURL
 
-        // URLをリンクに反映
-        document.getElementById('urlLink').href = urlToCheck;
-        document.getElementById('urlLink').textContent = urlToCheck;
+        // ページロード時にlocalStorageからURLを復元
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedUrl = localStorage.getItem('monitoredUrl');
+            if (savedUrl) {
+                document.getElementById('urlInput').value = savedUrl; // テキストボックスにURLを復元
+                document.getElementById('urlLink').href = savedUrl;
+                document.getElementById('urlLink').textContent = savedUrl;
+                urlToCheck = savedUrl; // 復元されたURLを使用
+            }
+        });
 
         // 監視開始ボタンの処理
         document.getElementById('startButton').addEventListener('click', function () {
+            urlToCheck = document.getElementById('urlInput').value; // 入力されたURLを取得
+            if (!urlToCheck) {
+                alert('URLを入力してください。');
+                return;
+            }
+
+            // localStorageにURLを保存
+            localStorage.setItem('monitoredUrl', urlToCheck);
+
+            // URLをリンクに反映
+            document.getElementById('urlLink').href = urlToCheck;
+            document.getElementById('urlLink').textContent = urlToCheck;
+
             intervalId = setInterval(checkForUpdate, 60000); // 60秒ごとにチェック
             document.getElementById('startButton').disabled = true;
             document.getElementById('stopButton').disabled = false;
@@ -86,3 +110,4 @@
 </body>
 
 </html>
+
