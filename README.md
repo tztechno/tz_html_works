@@ -1,3 +1,4 @@
+
 # tz_html_works
 
 https://tztechno.github.io/tz_html_works/1_garbage/garbage3_muko2.html    ver.2.0.PWA
@@ -28,8 +29,7 @@ https://tztechno.github.io/tz_html_works/i_4currency_4stock/currency.html    OK
 
 https://tztechno.github.io/tz_html_works/j_custom_graph/graph.html
 
-
-
+https://tztechno.github.io/tz_html_works/m_update_check/url_update_check.html
 
 
 ### latest
