@@ -32,7 +32,7 @@
 
     <script>
         let intervalId;
-        let previousContent = ''; // 前回のページ内容を保存
+        let previousHash = ''; // 前回のページ内容のハッシュ値を保存
         let urlToCheck = ''; // 監視するURL
 
         // ページロード時にlocalStorageからURLを復元
@@ -75,22 +75,34 @@
             console.log('監視を停止しました');
         });
 
+        // ハッシュ生成関数
+        async function generateHash(content) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(content);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(byte => byte.toString(16).padStart(2, '0')).join('');
+        }
+
         // 更新チェック関数
         async function checkForUpdate() {
             try {
                 const response = await fetch(urlToCheck);
                 const content = await response.text();
-                
-                console.log('現在のページ内容:', content); 
-                
-                if (previousContent && previousContent !== content) {
+
+                // 現在のページ内容のハッシュを生成
+                const currentHash = await generateHash(content);
+                console.log('現在のページのハッシュ:', currentHash);
+
+                // 前回のハッシュと比較
+                if (previousHash && previousHash !== currentHash) {
                     console.log('更新が検知されました');
                     const currentTime = new Date().toLocaleString(); // 現在の日時を取得
                     updateTimeDisplay(currentTime); // 検出時刻を表示
                     speakNotification('Update detected.'); // 音声通知
                 }
 
-                previousContent = content; // ページの内容を保存
+                previousHash = currentHash; // 現在のハッシュを保存
             } catch (error) {
                 console.error('エラーが発生しました:', error);
             }
@@ -112,4 +124,5 @@
 </body>
 
 </html>
+
 
