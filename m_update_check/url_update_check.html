@@ -80,7 +80,9 @@
             try {
                 const response = await fetch(urlToCheck);
                 const content = await response.text();
-
+                
+                console.log('現在のページ内容:', content); 
+                
                 if (previousContent && previousContent !== content) {
                     console.log('更新が検知されました');
                     const currentTime = new Date().toLocaleString(); // 現在の日時を取得
