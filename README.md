@@ -29,6 +29,10 @@ https://tztechno.github.io/tz_html_works/i_4currency_4stock/currency.html    OK
 
 https://tztechno.github.io/tz_html_works/j_custom_graph/graph.html
 
+https://tztechno.github.io/tz_html_works/j_custom_graph/graphA.html
+
+https://tztechno.github.io/tz_html_works/j_custom_graph/graphB.html
+
 https://tztechno.github.io/tz_html_works/m_update_check/url_update_check.html
 
 
