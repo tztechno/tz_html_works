@@ -23,6 +23,25 @@
     <h2 id="dayaftertomorrowInfo"></h2>
 
     <script>
+    // 現在の時刻を取得し、8時のタイミングを待ってメッセージを表示
+    function checkTimeForGreeting() {
+        const now = new Date();
+        const targetHour = 8;
+        
+        // 現在の時刻が8時だったらメッセージを表示
+        if (now.getHours() === targetHour) {
+            alert(`おはようございます、今日は${getFormattedDate(now)}です。今日のゴミ出しは${getGarbage(now)}です。`);
+        }
+
+        // 1分ごとに時刻をチェック
+        setTimeout(checkTimeForGreeting, 60000); // 60秒ごとに再確認
+        }
+    
+        checkTimeForGreeting();
+    </script>
+
+
+    <script>
         function getFormattedDate(date) {
             const options = { month: 'numeric', day: 'numeric', weekday: 'long' };
             return date.toLocaleDateString('ja-JP', options);
