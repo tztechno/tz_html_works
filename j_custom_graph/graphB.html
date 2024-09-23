@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>グラフのデータとタイトルを記憶A</title>
+    <style>
+        .container {
+            max-width: 86vw;
+            max-height: 86vh;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        canvas {
+            display: block;
+            margin: 20px auto;
+            width: 100%;
+            height: 400px;
+        }
+
+        .graph-controls {
+            margin-bottom: 20px;
+        }
+
+        #inputValue,
+        #submitButton,
+        #resetButton,
+        #titleInput,
+        #updateTitleButton {
+            margin: 10px;
+            padding: 10px;
+            font-size: 16px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .resetButton {
+            background-color: #f44336;
+        }
+
+        .resetButton:hover {
+            background-color: #d32f2f;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="graph-controls">
+            <input type="number" id="inputValue" placeholder="値を入力" step="1">
+            <button type="button" id="submitButton">input</button>
+            <button type="button" id="resetButton" class="resetButton">reset</button>
+            <input type="text" id="titleInput" placeholder="タイトルを入力">
+            <button type="button" id="updateTitleButton">title</button>
+        </div>
+        <canvas id="chart"></canvas>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <script>
+        // データとタイトルを"storageA"から取得する関数
+        function loadFromStorageA(key, defaultValue) {
+            const storedValue = localStorage.getItem(`storageA_${key}`);
+            return storedValue ? JSON.parse(storedValue) : defaultValue;
+        }
+
+        // データを"storageA"に保存する関数
+        function saveToStorageA(key, value) {
+            localStorage.setItem(`storageA_${key}`, JSON.stringify(value));
+        }
+
+        // データを保存する関数
+        function saveData(value) {
+            const timestamp = new Date().toISOString();
+            const data = loadFromStorageA('graphData', []);
+            data.push({ time: timestamp, value: value });
+            saveToStorageA('graphData', data);
+        }
+
+        // グラフを更新する関数
+        function updateChart(chart) {
+            const data = loadFromStorageA('graphData', []).map(item => ({
+                x: new Date(item.time),
+                y: parseFloat(item.value)
+            }));
+            chart.data.datasets[0].data = data;
+
+            // y軸のスケールを調整
+            const maxValue = Math.max(...data.map(item => item.y));
+            const minValue = Math.min(...data.map(item => item.y));
+            const range = maxValue - minValue;
+            const padding = range * 0.1; // 10%のパディングを追加
+
+            chart.options.scales.y.min = Math.max(0, minValue - padding);
+            chart.options.scales.y.max = maxValue + padding;
+
+            chart.update();
+        }
+
+        // グラフの初期化関数
+        function createChart(ctx, title) {
+            return new Chart(ctx, {
+                type: 'line',
+                data: {
+                    datasets: [{
+                        label: '値',
+                        data: [],
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 2,
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: title,
+                            font: {
+                                size: 24 // タイトルのフォントサイズを設定
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'minute',
+                                tooltipFormat: 'yyyy-MM-dd HH:mm:ss',
+                                displayFormats: {
+                                    minute: 'yyyy-MM-dd HH:mm'
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: '日時'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: '値'
+                            },
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // ページが読み込まれたときの処理
+        document.addEventListener('DOMContentLoaded', function () {
+            // タイトルとデータを"storageA"から取得
+            const initialTitle = loadFromStorageA('chartTitle', 'デフォルトタイトル');
+
+            // グラフの初期化
+            const ctx = document.getElementById('chart').getContext('2d');
+            const chart = createChart(ctx, initialTitle);
+
+            // ページ読み込み時にグラフを更新
+            updateChart(chart);
+
+            // グラフ更新ボタンの処理
+            document.getElementById('submitButton').addEventListener('click', function () {
+                const inputValue = document.getElementById('inputValue').value;
+                if (inputValue !== "") {
+                    saveData(parseFloat(inputValue));
+                    updateChart(chart);
+                    document.getElementById('inputValue').value = '';
+                }
+            });
+
+            // グラフリセットボタンの処理
+            document.getElementById('resetButton').addEventListener('click', function () {
+                localStorage.removeItem('storageA_graphData');
+                updateChart(chart);
+            });
+
+            // タイトル更新ボタンの処理
+            document.getElementById('updateTitleButton').addEventListener('click', function () {
+                const newTitle = document.getElementById('titleInput').value;
+                if (newTitle) {
+                    saveToStorageA('chartTitle', newTitle);
+                    chart.options.plugins.title.text = newTitle;
+                    chart.update();
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
