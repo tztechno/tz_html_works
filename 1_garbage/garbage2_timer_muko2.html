@@ -13,33 +13,20 @@
             margin: 20px;
             font-size: 1.5em;
         }
+
+        #currentTime {
+            font-size: 1.2em;
+            color: gray;
+        }
     </style>
 </head>
 
 <body>
     <h1>今日のゴミ出し</h1>
+    <div id="currentTime"></div> <!-- 現在の時刻を表示する場所 -->
     <h2 id="todayInfo"></h2>
     <h2 id="tomorrowInfo"></h2>
     <h2 id="dayaftertomorrowInfo"></h2>
-
-    <script>
-    // 現在の時刻を取得し、8時のタイミングを待ってメッセージを表示
-    function checkTimeForGreeting() {
-        const now = new Date();
-        const targetHour = 8;
-        
-        // 現在の時刻が8時だったらメッセージを表示
-        if (now.getHours() === targetHour) {
-            alert(`おはようございます、今日は${getFormattedDate(now)}です。今日のゴミ出しは${getGarbage(now)}です。`);
-        }
-
-        // 1分ごとに時刻をチェック
-        setTimeout(checkTimeForGreeting, 60000); // 60秒ごとに再確認
-        }
-    
-        checkTimeForGreeting();
-    </script>
-
 
     <script>
         function getFormattedDate(date) {
@@ -85,8 +72,35 @@
             return schedule[day][weekOfMonth - 1];
         }
 
+        // 現在の時刻を画面に表示する関数
+        function updateCurrentTime() {
+            const now = new Date();
+            const formattedTime = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日 ${now.getHours()}時${now.getMinutes()}分${now.getSeconds()}秒`;
+            document.getElementById('currentTime').textContent = `現在の時刻: ${formattedTime}`;
+        }
+
+        // 指定した時刻になったらメッセージを表示する関数
+        function checkTimeForGreeting(targetHour, targetMinute) {
+            const now = new Date();
+
+            if (now.getHours() === targetHour && now.getMinutes() === targetMinute) {
+                alert(`おはようございます、今日は${getFormattedDate(now)}です。今日のゴミ出しは${getGarbage(now)}です。`);
+            }
+
+            // 1分ごとに時刻をチェック
+            setTimeout(() => checkTimeForGreeting(targetHour, targetMinute), 60000); // 60秒ごとに再確認
+        }
+
+        // 1秒ごとに現在の時刻を更新
+        setInterval(updateCurrentTime, 1000);
+
+        // ゴミ出し情報を画面に表示
         displayDates();
+
+        // 毎朝8:00にメッセージを表示 (時刻は8時0分に設定)
+        checkTimeForGreeting(8, 0);
     </script>
 </body>
 
 </html>
+
