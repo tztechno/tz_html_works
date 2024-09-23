@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>グラフのデータとタイトルを記憶A</title>
+    <title>グラフのデータとタイトルを記憶B</title>
     <style>
         .container {
             max-width: 86vw;
@@ -70,28 +70,28 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
     <script>
-        // データとタイトルを"storageA"から取得する関数
-        function loadFromStorageA(key, defaultValue) {
-            const storedValue = localStorage.getItem(`storageA_${key}`);
+        // データとタイトルを"storageB"から取得する関数
+        function loadFromStorageB(key, defaultValue) {
+            const storedValue = localStorage.getItem(`storageB_${key}`);
             return storedValue ? JSON.parse(storedValue) : defaultValue;
         }
 
-        // データを"storageA"に保存する関数
-        function saveToStorageA(key, value) {
-            localStorage.setItem(`storageA_${key}`, JSON.stringify(value));
+        // データを"storageB"に保存する関数
+        function saveToStorageB(key, value) {
+            localStorage.setItem(`storageB_${key}`, JSON.stringify(value));
         }
 
         // データを保存する関数
         function saveData(value) {
             const timestamp = new Date().toISOString();
-            const data = loadFromStorageA('graphData', []);
+            const data = loadFromStorageB('graphData', []);
             data.push({ time: timestamp, value: value });
-            saveToStorageA('graphData', data);
+            saveToStorageB('graphData', data);
         }
 
         // グラフを更新する関数
         function updateChart(chart) {
-            const data = loadFromStorageA('graphData', []).map(item => ({
+            const data = loadFromStorageB('graphData', []).map(item => ({
                 x: new Date(item.time),
                 y: parseFloat(item.value)
             }));
@@ -162,8 +162,8 @@
 
         // ページが読み込まれたときの処理
         document.addEventListener('DOMContentLoaded', function () {
-            // タイトルとデータを"storageA"から取得
-            const initialTitle = loadFromStorageA('chartTitle', 'デフォルトタイトル');
+            // タイトルとデータを"storageB"から取得
+            const initialTitle = loadFromStorageB('chartTitle', 'デフォルトタイトル');
 
             // グラフの初期化
             const ctx = document.getElementById('chart').getContext('2d');
@@ -184,7 +184,7 @@
 
             // グラフリセットボタンの処理
             document.getElementById('resetButton').addEventListener('click', function () {
-                localStorage.removeItem('storageA_graphData');
+                localStorage.removeItem('storageB_graphData');
                 updateChart(chart);
             });
 
@@ -192,7 +192,7 @@
             document.getElementById('updateTitleButton').addEventListener('click', function () {
                 const newTitle = document.getElementById('titleInput').value;
                 if (newTitle) {
-                    saveToStorageA('chartTitle', newTitle);
+                    saveToStorageB('chartTitle', newTitle);
                     chart.options.plugins.title.text = newTitle;
                     chart.update();
                 }
