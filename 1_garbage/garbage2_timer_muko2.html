@@ -79,16 +79,24 @@
             document.getElementById('currentTime').textContent = `現在の時刻: ${formattedTime}`;
         }
 
-        // 指定した時刻になったらメッセージを表示する関数
+        // 指定した時刻になったらメッセージを読み上げる関数
         function checkTimeForGreeting(targetHour, targetMinute) {
             const now = new Date();
 
             if (now.getHours() === targetHour && now.getMinutes() === targetMinute) {
-                alert(`おはようございます、今日は${getFormattedDate(now)}です。今日のゴミ出しは${getGarbage(now)}です。`);
+                const greetingMessage = `おはようございます、今日は${getFormattedDate(now)}です。今日のゴミ出しは${getGarbage(now)}です。`;
+                speakText(greetingMessage); // メッセージを読み上げ
             }
 
             // 1分ごとに時刻をチェック
             setTimeout(() => checkTimeForGreeting(targetHour, targetMinute), 60000); // 60秒ごとに再確認
+        }
+
+        // テキストを読み上げる関数
+        function speakText(text) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'ja-JP'; // 日本語で読み上げる
+            window.speechSynthesis.speak(utterance);
         }
 
         // 1秒ごとに現在の時刻を更新
@@ -97,7 +105,7 @@
         // ゴミ出し情報を画面に表示
         displayDates();
 
-        // 毎朝8:00にメッセージを表示 (時刻は8時0分に設定)
+        // 毎朝8:00にメッセージを読み上げ (時刻は8時0分に設定)
         checkTimeForGreeting(8, 0);
     </script>
 </body>
