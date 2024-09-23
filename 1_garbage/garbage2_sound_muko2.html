@@ -1,0 +1,73 @@
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>今日のゴミ出し</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        h2 {
+            margin: 20px;
+            font-size: 1.5em;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>今日のゴミ出し</h1>
+    <h2 id="todayInfo"></h2>
+    <h2 id="tomorrowInfo"></h2>
+    <h2 id="dayaftertomorrowInfo"></h2>
+
+    <script>
+        function getFormattedDate(date) {
+            const options = { month: 'numeric', day: 'numeric', weekday: 'long' };
+            return date.toLocaleDateString('ja-JP', options);
+        }
+
+        function displayDates() {
+            const today = new Date();
+            const tomorrow = new Date(today);
+            const dayaftertomorrow = new Date(today);
+            tomorrow.setDate(today.getDate() + 1);
+            dayaftertomorrow.setDate(today.getDate() + 2);
+
+            document.getElementById('todayInfo').textContent = `今日(${getFormattedDate(today)}): ${getGarbage(today)}`;
+            document.getElementById('tomorrowInfo').textContent = `明日(${getFormattedDate(tomorrow)}): ${getGarbage(tomorrow)}`;
+            document.getElementById('dayaftertomorrowInfo').textContent = `明後日(${getFormattedDate(dayaftertomorrow)}): ${getGarbage(dayaftertomorrow)}`;
+        }
+
+        function getGarbage(date) {
+            const day = date.getDay();
+            const dateOfMonth = date.getDate();
+            const weekOfMonth = Math.floor((dateOfMonth - 1) / 7) + 1;
+
+            const a = 'プラスチック類';
+            const b = '燃やすごみ';
+            const c = 'かん・びん';
+            const d = '小型不燃ごみ';
+            const e = '紙・布';
+            const f = 'ペットボトル';
+            const g = 'なし';
+
+            const schedule = {
+                0: [g, g, g, g, g], // 日曜日
+                1: [a, a, a, a, a], // 月曜日
+                2: [b, b, b, b, b], // 火曜日
+                3: [d, c, d, c, g], // 水曜日
+                4: [e, f, e, f, g], // 木曜日
+                5: [b, b, b, b, b], // 金曜日
+                6: [g, g, g, g, g]  // 土曜日
+            };
+
+            return schedule[day][weekOfMonth - 1];
+        }
+
+        displayDates();
+    </script>
+</body>
+
+</html>
