@@ -89,11 +89,17 @@
             try {
                 const response = await fetch(urlToCheck);
                 const content = await response.text();
-
+        
                 // 現在のページ内容のハッシュを生成
                 const currentHash = await generateHash(content);
                 console.log('現在のページのハッシュ:', currentHash);
-
+        
+                // ハッシュを画面に表示
+                document.getElementById('result').innerHTML = `
+                    URL: <a href="${urlToCheck}" target="_blank">${urlToCheck}</a><br><br>
+                    Hash: ${currentHash}
+                `;
+        
                 // 前回のハッシュと比較
                 if (previousHash && previousHash !== currentHash) {
                     console.log('更新が検知されました');
@@ -101,7 +107,7 @@
                     updateTimeDisplay(currentTime); // 検出時刻を表示
                     speakNotification('Update detected.'); // 音声通知
                 }
-
+        
                 previousHash = currentHash; // 現在のハッシュを保存
             } catch (error) {
                 console.error('エラーが発生しました:', error);
@@ -120,6 +126,7 @@
             speech.lang = 'en-US'; // 言語設定（英語の場合）
             window.speechSynthesis.speak(speech); // 音声を再生
         }
+                
     </script>
 </body>
 
