@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>4タイマー</title>
+    <style>
+        .timer-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .timer-box {
+            border: 1px solid #000;
+            padding: 10px;
+            width: 100px;
+            text-align: center;
+        }
+
+        button {
+            width: 100px;
+            padding: 10px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>4タイマー</h1>
+    <div class="timer-container">
+        <div class="timer-box">
+            <h2>A</h2>
+            <p id="timerA">0秒</p>
+            <button onclick="startTimer('A')">Start A</button>
+        </div>
+        <div class="timer-box">
+            <h2>B</h2>
+            <p id="timerB">0秒</p>
+            <button onclick="startTimer('B')">Start B</button>
+        </div>
+        <div class="timer-box">
+            <h2>C</h2>
+            <p id="timerC">0秒</p>
+            <button onclick="startTimer('C')">Start C</button>
+        </div>
+        <div class="timer-box">
+            <h2>D</h2>
+            <p id="timerD">0秒</p>
+            <button onclick="startTimer('D')">Start D</button>
+        </div>
+    </div>
+
+    <button onclick="stopAllTimers()">Stop All</button>
+
+    <script>
+        let timers = { A: 0, B: 0, C: 0, D: 0 };
+        let activeTimer = null;
+        let timerInterval = null;
+        let startTime = null;
+
+        function startTimer(timerId) {
+            // 他のタイマーが動いていたら停止
+            if (activeTimer && activeTimer !== timerId) {
+                stopTimer(activeTimer);
+            }
+
+            // タイマーがすでに動いていない場合のみ開始
+            if (!timerInterval) {
+                activeTimer = timerId;
+                startTime = Date.now();
+                timerInterval = setInterval(() => {
+                    const elapsed = (Date.now() - startTime) / 1000;
+                    document.getElementById(`timer${timerId}`).textContent = `${(timers[timerId] + elapsed).toFixed(1)}秒`;
+                }, 100);
+            }
+        }
+
+        function stopTimer(timerId) {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timers[timerId] += (Date.now() - startTime) / 1000;
+                timerInterval = null;
+                activeTimer = null;
+            }
+        }
+
+        function stopAllTimers() {
+            if (activeTimer) {
+                stopTimer(activeTimer);
+            }
+        }
+    </script>
+
+</body>
+
+</html>
