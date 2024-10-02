@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>タイマーアプリ</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            position: relative;
+        }
+
+        .timer-container {
+            margin-top: 50px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .time-info {
+            margin: 20px;
+            font-size: 1.5em;
+        }
+
+        .message {
+            margin-top: 20px;
+            font-size: 1.2em;
+            color: red;
+        }
+
+        /* 擬似要素を使って背景画像を設定し、その透明度を制御 */
+        .background-visible::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('animation.gif');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.2;
+            /* 透過度 */
+            z-index: 0;
+            pointer-events: none;
+            /* 背景がクリックなどをブロックしないように */
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="timer-container">
+        <h1>レッスンタイマー</h1>
+        <label for="time-select">時間を選択してください:</label>
+        <select id="time-select">
+            <option value="6">6分</option>
+            <option value="50">50分</option>
+            <option value="100">100分</option>
+            <option value="150">150分</option>
+            <option value="200">200分</option>
+        </select>
+        <button id="start-button">スタート</button>
+
+        <div class="time-info" id="start-time">開始時刻: --:--</div>
+        <div class="time-info" id="end-time">終了時刻: --:--</div>
+        <div class="time-info" id="current-time">現在時刻: --:--</div>
+        <div class="time-info" id="elapsed-time">経過時間: 0分</div>
+        <div class="time-info" id="remaining-time">残り時間: --分</div>
+
+        <div class="message" id="warning-message"></div>
+    </div>
+
+    <script>
+        const startButton = document.getElementById('start-button');
+        const timeSelect = document.getElementById('time-select');
+        const startTimeDisplay = document.getElementById('start-time');
+        const currentTimeDisplay = document.getElementById('current-time');
+        const endTimeDisplay = document.getElementById('end-time');
+        const elapsedTimeDisplay = document.getElementById('elapsed-time');
+        const remainingTimeDisplay = document.getElementById('remaining-time');
+        const warningMessage = document.getElementById('warning-message');
+
+        let timerInterval;
+        let currentTimeInterval;
+        let startTime;
+        let endTime;
+        let totalMinutes;
+
+        startButton.addEventListener('click', startTimer);
+
+        // 現在時刻を常に更新するための関数
+        function updateCurrentTime() {
+            const now = new Date();
+            currentTimeDisplay.textContent = `現在時刻: ${formatTime(now)}`;
+        }
+
+        // タイマーを開始する関数
+        function startTimer() {
+            totalMinutes = parseInt(timeSelect.value);
+            startTime = new Date();
+            endTime = new Date(startTime.getTime() + totalMinutes * 60000);
+
+            startTimeDisplay.textContent = `開始時刻: ${formatTime(startTime)}`;
+            endTimeDisplay.textContent = `終了時刻: ${formatTime(endTime)}`;
+            warningMessage.textContent = '';
+
+            // 経過時間と残り時間の更新を開始
+            clearInterval(timerInterval);
+            timerInterval = setInterval(updateTimer, 1000);
+
+            // 現在時刻の更新を常に実行
+            clearInterval(currentTimeInterval);
+            currentTimeInterval = setInterval(updateCurrentTime, 1000);
+        }
+
+        // タイマーの進行状況を更新する関数
+        function updateTimer() {
+            const currentTime = new Date();
+            const elapsedTime = Math.floor((currentTime - startTime) / 60000);
+            const remainingTime = totalMinutes - elapsedTime;
+
+            elapsedTimeDisplay.textContent = `経過時間: ${elapsedTime}分`;
+            remainingTimeDisplay.textContent = `残り時間: ${remainingTime}分`;
+
+            // 残り5分で背景にアニメーションGIFを表示し、透過度を設定
+            if (remainingTime <= 5 && remainingTime > 0) {
+                document.body.classList.add('background-visible');
+                warningMessage.innerHTML = `まもなく終了です。保存などを行い終了の準備をしましょう♪<br>レッスンに関してご質問がある方は時間内にお願いします。`;
+            }
+
+            // タイマー終了時の処理
+            if (remainingTime <= 0) {
+                clearInterval(timerInterval); // 経過時間と残り時間の更新を停止
+                warningMessage.innerHTML = `終了です。本日も学習お疲れさまでした。<br>お時間ある方はレッスン追加可能です！最大50％割引あります。`;
+                document.body.classList.remove('background-visible'); // 背景を元に戻す
+            }
+        }
+
+        // 時刻を整形する関数
+        function formatTime(date) {
+            return date.toTimeString().split(' ')[0];
+        }
+
+        // ページ読み込み時に現在時刻の表示を開始
+        updateCurrentTime();
+        currentTimeInterval = setInterval(updateCurrentTime, 1000);
+
+    </script>
+
+</body>
+
+</html>
