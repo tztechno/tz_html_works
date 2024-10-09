@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数字リストシャッフル</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        input, button {
+            margin: 5px;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>数字リストシャッフル</h1>
+    <input type="text" id="numberList" placeholder="数字をカンマ区切りで入力">
+    <button id="shuffleButton">Shuffle</button>
+    <h2>シャッフル結果:</h2>
+    <div id="result"></div>
+
+    <script>
+        document.getElementById('shuffleButton').addEventListener('click', function() {
+            // 入力された数字リストを取得し、カンマで分割
+            const input = document.getElementById('numberList').value;
+            const numbers = input.split(',').map(num => num.trim()).filter(num => num);
+
+            // シャッフル関数
+            function shuffle(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+                return array;
+            }
+
+            // シャッフルした結果を表示
+            const shuffledNumbers = shuffle(numbers);
+            document.getElementById('result').textContent = shuffledNumbers.join(', ');
+        });
+    </script>
+</body>
+</html>
