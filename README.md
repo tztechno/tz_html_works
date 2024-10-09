@@ -37,6 +37,8 @@ https://tztechno.github.io/tz_html_works/j_custom_graph/graphB.html
 
 https://tztechno.github.io/tz_html_works/m_update_check/url_update_check.html
 
+https://tztechno.github.io/tz_html_works/o_shuffle/shuffle.html
+
 
 ### latest
 ---
