@@ -10,13 +10,11 @@
         .grid-container {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            /* 2列 */
+            grid-template-rows: 1fr 1fr;
             grid-gap: 10px;
-            /* 各動画の間に隙間を作る */
-            max-width: 1000px;
-            /* 全体の最大幅 */
-            margin: 0 auto;
-            /* 中央に配置 */
+            max-width: 1200px;
+            margin-left: 20px;
+            margin-right: auto;
         }
 
         .video-frame {
@@ -28,8 +26,6 @@
 </head>
 
 <body>
-    <h1>2x2 Layout</h1>
-
     <div class="grid-container">
         <!-- 1つ目の動画 -->
 <iframe width="560" height="315" src="https://www.youtube.com/embed/Q05j9GFlo8A?si=grV0jPfSqWya__rk"

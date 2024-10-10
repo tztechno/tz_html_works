@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2x2 Grid Layout</title>
+    <style>
+        /* 2行2列のグリッドレイアウト */
+        .grid-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            grid-gap: 10px;
+            max-width: 1200px;
+            margin-left: 10px;
+            margin-right: auto;
+        }
+
+        .grid-item {
+            width: 100%;
+            aspect-ratio: 16/9;
+            /* 各iframeを16:9の比率に */
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="grid-container">
+        <!-- 1つ目のHTMLファイル -->
+        <iframe class="grid-item" src="one.html" title="Page 1"></iframe>
+
+        <!-- 2つ目のHTMLファイル -->
+        <iframe class="grid-item" src="one.html" title="Page 2"></iframe>
+
+        <!-- 3つ目のHTMLファイル -->
+        <iframe class="grid-item" src="one.html" title="Page 3"></iframe>
+
+        <!-- 4つ目のHTMLファイル -->
+        <iframe class="grid-item" src="one.html" title="Page 4"></iframe>
+    </div>
+
+</body>
+
+</html>

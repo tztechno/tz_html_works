@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1 Layout</title>
+    <style>
+        /* 動画を2行2列で並べるためのスタイル */
+        .grid-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            /* 2列 */
+            grid-gap: 10px;
+            /* 各動画の間に隙間を作る */
+            max-width: 1000px;
+            /* 全体の最大幅 */
+            margin-left: 20px;
+            /* 左側の余白を狭く */
+            margin-right: auto;
+        }
+
+        .video-frame {
+            width: 100%;
+            aspect-ratio: 16/9;
+            /* アスペクト比16:9を維持 */
+        }
+    </style>
+</head>
+
+<body>
+    <div class="grid-container">
+        <!-- 1つ目の動画 -->
+        <iframe width="560" height="315" src="https://www.youtube.com/embed/Q05j9GFlo8A?si=grV0jPfSqWya__rk"
+            title="YouTube video player" frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+    </div>
+</body>
+
+</html>
