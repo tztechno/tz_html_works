@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MP3 Player with Speed Control</title>
+</head>
+<body>
+    <h1>MP3 Player with Speed Control</h1>
+
+    <!-- ファイル選択 -->
+    <input type="file" id="fileInput" accept="audio/mpeg">
+    <br><br>
+
+    <!-- オーディオプレイヤー -->
+    <audio id="audioPlayer" controls>
+        お使いのブラウザはオーディオタグをサポートしていません。
+    </audio>
+
+    <!-- スピード調整スライダー -->
+    <div>
+        <label for="speedControl">Speed: <span id="speedValue">1.0</span>x</label>
+        <input type="range" id="speedControl" min="0.5" max="2.0" step="0.1" value="1.0">
+    </div>
+
+    <script>
+        // 各要素を取得
+        const fileInput = document.getElementById('fileInput');
+        const audioPlayer = document.getElementById('audioPlayer');
+        const speedControl = document.getElementById('speedControl');
+        const speedValue = document.getElementById('speedValue');
+
+        // ファイルが選択された時の処理
+        fileInput.addEventListener('change', function(event) {
+            const file = event.target.files[0];  // 選択されたファイルを取得
+            if (file) {
+                const fileURL = URL.createObjectURL(file);  // ファイルからURLを生成
+                audioPlayer.src = fileURL;  // オーディオプレイヤーにファイルを読み込む
+                audioPlayer.play();  // 自動再生
+            }
+        });
+
+        // スピードが変わったときの処理
+        speedControl.addEventListener('input', function() {
+            const speed = parseFloat(this.value);
+            audioPlayer.playbackRate = speed;  // 再生速度を設定
+            speedValue.textContent = speed.toFixed(1);  // 表示を更新
+        });
+    </script>
+</body>
+</html>
