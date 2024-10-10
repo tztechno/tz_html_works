@@ -39,6 +39,7 @@ https://tztechno.github.io/tz_html_works/m_update_check/url_update_check.html
 
 https://tztechno.github.io/tz_html_works/o_shuffle/shuffle.html
 
+https://tztechno.github.io/tz_html_works/p_mp3/mp3_player.html
 
 ### latest
 ---
