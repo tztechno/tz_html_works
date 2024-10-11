@@ -1,24 +1,36 @@
 <!DOCTYPE html>
 <html lang="ja">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QRコードリーダー</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"
-        integrity="sha512-r6rDA7W6ZeQhvl8S7yRVQUKVHdexq+GAlNkNNqVC7YyIV+NwqCTJe2hDWCiffTyRNOeGEzRRJ9ifvRm/HCzGYg=="
-        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <title>調整可能なQRコードリーダー</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js" integrity="sha512-r6rDA7W6ZeQhvl8S7yRVQUKVHdexq+GAlNkNNqVC7YyIV+NwqCTJe2hDWCiffTyRNOeGEzRRJ9ifvRm/HCzGYg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <style>
+        #reader {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        #controls {
+            margin-top: 20px;
+        }
+    </style>
 </head>
-
 <body>
-    <h1>QRコードを読み取る</h1>
+    <h1>調整可能なQRコードリーダー</h1>
     <button id="startScanButton">カメラを起動</button>
-    <div id="reader" style="width: 500px; display:none;"></div>
+    <div id="reader"></div>
+    <div id="controls">
+        <label for="qrboxSize">QRコード読み取り枠のサイズ:</label>
+        <input type="range" id="qrboxSize" min="100" max="300" value="250" step="10">
+        <span id="qrboxSizeValue">250 x 250</span>
+    </div>
     <div id="result"></div>
     <div id="error" style="color: red;"></div>
 
     <script>
         let html5QrCode;
+        let qrboxSize = 250;
 
         function onScanSuccess(decodedText, decodedResult) {
             document.getElementById('result').innerText = `読み取った内容: ${decodedText}`;
@@ -37,9 +49,11 @@
                     throw new Error('Html5Qrcode ライブラリが読み込まれていません');
                 }
 
-                if (!html5QrCode) {
-                    html5QrCode = new Html5Qrcode("reader");
+                if (html5QrCode) {
+                    await html5QrCode.stop();
                 }
+
+                html5QrCode = new Html5Qrcode("reader");
 
                 const cameras = await Html5Qrcode.getCameras();
                 if (cameras && cameras.length) {
@@ -48,7 +62,7 @@
                         cameraId,
                         {
                             fps: 10,
-                            qrbox: { width: 250, height: 250 }
+                            qrbox: { width: qrboxSize, height: qrboxSize }
                         },
                         onScanSuccess,
                         onScanFailure
@@ -62,10 +76,20 @@
             }
         }
 
+        function updateQrBoxSize() {
+            qrboxSize = parseInt(document.getElementById('qrboxSize').value);
+            document.getElementById('qrboxSizeValue').innerText = `${qrboxSize} x ${qrboxSize}`;
+            if (html5QrCode) {
+                html5QrCode.applyVideoConstraints({
+                    qrbox: { width: qrboxSize, height: qrboxSize }
+                });
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('startScanButton').addEventListener('click', startQrCodeScanner);
+            document.getElementById('qrboxSize').addEventListener('input', updateQrBoxSize);
         });
     </script>
 </body>
-
 </html>
