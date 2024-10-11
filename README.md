@@ -41,6 +41,9 @@ https://tztechno.github.io/tz_html_works/o_shuffle/shuffle.html
 
 https://tztechno.github.io/tz_html_works/p_mp3/mp3_player.html
 
+https://tztechno.github.io/tz_html_works/r_qr_read/qr_read.html
+
+
 ### latest
 ---
 ```
