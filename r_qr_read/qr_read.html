@@ -4,59 +4,57 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QRコードリーダー</title>
-    <!-- 正しいCDNリンクの確認 -->
     <script src="https://unpkg.com/html5-qrcode/minified/html5-qrcode.min.js"></script>
 </head>
 <body>
     <h1>QRコードを読み取る</h1>
-
-    <!-- カメラを起動するボタン -->
     <button id="startScanButton">カメラを起動</button>
-
-    <!-- カメラビューの表示領域 -->
     <div id="reader" style="width: 500px; display:none;"></div>
-
-    <!-- 結果表示 -->
     <div id="result"></div>
+    <div id="error" style="color: red;"></div>
 
     <script>
         let html5QrCode;
 
-        // スキャンが成功したときの処理
         function onScanSuccess(decodedText, decodedResult) {
             document.getElementById('result').innerText = `読み取った内容: ${decodedText}`;
         }
 
         function onScanFailure(error) {
-            // QRコードの読み取りに失敗した場合
             console.warn(`QRコードの読み取りに失敗しました: ${error}`);
         }
 
-        // カメラを起動してQRコードスキャンを開始する関数
-        function startQrCodeScanner() {
-            // カメラビューを表示
-            document.getElementById('reader').style.display = 'block';
+        async function startQrCodeScanner() {
+            try {
+                document.getElementById('reader').style.display = 'block';
+                document.getElementById('error').innerText = '';
 
-            // QRコードリーダーのインスタンスを作成
-            html5QrCode = new Html5Qrcode("reader");
+                if (!html5QrCode) {
+                    html5QrCode = new Html5Qrcode("reader");
+                }
 
-            // カメラを起動してスキャン開始
-            html5QrCode.start(
-                { facingMode: "environment" },  // 背面カメラの使用
-                {
-                    fps: 10,    // フレームレート
-                    qrbox: { width: 250, height: 250 }  // スキャンエリアのサイズ
-                },
-                onScanSuccess,
-                onScanFailure
-            ).catch(err => {
+                const cameras = await Html5Qrcode.getCameras();
+                if (cameras && cameras.length) {
+                    const cameraId = cameras[cameras.length - 1].id;
+                    await html5QrCode.start(
+                        cameraId,
+                        {
+                            fps: 10,
+                            qrbox: { width: 250, height: 250 }
+                        },
+                        onScanSuccess,
+                        onScanFailure
+                    );
+                } else {
+                    throw new Error('カメラが見つかりません');
+                }
+            } catch (err) {
                 console.error(`カメラの起動に失敗しました: ${err}`);
-            });
+                document.getElementById('error').innerText = `エラー: ${err.message}`;
+            }
         }
 
-        // ボタンクリックでカメラ起動
         document.getElementById('startScanButton').addEventListener('click', startQrCodeScanner);
     </script>
 </body>
 </html>
-
