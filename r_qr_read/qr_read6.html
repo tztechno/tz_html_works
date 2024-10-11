@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>シンプル化されたQRコードリーダー</title>
+    <title>シンプル化されたQRコードリーダー（保存機能付き）</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js" integrity="sha512-r6rDA7W6ZeQhvl8S7yRVQUKVHdexq+GAlNkNNqVC7YyIV+NwqCTJe2hDWCiffTyRNOeGEzRRJ9ifvRm/HCzGYg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <style>
         #reader {
@@ -20,10 +20,17 @@
             max-height: 200px;
             overflow-y: auto;
         }
+        #scannedResults {
+            margin-top: 20px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
     </style>
 </head>
 <body>
-    <h1>シンプル化されたQRコードリーダー</h1>
+    <h1>シンプル化されたQRコードリーダー（保存機能付き）</h1>
     <button id="startScanButton">カメラを起動</button>
     <div id="reader"></div>
     <div id="controls">
@@ -33,6 +40,11 @@
     </div>
     <div id="result"></div>
     <div id="error" style="color: red;"></div>
+    <div id="scannedResults">
+        <h2>スキャン結果</h2>
+        <ul id="resultsList"></ul>
+    </div>
+    <button id="downloadButton">結果をダウンロード</button>
     <div id="debug">
         <h2>デバッグ情報</h2>
         <div id="debugInfo"></div>
@@ -42,6 +54,7 @@
         let html5QrCode;
         let qrboxSize = 250;
         let debugInfo = document.getElementById('debugInfo');
+        let scannedResults = [];
 
         function logDebug(message) {
             let now = new Date().toLocaleTimeString();
@@ -52,10 +65,19 @@
         function onScanSuccess(decodedText, decodedResult) {
             document.getElementById('result').innerText = `読み取った内容: ${decodedText}`;
             logDebug(`QRコード読み取り成功: ${decodedText}`);
+            addToScannedResults(decodedText);
         }
 
         function onScanFailure(error) {
             // 読み取り失敗時のログ出力を削除
+        }
+
+        function addToScannedResults(result) {
+            scannedResults.push(result);
+            let resultsList = document.getElementById('resultsList');
+            let listItem = document.createElement('li');
+            listItem.textContent = result;
+            resultsList.appendChild(listItem);
         }
 
         async function startQrCodeScanner() {
@@ -110,9 +132,24 @@
             }
         }
 
+        function downloadResults() {
+            const text = scannedResults.join('\n');
+            const blob = new Blob([text], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'qr_results.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            logDebug('結果をダウンロードしました');
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('startScanButton').addEventListener('click', startQrCodeScanner);
             document.getElementById('qrboxSize').addEventListener('input', updateQrBoxSize);
+            document.getElementById('downloadButton').addEventListener('click', downloadResults);
             logDebug('ページの読み込みが完了しました');
         });
     </script>
