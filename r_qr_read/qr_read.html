@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QRコードリーダー</title>
+    <!-- 正しいCDNリンクの確認 -->
     <script src="https://unpkg.com/html5-qrcode/minified/html5-qrcode.min.js"></script>
 </head>
 <body>
@@ -24,7 +25,6 @@
         // スキャンが成功したときの処理
         function onScanSuccess(decodedText, decodedResult) {
             document.getElementById('result').innerText = `読み取った内容: ${decodedText}`;
-            // ここで読み取った内容を保存する処理を追加可能
         }
 
         function onScanFailure(error) {
