@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>デバッグ機能付きQRコードリーダー</title>
+    <title>強化版QRコードリーダー</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js" integrity="sha512-r6rDA7W6ZeQhvl8S7yRVQUKVHdexq+GAlNkNNqVC7YyIV+NwqCTJe2hDWCiffTyRNOeGEzRRJ9ifvRm/HCzGYg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <style>
         #reader {
@@ -20,19 +20,27 @@
             max-height: 200px;
             overflow-y: auto;
         }
+        #qrImage {
+            max-width: 100%;
+            display: none;
+        }
     </style>
 </head>
 <body>
-    <h1>デバッグ機能付きQRコードリーダー</h1>
+    <h1>強化版QRコードリーダー</h1>
     <button id="startScanButton">カメラを起動</button>
     <div id="reader"></div>
     <div id="controls">
         <label for="qrboxSize">QRコード読み取り枠のサイズ:</label>
-        <input type="range" id="qrboxSize" min="50" max="300" value="250" step="10">
+        <input type="range" id="qrboxSize" min="100" max="300" value="250" step="10">
         <span id="qrboxSizeValue">250 x 250</span>
     </div>
     <div id="result"></div>
     <div id="error" style="color: red;"></div>
+    <div>
+        <input type="file" id="qrCodeInput" accept="image/*">
+        <img id="qrImage" alt="Uploaded QR Code">
+    </div>
     <div id="debug">
         <h2>デバッグ情報</h2>
         <div id="debugInfo"></div>
@@ -59,7 +67,6 @@
         }
 
         function onScanFailure(error) {
-            console.warn(`QRコードの読み取りに失敗しました: ${error}`);
             logDebug(`QRコード読み取り失敗: ${error}`);
         }
 
@@ -68,10 +75,6 @@
                 document.getElementById('reader').style.display = 'block';
                 document.getElementById('error').innerText = '';
                 logDebug('カメラ起動を開始します');
-
-                if (typeof Html5Qrcode === 'undefined') {
-                    throw new Error('Html5Qrcode ライブラリが読み込まれていません');
-                }
 
                 if (html5QrCode) {
                     await html5QrCode.stop();
@@ -117,9 +120,31 @@
             }
         }
 
+        function handleQRCodeUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.getElementById('qrImage');
+                    img.src = e.target.result;
+                    img.style.display = 'block';
+                    
+                    Html5Qrcode.scanImage(file, { qrbox: { width: qrboxSize, height: qrboxSize } })
+                        .then(decodedText => {
+                            onScanSuccess(decodedText, null);
+                        })
+                        .catch(error => {
+                            logDebug(`画像からのQRコード読み取りに失敗: ${error}`);
+                        });
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('startScanButton').addEventListener('click', startQrCodeScanner);
             document.getElementById('qrboxSize').addEventListener('input', updateQrBoxSize);
+            document.getElementById('qrCodeInput').addEventListener('change', handleQRCodeUpload);
             logDebug('ページの読み込みが完了しました');
         });
     </script>
