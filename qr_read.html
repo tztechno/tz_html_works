@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QRコードリーダー</title>
+    <script src="https://unpkg.com/html5-qrcode/minified/html5-qrcode.min.js"></script>
+</head>
+
+<body>
+    <h1>QRコードを読み取る</h1>
+
+    <!-- カメラビューの表示領域 -->
+    <div id="reader" style="width: 500px;"></div>
+
+    <!-- 結果表示 -->
+    <div id="result"></div>
+
+    <script>
+        function onScanSuccess(decodedText, decodedResult) {
+            // QRコードが正常に読み取られた場合
+            document.getElementById('result').innerText = `読み取った内容: ${decodedText}`;
+            // ここで読み取った内容を保存する処理を追加可能
+        }
+
+        function onScanFailure(error) {
+            // QRコードの読み取りに失敗した場合
+            console.warn(`QRコードの読み取りに失敗しました: ${error}`);
+        }
+
+        // QRコードリーダーの設定
+        let html5QrCode = new Html5Qrcode("reader");
+
+        // カメラを起動してスキャン開始
+        html5QrCode.start(
+            { facingMode: "environment" },  // 背面カメラの使用
+            {
+                fps: 10,    // フレームレート
+                qrbox: { width: 250, height: 250 }  // スキャンエリアのサイズ
+            },
+            onScanSuccess,
+            onScanFailure
+        ).catch(err => {
+            console.error(`カメラの起動に失敗しました: ${err}`);
+        });
+    </script>
+</body>
+
+</html>
