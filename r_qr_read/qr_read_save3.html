@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QRコードリーダー（保存機能・重複除去機能付き）</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"
+        integrity="sha512-r6rDA7W6ZeQhvl8S7yRVQUKVHdexq+GAlNkNNqVC7YyIV+NwqCTJe2hDWCiffTyRNOeGEzRRJ9ifvRm/HCzGYg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <style>
+        #reader {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        #controls,
+        #debug {
+            margin-top: 20px;
+        }
+
+        #debugInfo {
+            border: 1px solid #ccc;
+            padding: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        #scannedResults {
+            margin-top: 20px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>シンプル化されたQRコードリーダー（保存機能・重複除去機能付き）</h1>
+    <button id="startScanButton">カメラを起動</button>
+    <div id="reader"></div>
+    <div id="controls">
+        <label for="qrboxSize">QRコード読み取り枠のサイズ:</label>
+        <input type="range" id="qrboxSize" min="100" max="300" value="250" step="10">
+        <span id="qrboxSizeValue">250 x 250</span>
+    </div>
+    <div id="result"></div>
+    <div id="error" style="color: red;"></div>
+    <div id="scannedResults">
+        <h2>スキャン結果</h2>
+        <ul id="resultsList"></ul>
+    </div>
+    <button id="downloadButton">結果をダウンロード</button>
+    <button id="resetButton">結果をリセット</button>
+    <button id="removeDuplicatesButton">重複を削除</button>
+    <div id="debug">
+        <h2>デバッグ情報</h2>
+        <div id="debugInfo"></div>
+    </div>
+
+    <script>
+        let html5QrCode;
+        let qrboxSize = 250;
+        let debugInfo = document.getElementById('debugInfo');
+        let scannedResults = [];
+
+        function logDebug(message) {
+            let now = new Date().toLocaleTimeString();
+            debugInfo.innerHTML += `<p>[${now}] ${message}</p>`;
+            debugInfo.scrollTop = debugInfo.scrollHeight;
+        }
+
+        function onScanSuccess(decodedText, decodedResult) {
+            document.getElementById('result').innerText = `読み取った内容: ${decodedText}`;
+            logDebug(`QRコード読み取り成功: ${decodedText}`);
+            addToScannedResults(decodedText);
+        }
+
+        function onScanFailure(error) {
+            // 読み取り失敗時のログ出力を削除
+        }
+
+        function addToScannedResults(result) {
+            scannedResults.push(result);
+            saveResults();
+            updateResultsList();
+        }
+
+        function updateResultsList() {
+            let resultsList = document.getElementById('resultsList');
+            resultsList.innerHTML = '';
+            scannedResults.forEach(result => {
+                let listItem = document.createElement('li');
+                listItem.textContent = result;
+                resultsList.appendChild(listItem);
+            });
+        }
+
+        function loadScannedResults() {
+            let savedResults = localStorage.getItem('scannedResults');
+            if (savedResults) {
+                scannedResults = JSON.parse(savedResults);
+                updateResultsList();
+            }
+        }
+
+        function saveResults() {
+            localStorage.setItem('scannedResults', JSON.stringify(scannedResults));
+        }
+
+        async function startQrCodeScanner() {
+            try {
+                document.getElementById('reader').style.display = 'block';
+                document.getElementById('error').innerText = '';
+                logDebug('カメラ起動を開始します');
+
+                if (html5QrCode) {
+                    await html5QrCode.stop();
+                    logDebug('既存のスキャナーを停止しました');
+                }
+
+                html5QrCode = new Html5Qrcode("reader");
+                logDebug('新しいQRコードスキャナーインスタンスを作成しました');
+
+                const cameras = await Html5Qrcode.getCameras();
+                if (cameras && cameras.length) {
+                    const cameraId = cameras[cameras.length - 1].id;
+                    logDebug(`使用するカメラ: ${cameraId}`);
+                    await html5QrCode.start(
+                        cameraId,
+                        {
+                            fps: 10,
+                            qrbox: { width: qrboxSize, height: qrboxSize },
+                            aspectRatio: 1.0,
+                            disableFlip: false,
+                            formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE]
+                        },
+                        onScanSuccess,
+                        onScanFailure
+                    );
+                    logDebug('QRコードスキャンを開始しました');
+                } else {
+                    throw new Error('カメラが見つかりません');
+                }
+            } catch (err) {
+                console.error(`カメラの起動に失敗しました: ${err}`);
+                document.getElementById('error').innerText = `エラー: ${err.message}`;
+                logDebug(`エラー発生: ${err.message}`);
+            }
+        }
+
+        function updateQrBoxSize() {
+            qrboxSize = parseInt(document.getElementById('qrboxSize').value);
+            document.getElementById('qrboxSizeValue').innerText = `${qrboxSize} x ${qrboxSize}`;
+            logDebug(`QRコード読み取り枠のサイズを${qrboxSize}x${qrboxSize}に更新しました`);
+            if (html5QrCode) {
+                html5QrCode.applyVideoConstraints({
+                    qrbox: { width: qrboxSize, height: qrboxSize }
+                });
+            }
+        }
+
+        function downloadResults() {
+            const text = scannedResults.join('\n');
+            const blob = new Blob([text], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'attend.csv';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            logDebug('結果をダウンロードしました');
+        }
+
+        function resetResults() {
+            scannedResults = [];
+            saveResults();
+            updateResultsList();
+            logDebug('結果をリセットしました');
+        }
+
+        function removeDuplicates() {
+            const uniqueResults = [...new Set(scannedResults)];
+            scannedResults = uniqueResults;
+            saveResults();
+            updateResultsList();
+            logDebug('重複を削除しました');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('startScanButton').addEventListener('click', startQrCodeScanner);
+            document.getElementById('qrboxSize').addEventListener('input', updateQrBoxSize);
+            document.getElementById('downloadButton').addEventListener('click', downloadResults);
+            document.getElementById('resetButton').addEventListener('click', resetResults);
+            document.getElementById('removeDuplicatesButton').addEventListener('click', removeDuplicates);
+            loadScannedResults();
+            logDebug('ページの読み込みが完了しました');
+        });
+    </script>
+</body>
+
+</html>
