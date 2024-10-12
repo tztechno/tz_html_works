@@ -43,6 +43,7 @@ https://tztechno.github.io/tz_html_works/p_mp3/mp3_player.html
 
 https://tztechno.github.io/tz_html_works/r_qr_read/qr_read.html
 
+https://tztechno.github.io/tz_html_works/r_qr_read/qr_read_save.html
 
 ### latest
 ---
