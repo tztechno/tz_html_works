@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>抽選システム</title>
+</head>
+
+<body>
+    <h1>抽選システム</h1>
+
+    <!-- 次抽選リストの入力ボックス -->
+    <label for="inputList">次抽選リスト（カンマ区切り）:</label><br>
+    <textarea id="inputList" rows="4" cols="50" placeholder="例: Aさん,Bさん,Cさん"></textarea><br>
+    <button id="registerBtn">登録</button>
+
+    <!-- 当選数の入力ボックス -->
+    <br>
+    <label for="numWinners">当選数:</label><br>
+    <input type="number" id="numWinners" placeholder="当選数を入力"><br>
+    <button id="drawBtn">抽選</button>
+
+    <!-- 当選リストと落選リストの表示 -->
+    <h2>当選リスト</h2>
+    <div id="winnersList"></div>
+
+    <h2>次抽選リスト</h2>
+    <ul id="nextList"></ul>
+
+    <script>
+        let drawList = [];
+        let drawCount = 0; // 抽選の通し番号
+
+        // リスト登録ボタンの動作
+        document.getElementById('registerBtn').addEventListener('click', function () {
+            const input = document.getElementById('inputList').value;
+            if (input.trim() !== '') {
+                drawList = input.split(',').map(item => item.trim());
+                displayNextList();
+            }
+        });
+
+        // 抽選ボタンの動作
+        document.getElementById('drawBtn').addEventListener('click', function () {
+            const numWinners = parseInt(document.getElementById('numWinners').value, 10);
+            if (!isNaN(numWinners) && numWinners > 0 && drawList.length > 0) {
+                const winners = [];
+                const losers = [...drawList]; // 落選リストは全員からスタート
+
+                for (let i = 0; i < numWinners && drawList.length > 0; i++) {
+                    const randomIndex = Math.floor(Math.random() * drawList.length);
+                    const winner = drawList[randomIndex];
+                    winners.push(winner);
+                    losers.splice(losers.indexOf(winner), 1); // 落選リストから当選者を削除
+                    drawList.splice(randomIndex, 1); // 抽選リストから当選者を削除
+                }
+
+                // 抽選ごとの通し番号を増やす
+                drawCount++;
+
+                // 当選リストを蓄積して表示
+                appendWinners(winners);
+
+                // 次回の抽選リストを落選者に更新
+                drawList = losers;
+                displayNextList();
+            }
+        });
+
+        // 当選リストを蓄積して表示
+        function appendWinners(winners) {
+            const winnersListDiv = document.getElementById('winnersList');
+
+            // 抽選ごとに新しいグループを作成
+            const drawGroup = document.createElement('div');
+            const heading = document.createElement('h3');
+            heading.textContent = `抽選 ${drawCount}`;
+            drawGroup.appendChild(heading);
+
+            // 当選者をリスト形式で表示
+            const ul = document.createElement('ul');
+            winners.forEach(winner => {
+                const li = document.createElement('li');
+                li.textContent = winner;
+                ul.appendChild(li);
+            });
+
+            drawGroup.appendChild(ul);
+            winnersListDiv.appendChild(drawGroup);
+        }
+
+        // 次回抽選リストの表示
+        function displayNextList() {
+            const nextList = document.getElementById('nextList');
+            nextList.innerHTML = '';
+            drawList.forEach(item => {
+                const li = document.createElement('li');
+                li.textContent = item;
+                nextList.appendChild(li);
+            });
+        }
+    </script>
+</body>
+
+</html>
