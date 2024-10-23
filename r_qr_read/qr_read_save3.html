@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QRコードリーダー</title>
+    <title>QRコードリーダー(party)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"
         integrity="sha512-r6rDA7W6ZeQhvl8S7yRVQUKVHdexq+GAlNkNNqVC7YyIV+NwqCTJe2hDWCiffTyRNOeGEzRRJ9ifvRm/HCzGYg=="
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -163,11 +163,16 @@
         }
 
         function downloadResults() {
-            let header = "id"; // カラム名として 'id' を追加
-            let text = scannedResults.join('\n'); // スキャン結果のみを追加
-            text = header + '\n' + text; // カラム名とスキャン結果を結合
+            // カラム名を二重引用符で囲む
+            let header = '"id"';
 
-            const blob = new Blob([text], { type: 'text/plain' });
+            // スキャン結果の各要素を二重引用符で囲む
+            let text = scannedResults.map(result => `"${result}"`).join('\n');
+
+            // カラム名とスキャン結果を結合
+            text = header + '\n' + text;
+
+            const blob = new Blob([text], { type: 'text/csv' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
