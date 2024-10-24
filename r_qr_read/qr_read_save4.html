@@ -163,16 +163,14 @@
         }
 
         function downloadResults() {
-            // カラム名を二重引用符で囲む
+            // BOMを追加してUTF-8として認識させる
+            const bom = '\uFEFF';
+        
             let header = '"id"';
-
-            // スキャン結果の各要素を二重引用符で囲む
             let text = scannedResults.map(result => `"${result}"`).join('\n');
-
-            // カラム名とスキャン結果を結合
             text = header + '\n' + text;
-
-            const blob = new Blob([text], { type: 'text/csv' });
+        
+            const blob = new Blob([bom + text], { type: 'text/csv' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
