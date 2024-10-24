@@ -72,12 +72,31 @@
             debugInfo.scrollTop = debugInfo.scrollHeight;
         }
 
-        function onScanSuccess(decodedText, decodedResult) {
-            document.getElementById('result').innerText = `読み取った内容: ${decodedText}`;
-            logDebug(`QRコード読み取り成功: ${decodedText}`);
-            addToScannedResults(decodedText);
-        }
 
+        
+function isBase64(str) {
+    try {
+        return btoa(atob(str)) === str;
+    } catch (err) {
+        return false;
+    }
+}
+
+function onScanSuccess(decodedText, decodedResult) {
+    if (isBase64(decodedText)) {
+        const decodedBase64 = atob(decodedText);
+        document.getElementById('result').innerText = `読み取った内容 (Base64 デコード後): ${decodedBase64}`;
+        logDebug(`QRコード読み取り成功 (Base64 デコード後): ${decodedBase64}`);
+        addToScannedResults(decodedBase64);
+    } else {
+        document.getElementById('result').innerText = `読み取った内容: ${decodedText}`;
+        logDebug(`QRコード読み取り成功: ${decodedText}`);
+        addToScannedResults(decodedText);
+    }
+}
+
+
+        
         function onScanFailure(error) {
             // 読み取り失敗時のログ出力を削除
         }
