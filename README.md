@@ -49,6 +49,8 @@ https://tztechno.github.io/tz_html_works/r_qr_read/qr_read_save3.html (party仕�
 
 https://tztechno.github.io/tz_html_works/r_qr_read/qr_read_save4.html (party仕様)
 
+https://tztechno.github.io/tz_html_works/r_qr_read/qr_generate.html 
+
 https://tztechno.github.io/tz_html_works/s_lottery/lottery.html
 
 
