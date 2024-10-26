@@ -73,9 +73,14 @@
         }
 
         function onScanSuccess(decodedText, decodedResult) {
-            document.getElementById('result').innerText = `読み取った内容: ${decodedText}`;
-            logDebug(`QRコード読み取り成功: ${decodedText}`);
-            addToScannedResults(decodedText);
+            // 既にスキャン済みの内容かどうか確認
+            if (!scannedResults.includes(decodedText)) {
+                document.getElementById('result').innerText = `読み取った内容: ${decodedText}`;
+                logDebug(`QRコード読み取り成功: ${decodedText}`);
+                addToScannedResults(decodedText);
+            } else {
+                logDebug(`重複したQRコードを無視しました: ${decodedText}`);
+            }
         }
 
         function onScanFailure(error) {
