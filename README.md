@@ -19,6 +19,8 @@ https://tztechno.github.io/tz_html_works/a_checkbox/checkbox.html
 
 https://tztechno.github.io/tz_html_works/b_split_text/split_text.html
 
+https://tztechno.github.io/tz_html_works/c_camera/realtime.html
+
 https://tztechno.github.io/tz_html_works/d_canvas/index.html
 
 https://tztechno.github.io/tz_html_works/f_iss_map/index.html     ISS location Map
