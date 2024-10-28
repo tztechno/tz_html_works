@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>お知らせ</title>
+    <style>
+        body,
+        html {
+            height: 100%;
+            margin: 20px;
+        }
+
+        #displayArea {
+            text-align: left;
+            margin: 80px;            
+        }
+
+        #inputText {
+            position: absolute;
+            top: 95%;
+            left: 100px;
+            width: 800px;
+            height: 400px;
+            margin-bottom: 200px;
+            /* 下に40pxのスペースを追加 */
+        }
+    </style>
+</head>
+
+<body>
+    <h1>お知らせ</h1>
+
+    <h2 id="displayArea"></h2>
+
+    <textarea id="inputText" oninput="displayText()" placeholder="ここに入力"></textarea>
+
+    <script>
+        function displayText() {
+            const input = document.getElementById("inputText").value;
+            document.getElementById("displayArea").innerText = input;
+        }
+    </script>
+</body>
+
+</html>
