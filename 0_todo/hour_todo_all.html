@@ -17,6 +17,10 @@
             width: 60px; /* 横幅を短く設定 */
             margin-left: 10px; /* ボタンとの間にスペースを追加 */
         }
+        .timer {
+            font-weight: bold;
+            color: red; /* 残り時間の色を赤に設定 */
+        }
     </style>
 </head>
 
@@ -32,6 +36,7 @@
             <li v-for="(todo, index) in todos" :key="index">
                 <input type="checkbox" v-model="todo.done" />
                 <span :style="{ textDecoration: todo.done ? 'line-through' : 'none' }">{{ todo.text }}</span>&nbsp;
+                <span class="timer" v-if="todo.remainingTime >= 0">{{ formatRemainingTime(todo.remainingTime) }}</span>
                 <button @click="removeTodo(index)">Remove</button>
             </li>
         </ul>
@@ -65,7 +70,12 @@
                     const todosArray = this.newTodos.trim().split('\n').filter(todo => todo.trim() !== '');
                     todosArray.forEach(todoText => {
                         const timeToDelete = this.defaultTime; // 一定の時間を設定
-                        this.todos.push({ text: todoText, done: false, timeToDelete: timeToDelete });
+                        this.todos.push({ 
+                            text: todoText, 
+                            done: false, 
+                            timeToDelete: timeToDelete,
+                            remainingTime: timeToDelete * 3600000 // 初期残り時間をミリ秒に設定
+                        });
                     });
                     this.newTodos = '';
                     this.checkTodoTimers(); // タイマーをチェック
@@ -92,12 +102,22 @@
                 },
                 checkTodoTimers() {
                     this.todos.forEach((todo, index) => {
-                        if (todo.timeToDelete > 0) {
-                            setTimeout(() => {
-                                this.removeTodo(index);
-                            }, todo.timeToDelete * 3600000); // 時間をミリ秒に変換 (1時間 = 3600000ミリ秒)
+                        if (todo.remainingTime > 0) {
+                            const intervalId = setInterval(() => {
+                                todo.remainingTime -= 1000; // 1秒ごとに残り時間を減少
+                                if (todo.remainingTime <= 0) {
+                                    this.removeTodo(index);
+                                    clearInterval(intervalId); // タイマーをクリア
+                                }
+                            }, 1000);
                         }
                     });
+                },
+                formatRemainingTime(remainingTime) {
+                    const hours = Math.floor(remainingTime / 3600000);
+                    const minutes = Math.floor((remainingTime % 3600000) / 60000);
+                    const seconds = Math.floor((remainingTime % 60000) / 1000);
+                    return `${hours}h ${minutes}m ${seconds}s`;
                 }
             }
         });
@@ -106,5 +126,6 @@
 </body>
 
 </html>
+
 
 
