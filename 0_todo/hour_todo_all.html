@@ -1,29 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Todo List</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
 
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@IshiiStpete" />
-    <meta name="twitter:title" content="simple todo list">
-    <meta name="twitter:image" content="https://raw.githubusercontent.com/tztechno/vercel_todo/main/todo.png">
-    
     <style>
         input[type="number"] {
-            width: 60px; /* 横幅を短く設定 */
-            margin-left: 10px; /* ボタンとの間にスペースを追加 */
+            width: 60px;
+            margin-left: 10px;
         }
         .timer {
             font-weight: bold;
-            color: red; /* 残り時間の色を赤に設定 */
+            color: red;
         }
     </style>
 </head>
-
 <body>
     <div id="app">
         <h1>Todo List</h1>
@@ -31,7 +24,7 @@
         <button @click="addTodos">Add Todos</button>
         <button @click="saveToFile">Save to File</button>
         <button @click="resetTodos">Reset</button>
-        <input type="number" v-model.number="defaultTime" placeholder="時間（時間単位）" min="0" /> <!-- 一定時間指定 -->
+        <input type="number" v-model.number="defaultTime" placeholder="時間（時間単位）" min="0" />
         <ul>
             <li v-for="(todo, index) in todos" :key="index">
                 <input type="checkbox" v-model="todo.done" />
@@ -54,8 +47,11 @@
                 const savedTodos = localStorage.getItem('todos');
                 if (savedTodos) {
                     this.todos = JSON.parse(savedTodos);
+                    this.todos.forEach(todo => {
+                        todo.remainingTime = this.calculateRemainingTime(todo.deleteAt);
+                    });
                 }
-                this.startGlobalTimer(); // 全体タイマーの開始
+                this.startGlobalTimer(); 
             },
             watch: {
                 todos: {
@@ -69,12 +65,12 @@
                 addTodos() {
                     const todosArray = this.newTodos.trim().split('\n').filter(todo => todo.trim() !== '');
                     todosArray.forEach(todoText => {
-                        const timeToDelete = this.defaultTime; // 一定の時間を設定
+                        const deleteAt = Date.now() + this.defaultTime * 3600000;
                         this.todos.push({ 
                             text: todoText, 
                             done: false, 
-                            timeToDelete: timeToDelete,
-                            remainingTime: timeToDelete * 3600000 // 初期残り時間をミリ秒に設定
+                            deleteAt: deleteAt,
+                            remainingTime: this.calculateRemainingTime(deleteAt)
                         });
                     });
                     this.newTodos = '';
@@ -86,7 +82,7 @@
                     const todosText = this.todos.map(todo => `${todo.text}${todo.done ? ' (done)' : ''}`).join('\n');
                     const blob = new Blob([todosText], { type: 'text/plain' });
                     const url = URL.createObjectURL(blob);
-                    const timestamp = new Date().toISOString().replace(/[:.]/g, '-'); // 時刻を含むファイル名を生成
+                    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
                     const filename = `todos-${timestamp}.txt`;
                     const a = document.createElement('a');
                     a.href = url;
@@ -101,29 +97,27 @@
                 },
                 startGlobalTimer() {
                     setInterval(() => {
-                        this.todos.forEach((todo, index) => {
-                            if (todo.remainingTime > 0) {
-                                todo.remainingTime -= 1000; // 1秒ごとに残り時間を減少
-                                if (todo.remainingTime <= 0) {
-                                    this.removeTodo(index);
-                                }
-                            }
+                        const now = Date.now();
+                        this.todos = this.todos.filter(todo => {
+                            todo.remainingTime = this.calculateRemainingTime(todo.deleteAt);
+                            return todo.remainingTime > 0;
                         });
                     }, 1000);
+                },
+                calculateRemainingTime(deleteAt) {
+                    const remainingTime = deleteAt - Date.now();
+                    return remainingTime > 0 ? remainingTime : 0;
                 },
                 formatRemainingTime(remainingTime) {
                     const hours = Math.floor(remainingTime / 3600000);
                     const minutes = Math.floor((remainingTime % 3600000) / 60000);
                     const seconds = Math.floor((remainingTime % 60000) / 1000);
-                    return `${hours}h ${minutes}m ${seconds}s `;
+                    return `${hours}h ${minutes}m ${seconds}s`;
                 }
             }
         });
         app.mount('#app');
     </script>
 </body>
-
 </html>
-
-
 
