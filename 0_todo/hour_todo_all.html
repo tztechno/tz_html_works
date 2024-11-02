@@ -54,8 +54,8 @@
                 const savedTodos = localStorage.getItem('todos');
                 if (savedTodos) {
                     this.todos = JSON.parse(savedTodos);
-                    this.checkTodoTimers();
                 }
+                this.startGlobalTimer(); // 全体タイマーの開始
             },
             watch: {
                 todos: {
@@ -78,7 +78,6 @@
                         });
                     });
                     this.newTodos = '';
-                    this.checkTodoTimers(); // タイマーをチェック
                 },
                 removeTodo(index) {
                     this.todos.splice(index, 1);
@@ -100,24 +99,23 @@
                 resetTodos() {
                     this.todos = [];
                 },
-                checkTodoTimers() {
-                    this.todos.forEach((todo, index) => {
-                        if (todo.remainingTime > 0) {
-                            const intervalId = setInterval(() => {
+                startGlobalTimer() {
+                    setInterval(() => {
+                        this.todos.forEach((todo, index) => {
+                            if (todo.remainingTime > 0) {
                                 todo.remainingTime -= 1000; // 1秒ごとに残り時間を減少
                                 if (todo.remainingTime <= 0) {
                                     this.removeTodo(index);
-                                    clearInterval(intervalId); // タイマーをクリア
                                 }
-                            }, 1000);
-                        }
-                    });
+                            }
+                        });
+                    }, 1000);
                 },
                 formatRemainingTime(remainingTime) {
                     const hours = Math.floor(remainingTime / 3600000);
                     const minutes = Math.floor((remainingTime % 3600000) / 60000);
                     const seconds = Math.floor((remainingTime % 60000) / 1000);
-                    return `${hours}h ${minutes}m ${seconds}s `;
+                    return `${hours}h ${minutes}m ${seconds}s`;
                 }
             }
         });
