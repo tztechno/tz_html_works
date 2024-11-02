@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, content="initial-scale=1.0">
+    <title>Todo List</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@IshiiStpete" />
+    <meta name="twitter:title" content="simple todo list">
+    <meta name="twitter:image" content="https://raw.githubusercontent.com/tztechno/vercel_todo/main/todo.png">
+    
+</head>
+
+<body>
+    <div id="app">
+        <h1>Todo List</h1>
+        <textarea v-model="newTodos" placeholder="Enter multiple todos, each on a new line"></textarea>
+        <input type="number" v-model.number="defaultTime" placeholder="時間（時間単位）" min="0" /> <!-- 一定時間指定 -->
+        <button @click="addTodos">Add Todos</button>
+        <button @click="saveToFile">Save to File</button>
+        <button @click="resetTodos">Reset</button>
+        <ul>
+            <li v-for="(todo, index) in todos" :key="index">
+                <input type="checkbox" v-model="todo.done" />
+                <span :style="{ textDecoration: todo.done ? 'line-through' : 'none' }">{{ todo.text }}</span>&nbsp;
+                <button @click="removeTodo(index)">Remove</button>
+            </li>
+        </ul>
+    </div>
+    <script>
+        const app = Vue.createApp({
+            data() {
+                return {
+                    newTodos: '',
+                    todos: [],
+                    defaultTime: 0 // 一定時間を保持する変数
+                };
+            },
+            mounted() {
+                const savedTodos = localStorage.getItem('todos');
+                if (savedTodos) {
+                    this.todos = JSON.parse(savedTodos);
+                    this.checkTodoTimers();
+                }
+            },
+            watch: {
+                todos: {
+                    deep: true,
+                    handler(newTodos) {
+                        localStorage.setItem('todos', JSON.stringify(newTodos));
+                    }
+                }
+            },
+            methods: {
+                addTodos() {
+                    const todosArray = this.newTodos.trim().split('\n').filter(todo => todo.trim() !== '');
+                    todosArray.forEach(todoText => {
+                        const timeToDelete = this.defaultTime; // 一定の時間を設定
+                        this.todos.push({ text: todoText, done: false, timeToDelete: timeToDelete });
+                    });
+                    this.newTodos = '';
+                    this.checkTodoTimers(); // タイマーをチェック
+                },
+                removeTodo(index) {
+                    this.todos.splice(index, 1);
+                },
+                saveToFile() {
+                    const todosText = this.todos.map(todo => `${todo.text}${todo.done ? ' (done)' : ''}`).join('\n');
+                    const blob = new Blob([todosText], { type: 'text/plain' });
+                    const url = URL.createObjectURL(blob);
+                    const timestamp = new Date().toISOString().replace(/[:.]/g, '-'); // 時刻を含むファイル名を生成
+                    const filename = `todos-${timestamp}.txt`;
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                },
+                resetTodos() {
+                    this.todos = [];
+                },
+                checkTodoTimers() {
+                    this.todos.forEach((todo, index) => {
+                        if (todo.timeToDelete > 0) {
+                            setTimeout(() => {
+                                this.removeTodo(index);
+                            }, todo.timeToDelete * 3600000); // 時間をミリ秒に変換 (1時間 = 3600000ミリ秒)
+                        }
+                    });
+                }
+            }
+        });
+        app.mount('#app');
+    </script>
+</body>
+
+</html>
