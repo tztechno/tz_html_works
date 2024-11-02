@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, content="initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Todo List</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
 
@@ -11,20 +11,29 @@
     <meta name="twitter:site" content="@IshiiStpete" />
     <meta name="twitter:title" content="simple todo list">
     <meta name="twitter:image" content="https://raw.githubusercontent.com/tztechno/vercel_todo/main/todo.png">
-    
+
+    <style>
+        .input-container {
+            display: flex;
+            align-items: center; /* ボタンと入力ボックスを中央揃え */
+        }
+        .time-input {
+            width: 60px; /* 横幅を短く設定 */
+            margin-left: 10px; /* ボタンと入力ボックスの間にスペースを追加 */
+        }
+    </style>
 </head>
 
 <body>
     <div id="app">
         <h1>Todo List</h1>
         <textarea v-model="newTodos" placeholder="Enter multiple todos, each on a new line"></textarea>
-
-        <button @click="addTodos">Add Todos</button>
-        <button @click="saveToFile">Save to File</button>
-        <button @click="resetTodos">Reset</button>
-
-        <input type="number" v-model.number="defaultTime" placeholder="時間（時間単位）" min="0" /> <!-- 一定時間指定 -->
-        
+        <div class="input-container">
+            <input type="number" v-model.number="defaultTime" class="time-input" placeholder="時間（時間単位）" min="0" />
+            <button @click="addTodos">Add Todos</button>
+            <button @click="saveToFile">Save to File</button>
+            <button @click="resetTodos">Reset</button>
+        </div>
         <ul>
             <li v-for="(todo, index) in todos" :key="index">
                 <input type="checkbox" v-model="todo.done" />
@@ -103,3 +112,4 @@
 </body>
 
 </html>
+
