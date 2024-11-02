@@ -18,10 +18,13 @@
     <div id="app">
         <h1>Todo List</h1>
         <textarea v-model="newTodos" placeholder="Enter multiple todos, each on a new line"></textarea>
-        <input type="number" v-model.number="defaultTime" placeholder="時間（時間単位）" min="0" /> <!-- 一定時間指定 -->
+
         <button @click="addTodos">Add Todos</button>
         <button @click="saveToFile">Save to File</button>
         <button @click="resetTodos">Reset</button>
+
+        <input type="number" v-model.number="defaultTime" placeholder="時間（時間単位）" min="0" /> <!-- 一定時間指定 -->
+        
         <ul>
             <li v-for="(todo, index) in todos" :key="index">
                 <input type="checkbox" v-model="todo.done" />
