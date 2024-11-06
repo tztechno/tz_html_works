@@ -7,9 +7,9 @@ https://tztechno.github.io/tz_html_works/1_garbage/garbage2_muko2.html    ver.2.
 
 https://tztechno.github.io/tz_html_works/1_garbage/garbage1_muko2.html    ver.1.0
 
-https://tztechno.github.io/tz_html_works/0_todo/ToDoSave.html
+https://tztechno.github.io/tz_html_works/0_todo/ToDoSave1.html
 
-https://tztechno.github.io/tz_html_works/0_todo/hour_todo_all.html
+https://tztechno.github.io/tz_html_works/0_todo/ToDoTimer1.html
 
 https://tztechno.github.io/tz_html_works/4_newline/newline.html
 
