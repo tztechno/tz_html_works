@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Todo List</title>
+    <title>Todo Timer</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
 
     <style>
@@ -19,7 +19,7 @@
 </head>
 <body>
     <div id="app">
-        <h1>Todo List</h1>
+        <h1>Todo Timer</h1>
         <textarea v-model="newTodos" placeholder="Enter multiple todos, each on a new line"></textarea>
         <button @click="addTodos">Add Todos</button>
         <button @click="saveToFile">Save to File</button>
