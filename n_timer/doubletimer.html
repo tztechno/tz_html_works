@@ -31,6 +31,12 @@
         <div id="timer2">00:00:00</div>
     </div>
 
+    <!-- 現在時刻と開始時刻の表示 -->
+    <div>
+        <h3>現在時刻: <span id="currentTime">00:00:00</span></h3>
+        <h3>開始時刻: <span id="startTimeDisplay">未設定</span></h3>
+    </div>
+
     <!-- Start/Reset ボタン -->
     <button id="startButton">Start</button>
     <button id="resetButton">Reset</button>
@@ -43,12 +49,22 @@
         let timer2Active = false;
         let timer2Elapsed = localStorage.getItem('timer2Elapsed') ? parseInt(localStorage.getItem('timer2Elapsed')) : 0;
 
+        // 現在時刻を表示する関数
+        function updateCurrentTime() {
+            const now = new Date();
+            const hours = now.getHours();
+            const minutes = now.getMinutes();
+            const seconds = now.getSeconds();
+            document.getElementById('currentTime').textContent = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+        }
+
         // タイマー 1 - 現在時刻との差を計算
         function startTimer1() {
             if (startTime === null) {
                 startTime = new Date();
                 localStorage.setItem('startTime', startTime.toISOString()); // start時刻を保存
             }
+            document.getElementById('startTimeDisplay').textContent = startTime.toLocaleTimeString(); // 開始時刻を表示
             timer1Interval = setInterval(() => {
                 const elapsed = new Date() - startTime;
                 const hours = Math.floor(elapsed / (1000 * 60 * 60));
@@ -98,6 +114,7 @@
             localStorage.removeItem('timer2Elapsed');
             document.getElementById('timer1').textContent = '00:00:00';
             document.getElementById('timer2').textContent = '00:00:00';
+            document.getElementById('startTimeDisplay').textContent = '未設定';
         }
 
         // 数字を2桁にする補助関数
@@ -119,6 +136,8 @@
             if (timer2StartTime) {
                 startTimer2();
             }
+            updateCurrentTime();
+            setInterval(updateCurrentTime, 1000); // 1秒ごとに現在時刻を更新
         });
 
         // ボタンのクリックイベント
