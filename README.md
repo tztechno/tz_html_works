@@ -37,7 +37,7 @@ https://tztechno.github.io/tz_html_works/j_custom_graph/graphB.html
 
 https://tztechno.github.io/tz_html_works/j_custom_graph/graphC.html
 
-https://tztechno.github.io/tz_html_works/n_timer/doubletimer.html
+https://tztechno.github.io/tz_html_works/n_timer/storage_timer.html
 
 https://tztechno.github.io/tz_html_works/o_shuffle/shuffle.html
 
