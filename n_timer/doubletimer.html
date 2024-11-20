@@ -132,10 +132,13 @@
             }
         });
 
-        // ページがロードされた時、タイマー2が動いていれば再開する
+        // ページがロードされた時、タイマー1とタイマー2を適切に再開
         window.addEventListener('load', () => {
+            if (startTime !== null) {
+                startTimer1(); // startTimeがあればタイマー1をスタート
+            }
             if (timer2StartTime) {
-                startTimer2();
+                startTimer2(); // タイマー2があればスタート
             }
             updateCurrentTime();
             setInterval(updateCurrentTime, 1000); // 1秒ごとに現在時刻を更新
