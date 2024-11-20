@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>二つのタイマー</title>
+    <title>タイマー</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -17,18 +17,12 @@
 </head>
 
 <body>
-    <h1>二つのタイマー</h1>
+    <h1>タイマー</h1>
 
     <!-- 1つ目のタイマー -->
     <div class="timer">
         <h3>タイマー 1 (開始時刻との差で計測)</h3>
         <div id="timer1">00:00:00</div>
-    </div>
-
-    <!-- 2つ目のタイマー -->
-    <div class="timer">
-        <h3>タイマー 2 (ページがアクティブな限り計測)</h3>
-        <div id="timer2">00:00:00</div>
     </div>
 
     <!-- 現在時刻と開始時刻の表示 -->
@@ -43,11 +37,7 @@
 
     <script>
         let timer1Interval;
-        let timer2Interval;
         let startTime = localStorage.getItem('startTime') ? new Date(localStorage.getItem('startTime')) : null;
-        let timer2StartTime = localStorage.getItem('timer2StartTime') ? new Date(localStorage.getItem('timer2StartTime')) : null;
-        let timer2Active = false;
-        let timer2Elapsed = localStorage.getItem('timer2Elapsed') ? parseInt(localStorage.getItem('timer2Elapsed')) : 0;
 
         // 現在時刻を表示する関数
         function updateCurrentTime() {
@@ -74,47 +64,17 @@
             }, 1000);
         }
 
-        // タイマー 2 - ページがアクティブな限り計測
-        function startTimer2() {
-            if (!timer2Active) {
-                timer2Active = true;
-                if (!timer2StartTime) {
-                    timer2StartTime = new Date();
-                    localStorage.setItem('timer2StartTime', timer2StartTime.toISOString()); // 開始時刻を保存
-                }
-                timer2Interval = setInterval(() => {
-                    const elapsed = new Date() - timer2StartTime + timer2Elapsed;
-                    const hours = Math.floor(elapsed / (1000 * 60 * 60));
-                    const minutes = Math.floor((elapsed % (1000 * 60 * 60)) / (1000 * 60));
-                    const seconds = Math.floor((elapsed % (1000 * 60)) / 1000);
-                    document.getElementById('timer2').textContent = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
-                }, 1000);
-            }
-        }
-
         // タイマー停止
         function stopTimers() {
             clearInterval(timer1Interval);
-            clearInterval(timer2Interval);
-            // タイマー2が停止した時の経過時間を保存
-            if (timer2Active) {
-                const elapsed = new Date() - timer2StartTime + timer2Elapsed;
-                localStorage.setItem('timer2Elapsed', elapsed);
-            }
         }
 
         // リセット
         function resetTimers() {
             stopTimers();
             startTime = null;
-            timer2Active = false;
-            timer2Elapsed = 0;
-            timer2StartTime = null; // タイマー2の開始時刻をリセット
             localStorage.removeItem('startTime');
-            localStorage.removeItem('timer2StartTime');
-            localStorage.removeItem('timer2Elapsed');
             document.getElementById('timer1').textContent = '00:00:00';
-            document.getElementById('timer2').textContent = '00:00:00';
             document.getElementById('startTimeDisplay').textContent = '未設定';
         }
 
@@ -123,22 +83,10 @@
             return num < 10 ? '0' + num : num;
         }
 
-        // ページが非アクティブになったとき、経過時間を保存
-        document.addEventListener('visibilitychange', () => {
-            if (document.hidden) {
-                stopTimers();
-            } else {
-                startTimer2();
-            }
-        });
-
-        // ページがロードされた時、タイマー1とタイマー2を適切に再開
+        // ページがロードされた時、タイマー1を適切に再開
         window.addEventListener('load', () => {
             if (startTime !== null) {
                 startTimer1(); // startTimeがあればタイマー1をスタート
-            }
-            if (timer2StartTime) {
-                startTimer2(); // タイマー2があればスタート
             }
             updateCurrentTime();
             setInterval(updateCurrentTime, 1000); // 1秒ごとに現在時刻を更新
@@ -148,12 +96,6 @@
         document.getElementById('startButton').addEventListener('click', () => {
             if (startTime === null) {
                 startTimer1(); // タイマー1をスタート
-                startTimer2(); // タイマー2をスタート
-            } else {
-                // リセット後にStartボタンを押したとき、タイマー2を0からスタート
-                if (!timer2Active) {
-                    startTimer2();
-                }
             }
         });
 
@@ -162,5 +104,6 @@
 </body>
 
 </html>
+
 
 
