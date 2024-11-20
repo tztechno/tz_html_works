@@ -109,6 +109,7 @@
             startTime = null;
             timer2Active = false;
             timer2Elapsed = 0;
+            timer2StartTime = null; // タイマー2の開始時刻をリセット
             localStorage.removeItem('startTime');
             localStorage.removeItem('timer2StartTime');
             localStorage.removeItem('timer2Elapsed');
@@ -145,6 +146,11 @@
             if (startTime === null) {
                 startTimer1(); // タイマー1をスタート
                 startTimer2(); // タイマー2をスタート
+            } else {
+                // リセット後にStartボタンを押したとき、タイマー2を0からスタート
+                if (!timer2Active) {
+                    startTimer2();
+                }
             }
         });
 
@@ -153,3 +159,4 @@
 </body>
 
 </html>
+
