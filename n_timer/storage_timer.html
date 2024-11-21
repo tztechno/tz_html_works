@@ -13,6 +13,13 @@
         .timer {
             margin-bottom: 20px;
         }
+
+        /* タイマーと現在時刻の共通スタイル */
+        .time-display {
+            font-size: 2em;
+            font-family: 'Courier New', Courier, monospace;
+            color: #333;
+        }
     </style>
 </head>
 
@@ -21,13 +28,13 @@
 
     <!-- 1つ目のタイマー -->
     <div class="timer">
-        <h3>タイマー
-        <div id="timer1">00:00:00</div></h3>
+        <h3>タイマー</h3>
+        <div id="timer1" class="time-display">00:00:00</div>
     </div>
 
     <div>
-        <h3>現在時刻: <span id="currentTime">00:00:00</span></h3>
-        <h3>開始時刻: <span id="startTimeDisplay">未設定</span></h3>
+        <h3>現在時刻: <span id="currentTime" class="time-display">00:00:00</span></h3>
+        <h3>開始時刻: <span id="startTimeDisplay" class="time-display">未設定</span></h3>
     </div>
 
     <!-- Start/Reset ボタン -->
@@ -103,6 +110,7 @@
 </body>
 
 </html>
+
 
 
 
