@@ -53,7 +53,7 @@
             currentTimeElement.textContent = `${hours}:${minutes}:${seconds}`;
 
             // 10分ごと (分が10の倍数かつ秒が0) の場合に履歴を追加
-            if (now.getMinutes() % 10 === 0 && now.getSeconds() === 0) {
+            if (now.getSeconds() === 0) {
                 addToHistory(`${hours}:${minutes}:00`);
             }
         }
