@@ -14,28 +14,21 @@
             margin-bottom: 20px;
         }
 
-        /* タイマーと現在時刻の共通スタイル */
-        .time-display {
-            font-size: 2em;
-            font-family: 'Courier New', Courier, monospace;
-            color: #333;
-        }
+
     </style>
 </head>
 
 <body>
     <h1>タイマー</h1>
-
-    <!-- 1つ目のタイマー -->
-    <div class="timer">
-        <h3>タイマー</h3>
-        <div id="timer1" class="time-display">00:00:00</div>
-    </div>
-
     <div>
-        <h3>現在時刻: <span id="currentTime" class="time-display">00:00:00</span></h3>
-        <h3>開始時刻: <span id="startTimeDisplay" class="time-display">未設定</span></h3>
+        <h1>現在時刻: <span id="currentTime" class="time-display">00:00:00</span></h1>
+        <h1>開始時刻: <span id="startTimeDisplay" class="time-display">未設定</span></h31>
     </div>
+
+    <div class="timer">
+        <h1><div id="timer1" class="time-display">タイマー: 00:00:00</div></h1>
+    </div>
+
 
     <!-- Start/Reset ボタン -->
     <button id="startButton">Start</button>
@@ -66,7 +59,7 @@
                 const hours = Math.floor(elapsed / (1000 * 60 * 60));
                 const minutes = Math.floor((elapsed % (1000 * 60 * 60)) / (1000 * 60));
                 const seconds = Math.floor((elapsed % (1000 * 60)) / 1000);
-                document.getElementById('timer1').textContent = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+                document.getElementById('timer1').textContent = `タイマー: ${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
             }, 1000);
         }
 
@@ -80,7 +73,7 @@
             stopTimers();
             startTime = null;
             localStorage.removeItem('startTime');
-            document.getElementById('timer1').textContent = '00:00:00';
+            document.getElementById('timer1').textContent = 'タイマー: 00:00:00';
             document.getElementById('startTimeDisplay').textContent = '未設定';
         }
 
@@ -110,6 +103,10 @@
 </body>
 
 </html>
+
+
+
+
 
 
 
