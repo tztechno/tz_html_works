@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>時刻表示と履歴</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+        }
+
+        #current-time {
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+
+        #history {
+            margin-top: 20px;
+            border: 1px solid #ddd;
+            padding: 10px;
+            max-width: 300px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .time-entry {
+            margin: 5px 0;
+        }
+
+        .active {
+            background-color: yellow;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>現在時刻と履歴表示</h1>
+    <div id="current-time">--:--:--</div>
+    <div id="history">
+        <h2>履歴</h2>
+        <div id="history-list"></div>
+    </div>
+
+    <script>
+        const currentTimeElement = document.getElementById('current-time');
+        const historyListElement = document.getElementById('history-list');
+
+        // 現在時刻を更新する関数
+        function updateCurrentTime() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            currentTimeElement.textContent = `${hours}:${minutes}:${seconds}`;
+
+            // 10分ごと (分が10の倍数かつ秒が0) の場合に履歴を追加
+            if (now.getSeconds() === 0) {
+                addToHistory(`${hours}:${minutes}:00`);
+            }
+
+            // 秒が58の時にactiveクラスを追加
+            if (now.getSeconds() === 58) {
+                currentTimeElement.classList.add('active');
+            } else {
+                currentTimeElement.classList.remove('active');
+            }
+        }
+
+        // 履歴に時刻を追加する関数
+        function addToHistory(time) {
+            const entry = document.createElement('div');
+            entry.className = 'time-entry';
+            entry.textContent = time;
+            historyListElement.appendChild(entry);
+        }
+
+        // 毎秒現在時刻を更新
+        setInterval(updateCurrentTime, 1000);
+    </script>
+</body>
+
+</html>
