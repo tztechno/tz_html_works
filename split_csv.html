@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSVファイルアップロード</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
+</head>
+
+<body>
+    <h1>CSVファイルアップロード</h1>
+
+    <form id="uploadForm">
+        <input type="file" id="csvFile" accept=".csv" required>
+        <br><br>
+        <label for="lines_per_file">1ファイルあたりの行数:</label>
+        <input type="text" id="linesPerFile" required placeholder="例: 100, 200">
+        <br><br>
+        <button type="submit">アップロード</button>
+    </form>
+
+    <hr>
+
+    <h2>処理結果</h2>
+    <a id="downloadLink" style="display:none;" href="#">ZIPファイルをダウンロード</a>
+
+    <script>
+        // Shift-JISエンコーディングを処理するためにTextDecoderを使う
+        function decodeShiftJIS(arrayBuffer) {
+            const decoder = new TextDecoder("shift-jis");
+            return decoder.decode(arrayBuffer);
+        }
+
+        document.getElementById('uploadForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            const fileInput = document.getElementById('csvFile');
+            const linesPerFileInput = document.getElementById('linesPerFile').value;
+
+            if (fileInput.files.length === 0) {
+                alert("ファイルを選択してください");
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const linesPerFile = linesPerFileInput.split(',').map(Number);
+
+            // FileReaderでファイルを読み込む
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                // ファイルのバイナリデータを取得
+                const arrayBuffer = e.target.result;
+
+                // Shift-JISをデコードして文字列に変換
+                const content = decodeShiftJIS(arrayBuffer);
+
+                // PapaParseでCSVを解析（headerオプションをtrueに設定）
+                Papa.parse(content, {
+                    header: true,  // 1行目をヘッダーとして扱う
+                    skipEmptyLines: true,  // 空行をスキップ
+                    complete: function (results) {
+                        const data = results.data;
+                        const totalRows = data.length;
+
+                        // CSV分割処理
+                        let startIndex = 0;
+                        const outputFiles = [];
+
+                        linesPerFile.forEach((lines, index) => {
+                            const chunk = data.slice(startIndex, startIndex + lines);
+                            startIndex += lines;
+
+                            // 新しいCSVファイルを作成
+                            const csvContent = Papa.unparse(chunk);
+                            outputFiles.push(csvContent);
+                        });
+
+                        // ZIP化してダウンロードリンクを表示（JSZipなどを使う）
+                        const zip = new JSZip();
+                        outputFiles.forEach((content, index) => {
+                            zip.file(`output_${index + 1}.csv`, content);
+                        });
+
+                        zip.generateAsync({ type: 'blob' }).then(function (content) {
+                            const link = document.getElementById('downloadLink');
+                            const url = URL.createObjectURL(content);
+                            link.href = url;
+                            link.style.display = 'block';
+                            link.download = 'split_files.zip';
+                        });
+                    }
+                });
+            };
+            // Shift-JISとして読み込む
+            reader.readAsArrayBuffer(file);
+        });
+    </script>
+</body>
+
+</html>
