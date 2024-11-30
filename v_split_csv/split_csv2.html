@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>賞品毎の例数表示</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
 </head>
 
 <body>
@@ -27,12 +28,12 @@
 
     <!-- 表示する処理結果 -->
     <h2>賞品毎の例数</h2>
-    <p id="totalCount" style="display:none; font-weight: bold;"></p>
-    <table id="itemTable" border="1" style="width:50%; display:none;">
+    <table id="itemTable" border="1" style="width:60%; display:none;">
         <thead>
             <tr>
                 <th>例数</th>
                 <th>賞品名</th>
+                <th>延べ例数</th>
             </tr>
         </thead>
         <tbody>
@@ -70,9 +71,6 @@
                     complete: function (results) {
                         csvData = results.data;
 
-                        // デバッグ用: CSVデータをコンソールに出力
-                        console.log("CSVデータ:", csvData);
-
                         if (csvData.length === 0) {
                             alert("ファイルにデータがありません。");
                             return;
@@ -102,43 +100,84 @@
             }
 
             // 賞品名ごとの例数を集計
-            const counts = csvData.reduce((acc, row) => {
+            const counts = {};
+            let cumulativeCount = 0;
+            csvData.forEach(row => {
                 const productName = row["商品名"];
                 if (productName) {
-                    acc[productName] = (acc[productName] || 0) + 1;
+                    counts[productName] = (counts[productName] || 0) + 1;
+                    cumulativeCount++;
+                    row.cumulativeCount = cumulativeCount; // 行ごとの累積和を追加
                 }
-                return acc;
-            }, {});
-
-            // 延べの例数を計算
-            const totalRows = csvData.length;
+            });
 
             // テーブルをクリア
             const tableBody = document.querySelector("#itemTable tbody");
             tableBody.innerHTML = "";
 
             // テーブルにデータを追加
+            let cumulativeSum = 0;
             Object.entries(counts).forEach(([productName, count]) => {
+                cumulativeSum += count;
+
                 const row = document.createElement("tr");
                 const countCell = document.createElement("td");
                 const nameCell = document.createElement("td");
+                const cumulativeCell = document.createElement("td");
+
                 countCell.textContent = count;
                 nameCell.textContent = productName;
+                cumulativeCell.textContent = cumulativeSum;
+
                 row.appendChild(countCell);
                 row.appendChild(nameCell);
+                row.appendChild(cumulativeCell);
                 tableBody.appendChild(row);
             });
 
-            // 延べの例数を表示
-            const totalCountElement = document.getElementById("totalCount");
-            totalCountElement.textContent = `延べの例数: ${totalRows}`;
-            totalCountElement.style.display = "block";
-
             // テーブルを表示
             document.getElementById("itemTable").style.display = "table";
+        });
+
+        // CSV分割
+        document.getElementById('uploadForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            if (csvData.length === 0) {
+                alert("CSVデータがありません。ファイルを選択してください。");
+                return;
+            }
+
+            const linesPerFileInput = document.getElementById('linesPerFile').value;
+            const linesPerFile = linesPerFileInput.split(',').map(Number);
+
+            // CSV分割処理
+            let startIndex = 0;
+            const outputFiles = [];
+            linesPerFile.forEach((lines, index) => {
+                const chunk = csvData.slice(startIndex, startIndex + lines);
+                startIndex += lines;
+
+                const csvContent = Papa.unparse(chunk);
+                outputFiles.push(csvContent);
+            });
+
+            // ZIP化してダウンロード
+            const zip = new JSZip();
+            outputFiles.forEach((content, index) => {
+                zip.file(`output_${index + 1}.csv`, content);
+            });
+
+            zip.generateAsync({ type: 'blob' }).then(function (content) {
+                const link = document.createElement("a");
+                link.href = URL.createObjectURL(content);
+                link.download = "split_files.zip";
+                link.click();
+            });
         });
     </script>
 </body>
 
 </html>
+
 
