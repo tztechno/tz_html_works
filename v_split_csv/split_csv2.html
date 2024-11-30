@@ -55,11 +55,12 @@
         <form id="uploadForm">
             <input type="file" id="csvFile" accept=".csv" required>
             <br><br>
-            <label for="lines_per_file">1ファイルあたりの行数:</label>
+            <button type="button" id="showCountsButton" class="hidden">商品毎の例数を表示</button>
+            <br><br>
+            <label for="linesPerFile">1ファイルあたりの行数:</label>
             <input type="text" id="linesPerFile" required placeholder="例: 100, 200">
             <br><br>
             <button type="submit">アップロード</button>
-            <button type="button" id="aggregateButton" class="hidden">集計実行</button>
         </form>
 
         <hr>
@@ -87,7 +88,7 @@
             return decoder.decode(arrayBuffer);
         }
 
-        let csvData = []; // 全データを保持するための変数
+        let csvData = []; // CSVデータ全体を保持
 
         document.getElementById('uploadForm').addEventListener('submit', function (event) {
             event.preventDefault();
@@ -111,30 +112,23 @@
                     header: true,
                     skipEmptyLines: true,
                     complete: function (results) {
-                        csvData = results.data; // 全データを保持
+                        csvData = results.data; // データをグローバルに保存
 
-                        // アップロード後すぐに集計を行う
-                        if (csvData.length > 0) {
-                            aggregateData();
-                        }
-
-                        // 「集計実行」ボタンを表示
-                        document.getElementById('aggregateButton').classList.remove('hidden');
+                        // 「商品毎の例数を表示」ボタンを有効化
+                        document.getElementById('showCountsButton').classList.remove('hidden');
                     }
                 });
             };
             reader.readAsArrayBuffer(file);
         });
 
-        document.getElementById('aggregateButton').addEventListener('click', aggregateData);
-
-        function aggregateData() {
+        document.getElementById('showCountsButton').addEventListener('click', function () {
             if (csvData.length === 0) {
                 alert("データがありません。CSVをアップロードしてください。");
                 return;
             }
 
-            // 商品名ごとの件数をカウント
+            // 商品名ごとの例数をカウント
             const counts = csvData.reduce((acc, row) => {
                 const productName = row["商品名"];
                 if (productName) {
@@ -143,7 +137,7 @@
                 return acc;
             }, {});
 
-            // テーブルに表示
+            // 表に反映
             const tableBody = document.querySelector("#itemTable tbody");
             tableBody.innerHTML = ""; // 初期化
             Object.entries(counts).forEach(([productName, count]) => {
@@ -157,9 +151,9 @@
                 tableBody.appendChild(row);
             });
 
-            // テーブルを表示
+            // 表を表示
             document.getElementById("itemTable").classList.remove("hidden");
-        }
+        });
     </script>
 </body>
 
