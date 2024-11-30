@@ -4,94 +4,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CSVファイルアップロード</title>
+    <title>賞品毎の例数表示</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
-    <style>
-        body {
-            display: flex;
-            margin: 0;
-        }
-
-        #main-content {
-            flex: 1;
-            padding: 20px;
-        }
-
-        #unique-items {
-            flex: 1;
-            padding: 20px;
-            border-left: 1px solid #ccc;
-            overflow-y: auto;
-            max-height: 90vh;
-            box-sizing: border-box;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th, td {
-            border: 1px solid #ccc;
-            padding: 8px;
-            text-align: left;
-        }
-
-        th {
-            background-color: #f0f0f0;
-        }
-
-        #totalCount {
-            font-weight: bold;
-            margin-top: 10px;
-        }
-    </style>
 </head>
 
 <body>
-    <div id="main-content">
-        <h1>CSVファイルアップロード</h1>
+    <h1>CSVファイルアップロードと賞品毎の例数表示</h1>
 
-        <form id="uploadForm">
-            <input type="file" id="csvFile" accept=".csv" required>
-            <br><br>
-            <button type="button" id="showCountsButton">商品毎の例数を表示</button>
-            <br><br>
-            <label for="linesPerFile">1ファイルあたりの行数:</label>
-            <input type="text" id="linesPerFile" required placeholder="例: 100, 200">
-            <br><br>
-            <button type="submit">アップロード</button>
-        </form>
+    <!-- CSVファイル選択フォーム -->
+    <form id="uploadForm">
+        <input type="file" id="csvFile" accept=".csv" required>
+        <br><br>
+        <button type="button" id="showCountsButton">賞品毎の例数を表示</button>
+        <br><br>
+        <label for="linesPerFile">1ファイルあたりの行数:</label>
+        <input type="text" id="linesPerFile" required placeholder="例: 100, 200">
+        <br><br>
+        <button type="submit">CSV分割</button>
+    </form>
 
-        <hr>
+    <hr>
 
-        <h2>処理結果</h2>
-        <a id="downloadLink" style="display:none;" href="#">ZIPファイルをダウンロード</a>
-    </div>
-
-    <aside id="unique-items">
-        <h2>商品ごとの件数</h2>
-        <table id="itemTable" style="display: none;">
-            <thead>
-                <tr>
-                    <th>件数</th>
-                    <th>商品名</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
-        <div id="totalCount" style="display: none;">延べの件数: 0</div>
-    </aside>
+    <!-- 表示する処理結果 -->
+    <h2>賞品毎の例数</h2>
+    <p id="totalCount" style="display:none; font-weight: bold;"></p>
+    <table id="itemTable" border="1" style="width:50%; display:none;">
+        <thead>
+            <tr>
+                <th>例数</th>
+                <th>賞品名</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
 
     <script>
+        let csvData = [];
+
+        // Shift-JISエンコーディングを処理するためのTextDecoder
         function decodeShiftJIS(arrayBuffer) {
             const decoder = new TextDecoder("shift-jis");
             return decoder.decode(arrayBuffer);
         }
 
-        let csvData = []; // CSVデータ全体を保持
-
+        // ファイル選択時の処理
         document.getElementById('csvFile').addEventListener('change', function () {
             const fileInput = document.getElementById('csvFile');
             const file = fileInput.files[0];
@@ -106,27 +63,45 @@
                 const arrayBuffer = e.target.result;
                 const content = decodeShiftJIS(arrayBuffer);
 
+                // PapaParseでCSVを解析
                 Papa.parse(content, {
                     header: true,
                     skipEmptyLines: true,
                     complete: function (results) {
                         csvData = results.data;
 
-                        alert("ファイルが読み込まれました。「商品毎の例数を表示」をクリックして件数を確認してください。");
+                        // デバッグ用: CSVデータをコンソールに出力
+                        console.log("CSVデータ:", csvData);
+
+                        if (csvData.length === 0) {
+                            alert("ファイルにデータがありません。");
+                            return;
+                        }
+
+                        if (!("商品名" in csvData[0])) {
+                            alert("ファイルに「商品名」列が存在しません。列名を確認してください。");
+                            return;
+                        }
+
+                        alert("ファイルが正常に読み込まれました。「賞品毎の例数を表示」をクリックしてください。");
+                    },
+                    error: function (error) {
+                        console.error("CSV解析エラー:", error);
+                        alert("CSV解析中にエラーが発生しました。ファイル形式を確認してください。");
                     }
                 });
             };
-
             reader.readAsArrayBuffer(file);
         });
 
+        // 賞品毎の例数を表示
         document.getElementById('showCountsButton').addEventListener('click', function () {
             if (csvData.length === 0) {
-                alert("データがありません。CSVを選択してください。");
+                alert("CSVデータがありません。ファイルを選択してください。");
                 return;
             }
 
-            // 商品名ごとの例数をカウント
+            // 賞品名ごとの例数を集計
             const counts = csvData.reduce((acc, row) => {
                 const productName = row["商品名"];
                 if (productName) {
@@ -135,11 +110,14 @@
                 return acc;
             }, {});
 
-            // 表に反映
-            const tableBody = document.querySelector("#itemTable tbody");
-            tableBody.innerHTML = ""; // 初期化
-            let totalCount = 0;
+            // 延べの例数を計算
+            const totalRows = csvData.length;
 
+            // テーブルをクリア
+            const tableBody = document.querySelector("#itemTable tbody");
+            tableBody.innerHTML = "";
+
+            // テーブルにデータを追加
             Object.entries(counts).forEach(([productName, count]) => {
                 const row = document.createElement("tr");
                 const countCell = document.createElement("td");
@@ -149,19 +127,18 @@
                 row.appendChild(countCell);
                 row.appendChild(nameCell);
                 tableBody.appendChild(row);
-                totalCount += count;
             });
 
-            // 表を表示
-            const itemTable = document.getElementById("itemTable");
-            itemTable.style.display = "table";
-
-            // 延べの件数を表示
+            // 延べの例数を表示
             const totalCountElement = document.getElementById("totalCount");
-            totalCountElement.textContent = `延べの件数: ${totalCount}`;
+            totalCountElement.textContent = `延べの例数: ${totalRows}`;
             totalCountElement.style.display = "block";
+
+            // テーブルを表示
+            document.getElementById("itemTable").style.display = "table";
         });
     </script>
 </body>
 
 </html>
+
