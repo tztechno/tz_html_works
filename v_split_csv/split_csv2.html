@@ -42,8 +42,9 @@
             background-color: #f0f0f0;
         }
 
-        .hidden {
-            display: none;
+        #totalCount {
+            font-weight: bold;
+            margin-top: 10px;
         }
     </style>
 </head>
@@ -55,7 +56,7 @@
         <form id="uploadForm">
             <input type="file" id="csvFile" accept=".csv" required>
             <br><br>
-            <button type="button" id="showCountsButton" class="hidden">商品毎の例数を表示</button>
+            <button type="button" id="showCountsButton">商品毎の例数を表示</button>
             <br><br>
             <label for="linesPerFile">1ファイルあたりの行数:</label>
             <input type="text" id="linesPerFile" required placeholder="例: 100, 200">
@@ -71,7 +72,7 @@
 
     <aside id="unique-items">
         <h2>商品ごとの件数</h2>
-        <table id="itemTable" class="hidden">
+        <table id="itemTable" style="display: none;">
             <thead>
                 <tr>
                     <th>件数</th>
@@ -80,6 +81,7 @@
             </thead>
             <tbody></tbody>
         </table>
+        <div id="totalCount" style="display: none;">延べの件数: 0</div>
     </aside>
 
     <script>
@@ -90,18 +92,14 @@
 
         let csvData = []; // CSVデータ全体を保持
 
-        document.getElementById('uploadForm').addEventListener('submit', function (event) {
-            event.preventDefault();
-
+        document.getElementById('csvFile').addEventListener('change', function () {
             const fileInput = document.getElementById('csvFile');
-            const linesPerFileInput = document.getElementById('linesPerFile').value;
+            const file = fileInput.files[0];
 
-            if (fileInput.files.length === 0) {
+            if (!file) {
                 alert("ファイルを選択してください");
                 return;
             }
-
-            const file = fileInput.files[0];
 
             const reader = new FileReader();
             reader.onload = function (e) {
@@ -112,19 +110,19 @@
                     header: true,
                     skipEmptyLines: true,
                     complete: function (results) {
-                        csvData = results.data; // データをグローバルに保存
+                        csvData = results.data;
 
-                        // 「商品毎の例数を表示」ボタンを有効化
-                        document.getElementById('showCountsButton').classList.remove('hidden');
+                        alert("ファイルが読み込まれました。「商品毎の例数を表示」をクリックして件数を確認してください。");
                     }
                 });
             };
+
             reader.readAsArrayBuffer(file);
         });
 
         document.getElementById('showCountsButton').addEventListener('click', function () {
             if (csvData.length === 0) {
-                alert("データがありません。CSVをアップロードしてください。");
+                alert("データがありません。CSVを選択してください。");
                 return;
             }
 
@@ -140,6 +138,8 @@
             // 表に反映
             const tableBody = document.querySelector("#itemTable tbody");
             tableBody.innerHTML = ""; // 初期化
+            let totalCount = 0;
+
             Object.entries(counts).forEach(([productName, count]) => {
                 const row = document.createElement("tr");
                 const countCell = document.createElement("td");
@@ -149,10 +149,17 @@
                 row.appendChild(countCell);
                 row.appendChild(nameCell);
                 tableBody.appendChild(row);
+                totalCount += count;
             });
 
             // 表を表示
-            document.getElementById("itemTable").classList.remove("hidden");
+            const itemTable = document.getElementById("itemTable");
+            itemTable.style.display = "table";
+
+            // 延べの件数を表示
+            const totalCountElement = document.getElementById("totalCount");
+            totalCountElement.textContent = `延べの件数: ${totalCount}`;
+            totalCountElement.style.display = "block";
         });
     </script>
 </body>
