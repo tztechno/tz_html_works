@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>賞品毎の例数表示</title>
+    <title>CSVファイルアップロードと賞品毎の例数表示</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
 </head>
@@ -26,13 +26,13 @@
 
     <hr>
 
-    <!-- 表示する処理結果 -->
+    <!-- 賞品毎の例数テーブル（右側に表示） -->
     <h2>賞品毎の例数</h2>
-    <table id="itemTable" border="1" style="width:60%; display:none;">
+    <table id="itemTable" border="1" style="width:40%; float:right; display:none;">
         <thead>
             <tr>
                 <th>例数</th>
-                <th>賞品名</th>
+                <th>商品名</th>
                 <th>延べ例数</th>
             </tr>
         </thead>
@@ -81,7 +81,8 @@
                             return;
                         }
 
-                        alert("ファイルが正常に読み込まれました。「賞品毎の例数を表示」をクリックしてください。");
+                        // 「賞品毎の例数を表示」ボタンを有効に
+                        document.getElementById("showCountsButton").disabled = false;
                     },
                     error: function (error) {
                         console.error("CSV解析エラー:", error);
@@ -179,5 +180,6 @@
 </body>
 
 </html>
+
 
 
