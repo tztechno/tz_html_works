@@ -27,13 +27,23 @@
             box-sizing: border-box;
         }
 
-        ul {
-            list-style: none;
-            padding: 0;
+        table {
+            width: 100%;
+            border-collapse: collapse;
         }
 
-        li {
-            margin: 5px 0;
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f0f0f0;
+        }
+
+        .hidden {
+            display: none;
         }
     </style>
 </head>
@@ -49,6 +59,7 @@
             <input type="text" id="linesPerFile" required placeholder="例: 100, 200">
             <br><br>
             <button type="submit">アップロード</button>
+            <button type="button" id="aggregateButton" class="hidden">集計実行</button>
         </form>
 
         <hr>
@@ -58,8 +69,16 @@
     </div>
 
     <aside id="unique-items">
-        <h2>商品ごとの例数</h2>
-        <ul id="itemList"></ul>
+        <h2>商品ごとの件数</h2>
+        <table id="itemTable" class="hidden">
+            <thead>
+                <tr>
+                    <th>件数</th>
+                    <th>商品名</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
     </aside>
 
     <script>
@@ -67,6 +86,8 @@
             const decoder = new TextDecoder("shift-jis");
             return decoder.decode(arrayBuffer);
         }
+
+        let csvData = []; // 全データを保持するための変数
 
         document.getElementById('uploadForm').addEventListener('submit', function (event) {
             event.preventDefault();
@@ -90,57 +111,57 @@
                     header: true,
                     skipEmptyLines: true,
                     complete: function (results) {
-                        const data = results.data;
+                        csvData = results.data; // 全データを保持
 
-                        // 商品名ごとの例数をカウント
-                        const counts = data.reduce((acc, row) => {
-                            const productName = row["商品名"];
-                            if (productName) {
-                                acc[productName] = (acc[productName] || 0) + 1;
-                            }
-                            return acc;
-                        }, {});
+                        // アップロード後すぐに集計を行う
+                        if (csvData.length > 0) {
+                            aggregateData();
+                        }
 
-                        // サイドバーに表示
-                        const itemList = document.getElementById("itemList");
-                        itemList.innerHTML = ""; // 初期化
-                        Object.entries(counts).forEach(([productName, count]) => {
-                            const listItem = document.createElement("li");
-                            listItem.textContent = `${productName}: ${count} 件`;
-                            itemList.appendChild(listItem);
-                        });
-
-                        // CSV分割処理（ここでは従来通り）
-                        const linesPerFile = linesPerFileInput.split(',').map(Number);
-                        let startIndex = 0;
-                        const outputFiles = [];
-                        linesPerFile.forEach((lines, index) => {
-                            const chunk = data.slice(startIndex, startIndex + lines);
-                            startIndex += lines;
-                            const csvContent = Papa.unparse(chunk);
-                            outputFiles.push(csvContent);
-                        });
-
-                        const zip = new JSZip();
-                        outputFiles.forEach((content, index) => {
-                            zip.file(`output_${index + 1}.csv`, content);
-                        });
-
-                        zip.generateAsync({ type: 'blob' }).then(function (content) {
-                            const link = document.getElementById('downloadLink');
-                            const url = URL.createObjectURL(content);
-                            link.href = url;
-                            link.style.display = 'block';
-                            link.download = 'split_files.zip';
-                        });
+                        // 「集計実行」ボタンを表示
+                        document.getElementById('aggregateButton').classList.remove('hidden');
                     }
                 });
             };
             reader.readAsArrayBuffer(file);
         });
+
+        document.getElementById('aggregateButton').addEventListener('click', aggregateData);
+
+        function aggregateData() {
+            if (csvData.length === 0) {
+                alert("データがありません。CSVをアップロードしてください。");
+                return;
+            }
+
+            // 商品名ごとの件数をカウント
+            const counts = csvData.reduce((acc, row) => {
+                const productName = row["商品名"];
+                if (productName) {
+                    acc[productName] = (acc[productName] || 0) + 1;
+                }
+                return acc;
+            }, {});
+
+            // テーブルに表示
+            const tableBody = document.querySelector("#itemTable tbody");
+            tableBody.innerHTML = ""; // 初期化
+            Object.entries(counts).forEach(([productName, count]) => {
+                const row = document.createElement("tr");
+                const countCell = document.createElement("td");
+                const nameCell = document.createElement("td");
+                countCell.textContent = count;
+                nameCell.textContent = productName;
+                row.appendChild(countCell);
+                row.appendChild(nameCell);
+                tableBody.appendChild(row);
+            });
+
+            // テーブルを表示
+            document.getElementById("itemTable").classList.remove("hidden");
+        }
     </script>
 </body>
 
 </html>
-
 
