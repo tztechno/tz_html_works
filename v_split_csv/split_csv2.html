@@ -10,10 +10,11 @@
     <style>
         body {
             display: flex;
+            margin: 0;
         }
 
         #main-content {
-            flex: 3;
+            flex: 1;
             padding: 20px;
         }
 
@@ -23,6 +24,16 @@
             border-left: 1px solid #ccc;
             overflow-y: auto;
             max-height: 90vh;
+            box-sizing: border-box;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            margin: 5px 0;
         }
     </style>
 </head>
@@ -88,9 +99,9 @@
                         // サイドバーに表示
                         const itemList = document.getElementById("itemList");
                         itemList.innerHTML = ""; // 初期化
-                        uniqueItems.forEach(item => {
+                        uniqueItems.forEach((item, index) => {
                             const listItem = document.createElement("li");
-                            listItem.textContent = item;
+                            listItem.textContent = `${index + 1}. ${item}`;
                             itemList.appendChild(listItem);
                         });
 
@@ -126,3 +137,4 @@
 </body>
 
 </html>
+
