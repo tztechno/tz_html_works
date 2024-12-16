@@ -168,7 +168,7 @@
             const listItem = document.createElement("li");
             // プレイヤーが「出場エリア」に移動した場合は「出場しました」と記録
             if (targetArea === "field") {
-                listItem.textContent = `${timestamp}: ${playerName} が 出場しました、控えエリアに移動しました。`;
+                listItem.textContent = `${timestamp}: ${playerName} が 出場しました。`;
             } 
             // プレイヤーが「控えエリア」に移動した場合は「退場しました」と記録
             else {
