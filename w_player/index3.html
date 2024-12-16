@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ドラッグ＆ドロップエリア</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .area {
+            border: 2px dashed #ccc;
+            border-radius: 5px;
+            width: 45%;
+            height: 300px;
+            margin: 10px;
+            padding: 10px;
+            display: inline-block;
+            vertical-align: top;
+            overflow-y: auto;
+        }
+        .area-title {
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .player {
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 5px 10px;
+            margin: 5px;
+            cursor: grab;
+        }
+        .history {
+            margin-top: 20px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <div class="area" id="bench">
+            <div class="area-title">控えエリア</div>
+        </div>
+        <div class="area" id="field">
+            <div class="area-title">出場エリア</div>
+        </div>
+    </div>
+    <div class="history" id="history">
+        <strong>移動履歴:</strong>
+        <ul id="history-list"></ul>
+    </div>
+
+    <script>
+        const playerNames = ["Player 1", "Player 2", "Player 3", "Player 4", "Player 5"];
+        const bench = document.getElementById("bench");
+        const field = document.getElementById("field");
+        const historyList = document.getElementById("history-list");
+
+        // プレイヤーのアイコンを生成
+        playerNames.forEach(name => {
+            const player = document.createElement("div");
+            player.className = "player";
+            player.textContent = name;
+            player.draggable = true;
+            player.dataset.name = name;
+            bench.appendChild(player);
+        });
+
+        // ドラッグ＆ドロップイベントの設定
+        document.addEventListener("dragstart", event => {
+            if (event.target.classList.contains("player")) {
+                event.dataTransfer.setData("text/plain", event.target.dataset.name);
+            }
+        });
+
+        [bench, field].forEach(area => {
+            area.addEventListener("dragover", event => {
+                event.preventDefault();
+            });
+
+            area.addEventListener("drop", event => {
+                event.preventDefault();
+                const playerName = event.dataTransfer.getData("text/plain");
+                const player = document.querySelector(`[data-name="${playerName}"]`);
+                if (player && event.currentTarget !== player.parentElement) {
+                    event.currentTarget.appendChild(player);
+                    recordHistory(playerName, area.id);
+                }
+            });
+        });
+
+        // タッチ操作に対応
+        document.addEventListener("touchstart", event => {
+            if (event.target.classList.contains("player")) {
+                event.target.classList.add("dragging");
+            }
+        });
+
+        document.addEventListener("touchmove", event => {
+            const dragging = document.querySelector(".dragging");
+            if (dragging) {
+                const touch = event.touches[0];
+                dragging.style.position = "absolute";
+                dragging.style.left = `${touch.pageX - dragging.offsetWidth / 2}px`;
+                dragging.style.top = `${touch.pageY - dragging.offsetHeight / 2}px`;
+            }
+        });
+
+        document.addEventListener("touchend", event => {
+            const dragging = document.querySelector(".dragging");
+            if (dragging) {
+                dragging.classList.remove("dragging");
+                dragging.style.position = "";
+                dragging.style.left = "";
+                dragging.style.top = "";
+
+                const dropZone = document.elementFromPoint(event.changedTouches[0].clientX, event.changedTouches[0].clientY);
+                if (dropZone && (dropZone.id === "bench" || dropZone.id === "field")) {
+                    dropZone.appendChild(dragging);
+                    recordHistory(dragging.dataset.name, dropZone.id);
+                }
+            }
+        });
+
+        // 移動履歴を記録
+        function recordHistory(playerName, targetArea) {
+            const timestamp = new Date().toLocaleTimeString();
+            const listItem = document.createElement("li");
+            listItem.textContent = `${timestamp}: ${playerName} が ${targetArea === "bench" ? "控えエリア" : "出場エリア"} に移動しました。`;
+            historyList.appendChild(listItem);
+            historyList.scrollTop = historyList.scrollHeight; // 自動スクロール
+        }
+    </script>
+</body>
+</html>
