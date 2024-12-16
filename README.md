@@ -59,6 +59,8 @@ https://tztechno.github.io/tz_html_works/r_qr_read/qr_generate.html
 
 https://tztechno.github.io/tz_html_works/s_lottery/lottery.html
 
+https://tztechno.github.io/tz_html_works/w_player/index3.html
+
 
 ### latest
 ---
