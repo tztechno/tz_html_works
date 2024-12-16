@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ドラッグ＆ドロップエリア</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            display: flex;
+            justify-content: space-between;
+            width: 90%;
+            max-width: 600px;
+            margin-top: 20px;
+        }
+        .area {
+            border: 2px dashed #ccc;
+            border-radius: 5px;
+            width: 45%;
+            height: 400px;
+            padding: 5px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            overflow-y: auto;
+            position: relative;
+        }
+        .area-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            text-align: center;
+            width: 100%;
+        }
+        .player {
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 5px;
+            margin: 5px;
+            cursor: grab;
+            width: 80px;
+            text-align: center;
+        }
+        .player.dragging {
+            opacity: 0.7;
+        }
+        .history {
+            margin-top: 20px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            max-height: 150px;
+            width: 90%;
+            max-width: 600px;
+            overflow-y: auto;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="area" id="bench">
+            <div class="area-title">控えエリア</div>
+        </div>
+        <div class="area" id="field">
+            <div class="area-title">出場エリア</div>
+        </div>
+    </div>
+    <div class="history" id="history">
+        <strong>移動履歴:</strong>
+        <ul id="history-list"></ul>
+    </div>
+
+    <script>
+        // 23人分のプレイヤーを生成
+        const playerNames = Array.from({ length: 23 }, (_, i) => `Player ${i + 1}`);
+        const bench = document.getElementById("bench");
+        const field = document.getElementById("field");
+        const historyList = document.getElementById("history-list");
+
+        // プレイヤーのアイコンを生成
+        playerNames.forEach(name => {
+            const player = document.createElement("div");
+            player.className = "player";
+            player.textContent = name;
+            player.draggable = true;
+            player.dataset.name = name;
+            bench.appendChild(player);
+        });
+
+        // ドラッグ＆ドロップイベントの設定
+        document.addEventListener("dragstart", event => {
+            if (event.target.classList.contains("player")) {
+                event.target.classList.add("dragging");
+                event.dataTransfer.setData("text/plain", event.target.dataset.name);
+            }
+        });
+
+        document.addEventListener("dragend", event => {
+            if (event.target.classList.contains("player")) {
+                event.target.classList.remove("dragging");
+            }
+        });
+
+        [bench, field].forEach(area => {
+            area.addEventListener("dragover", event => {
+                event.preventDefault();
+            });
+
+            area.addEventListener("drop", event => {
+                event.preventDefault();
+                const playerName = event.dataTransfer.getData("text/plain");
+                const player = document.querySelector(`[data-name="${playerName}"]`);
+                if (player && event.currentTarget !== player.parentElement) {
+                    event.currentTarget.appendChild(player);
+                    recordHistory(playerName, area.id);
+                }
+            });
+        });
+
+        // タッチ操作に対応
+        document.addEventListener("touchstart", event => {
+            if (event.target.classList.contains("player")) {
+                event.target.classList.add("dragging");
+                const touch = event.touches[0];
+                event.target.style.position = "absolute";
+                event.target.style.zIndex = "1000";
+                event.target.dataset.startX = touch.pageX;
+                event.target.dataset.startY = touch.pageY;
+            }
+        });
+
+        document.addEventListener("touchmove", event => {
+            const dragging = document.querySelector(".dragging");
+            if (dragging) {
+                const touch = event.touches[0];
+                dragging.style.left = `${touch.pageX - dragging.offsetWidth / 2}px`;
+                dragging.style.top = `${touch.pageY - dragging.offsetHeight / 2}px`;
+            }
+        });
+
+        document.addEventListener("touchend", event => {
+            const dragging = document.querySelector(".dragging");
+            if (dragging) {
+                dragging.classList.remove("dragging");
+                dragging.style.position = "";
+                dragging.style.left = "";
+                dragging.style.top = "";
+                dragging.style.zIndex = "";
+
+                const dropZone = document.elementFromPoint(event.changedTouches[0].clientX, event.changedTouches[0].clientY);
+                if (dropZone && (dropZone.id === "bench" || dropZone.id === "field")) {
+                    dropZone.appendChild(dragging);
+                    recordHistory(dragging.dataset.name, dropZone.id);
+                }
+            }
+        });
+
+        // 移動履歴を記録
+        function recordHistory(playerName, targetArea) {
+            const timestamp = new Date().toLocaleTimeString();
+            const listItem = document.createElement("li");
+            // プレイヤーが「出場エリア」に移動した場合は「出場しました」と記録
+            if (targetArea === "field") {
+                listItem.textContent = `${timestamp}: ${playerName} が 出場しました、控えエリアに移動しました。`;
+            } 
+            // プレイヤーが「控えエリア」に移動した場合は「退場しました」と記録
+            else {
+                listItem.textContent = `${timestamp}: ${playerName} が 退場しました。`;
+            }
+            historyList.appendChild(listItem);
+            historyList.scrollTop = historyList.scrollHeight; // 自動スクロール
+        }
+    </script>
+</body>
+</html>
