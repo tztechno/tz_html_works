@@ -1,0 +1,355 @@
+// Claude登場、理由の記載を加えるタスク
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>選手交代記録アプリ</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            display: flex;
+            justify-content: space-between;
+            width: 90%;
+            max-width: 800px;
+            margin-top: 20px;
+        }
+        .area {
+            border: 2px dashed #ccc;
+            border-radius: 5px;
+            width: 30%;
+            height: 400px;
+            padding: 5px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            overflow-y: auto;
+            position: relative;
+        }
+        .list {
+            border: 2px dashed #ccc;
+            border-radius: 5px;
+            width: 20%;
+            height: 400px;
+            padding: 5px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            overflow-y: auto;
+        }
+        .area-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            text-align: center;
+            width: 100%;
+        }
+        .player {
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 5px;
+            margin: 5px;
+            cursor: grab;
+            width: 120px;
+            text-align: center;
+            font-size: 14px;
+        }
+        .player.dragging {
+            opacity: 0.7;
+        }
+        .history {
+            margin-top: 20px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            max-height: 150px;
+            width: 90%;
+            max-width: 800px;
+            overflow-y: auto;
+            font-size: 14px;
+        }
+        .input-container {
+            margin-top: 20px;
+        }
+        .input-box {
+            padding: 5px;
+            width: 300px;
+        }
+        .register-btn {
+            padding: 5px 10px;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+        .stopwatch {
+            margin-top: 20px;
+            font-size: 20px;
+        }
+        .stopwatch-btn {
+            padding: 5px 10px;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+        #reasonModal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 300px;
+            text-align: center;
+            border-radius: 10px;
+        }
+        .modal-content select, .modal-content button {
+            margin: 10px 0;
+            padding: 5px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="list" id="playerList">
+            <div class="area-title">登録選手</div>
+        </div>
+        <div class="area" id="bench">
+            <div class="area-title">控え</div>
+        </div>
+        <div class="area" id="field">
+            <div class="area-title">出場</div>
+        </div>
+        <div class="area" id="tempOut">
+            <div class="area-title">一時退出</div>
+        </div>
+    </div>
+    <div class="input-container">
+        <input type="text" id="playerNamesInput" class="input-box" placeholder="選手名をカンマ区切りで入力">
+        <button id="registerButton" class="register-btn">登録</button>
+    </div>
+    <div class="history" id="history">
+        <strong>移動履歴:</strong>
+        <ul id="history-list"></ul>
+    </div>
+
+    <div class="stopwatch">
+        <div id="timeDisplay">00:00:00</div>
+        <button id="startStopButton" class="stopwatch-btn">スタート</button>
+        <button id="resetButton" class="stopwatch-btn">リセット</button>
+    </div>
+
+    <!-- 理由選択モーダル -->
+    <div id="reasonModal" class="modal">
+        <div class="modal-content">
+            <h3>移動理由を選択</h3>
+            <select id="moveReason">
+                <option value="">理由を選択</option>
+                <option value="戦術変更">戦術変更</option>
+                <option value="怪我">怪我</option>
+                <option value="体力低下">体力低下</option>
+                <option value="警告">警告</option>
+                <option value="作戦変更">作戦変更</option>
+                <option value="その他">その他</option>
+            </select>
+            <button id="confirmReasonBtn">確定</button>
+            <button id="cancelReasonBtn">キャンセル</button>
+        </div>
+    </div>
+
+    <script>
+        const playerList = document.getElementById("playerList");
+        const bench = document.getElementById("bench");
+        const field = document.getElementById("field");
+        const tempOut = document.getElementById("tempOut");
+        const historyList = document.getElementById("history-list");
+        const playerNamesInput = document.getElementById("playerNamesInput");
+        const registerButton = document.getElementById("registerButton");
+
+        const startStopButton = document.getElementById("startStopButton");
+        const resetButton = document.getElementById("resetButton");
+        const timeDisplay = document.getElementById("timeDisplay");
+
+        const reasonModal = document.getElementById("reasonModal");
+        const moveReasonSelect = document.getElementById("moveReason");
+        const confirmReasonBtn = document.getElementById("confirmReasonBtn");
+        const cancelReasonBtn = document.getElementById("cancelReasonBtn");
+
+        let currentDraggedPlayer = null;
+        let targetArea = null;
+
+        let timer;
+        let isRunning = false;
+        let seconds = 0;
+        let minutes = 0;
+        let hours = 0;
+
+        // ストップウォッチの動作
+        function startStopwatch() {
+            if (isRunning) {
+                clearInterval(timer);
+                startStopButton.textContent = "スタート";
+            } else {
+                timer = setInterval(() => {
+                    seconds++;
+                    if (seconds === 60) {
+                        seconds = 0;
+                        minutes++;
+                    }
+                    if (minutes === 60) {
+                        minutes = 0;
+                        hours++;
+                    }
+                    timeDisplay.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                }, 1000);
+                startStopButton.textContent = "停止";
+            }
+            isRunning = !isRunning;
+        }
+
+        function resetStopwatch() {
+            clearInterval(timer);
+            isRunning = false;
+            seconds = 0;
+            minutes = 0;
+            hours = 0;
+            timeDisplay.textContent = "00:00:00";
+            startStopButton.textContent = "スタート";
+        }
+
+        // プレイヤーを生成する関数
+        function generatePlayers(playerNames) {
+            playerList.innerHTML = ''; // 既存の選手リストをクリア
+            bench.innerHTML = '<div class="area-title">控え</div>';
+            field.innerHTML = '<div class="area-title">出場</div>';
+            tempOut.innerHTML = '<div class="area-title">一時退出</div>';
+
+            playerNames.forEach((name, index) => {
+                const player = createPlayerElement(name);
+                playerList.appendChild(createPlayerListElement(name));
+                if (index < 15) {
+                    field.appendChild(player);
+                } else {
+                    bench.appendChild(player);
+                }
+            });
+        }
+
+        // 選手リスト要素を作成
+        function createPlayerListElement(name) {
+            const listItem = document.createElement("div");
+            listItem.textContent = name;
+            return listItem;
+        }
+
+        // 選手要素を作成
+        function createPlayerElement(name) {
+            const player = document.createElement("div");
+            player.className = "player";
+            player.textContent = name;
+            player.draggable = true;
+            player.dataset.name = name;
+            return player;
+        }
+
+        // 理由選択モーダルを表示
+        function showReasonModal(player, target) {
+            currentDraggedPlayer = player;
+            targetArea = target;
+            reasonModal.style.display = "flex";
+            moveReasonSelect.value = ""; // リセット
+        }
+
+        // ドラッグ＆ドロップイベントの設定
+        document.addEventListener("dragstart", event => {
+            if (event.target.classList.contains("player")) {
+                event.target.classList.add("dragging");
+                event.dataTransfer.setData("text/plain", event.target.dataset.name);
+            }
+        });
+
+        document.addEventListener("dragend", event => {
+            if (event.target.classList.contains("player")) {
+                event.target.classList.remove("dragging");
+            }
+        });
+
+        [bench, field, tempOut].forEach(area => {
+            area.addEventListener("dragover", event => {
+                event.preventDefault();
+            });
+
+            area.addEventListener("drop", event => {
+                event.preventDefault();
+                const playerName = event.dataTransfer.getData("text/plain");
+                const player = document.querySelector(`[data-name="${playerName}"]`);
+                if (player && event.currentTarget !== player.parentElement) {
+                    showReasonModal(player, event.currentTarget);
+                }
+            });
+        });
+
+        // 理由確定ボタン
+        confirmReasonBtn.addEventListener("click", () => {
+            const reason = moveReasonSelect.value;
+            if (reason) {
+                targetArea.appendChild(currentDraggedPlayer);
+                recordHistory(currentDraggedPlayer.dataset.name, targetArea.id, reason);
+                reasonModal.style.display = "none";
+            } else {
+                alert("理由を選択してください。");
+            }
+        });
+
+        // キャンセルボタン
+        cancelReasonBtn.addEventListener("click", () => {
+            reasonModal.style.display = "none";
+        });
+
+        // 移動履歴を記録
+        function recordHistory(playerName, targetArea, reason) {
+            const timestamp = timeDisplay.textContent; // ストップウォッチの値を使う
+            const listItem = document.createElement("li");
+
+            if (targetArea === "field") {
+                listItem.textContent = `${timestamp}: ${playerName} が 出場しました。(理由: ${reason})`;
+            } else if (targetArea === "bench") {
+                listItem.textContent = `${timestamp}: ${playerName} が 退場しました。(理由: ${reason})`;
+            } else if (targetArea === "tempOut") {
+                listItem.textContent = `${timestamp}: ${playerName} が 一時OUTしました。(理由: ${reason})`;
+            }
+
+            historyList.appendChild(listItem);
+            historyList.scrollTop = historyList.scrollHeight;
+        }
+
+        // 登録ボタンがクリックされたときの処理
+        registerButton.addEventListener("click", () => {
+            const inputNames = playerNamesInput.value.trim();
+            if (inputNames) {
+                const playerNames = inputNames.split(',').map(name => name.trim()).filter(name => name);
+                generatePlayers(playerNames);
+                playerNamesInput.value = ''; // 入力ボックスをリセット
+            }
+        });
+
+        // ストップウォッチのボタンにイベントを追加
+        startStopButton.addEventListener("click", startStopwatch);
+        resetButton.addEventListener("click", resetStopwatch);
+    </script>
+</body>
+</html>
