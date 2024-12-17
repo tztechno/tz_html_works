@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>選手交代記録アプリ</title>
+    <style>
+        /* スタイル定義（省略） */
+        /* ここでは前回のコードと同じスタイルに追加 */
+        .swap-area {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            width: 90%;
+            max-width: 800px;
+        }
+        .swap-section {
+            border: 2px dashed #ccc;
+            border-radius: 5px;
+            width: 45%;
+            height: 100px;
+            padding: 5px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            overflow-y: auto;
+        }
+        .swap-buttons {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        .swap-btn {
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="list" id="playerList">
+            <div class="area-title">登録選手</div>
+        </div>
+        <div class="area" id="bench">
+            <div class="area-title">控え</div>
+        </div>
+        <div class="area" id="field">
+            <div class="area-title">出場</div>
+        </div>
+        <div class="area" id="tempOut">
+            <div class="area-title">一時退出</div>
+        </div>
+    </div>
+    <div class="swap-area">
+        <div class="swap-section" id="inArea">
+            <div class="area-title">IN用エリア</div>
+        </div>
+        <div class="swap-section" id="outArea">
+            <div class="area-title">OUT用エリア</div>
+        </div>
+    </div>
+    <div class="swap-buttons">
+        <button class="swap-btn" data-reason="理由A">理由A</button>
+        <button class="swap-btn" data-reason="理由B">理由B</button>
+        <button class="swap-btn" data-reason="理由C">理由C</button>
+    </div>
+    <div class="history" id="history">
+        <strong>移動履歴:</strong>
+        <ul id="history-list"></ul>
+    </div>
+
+    <div class="stopwatch">
+        <div id="timeDisplay">00:00:00</div>
+        <button id="startStopButton" class="stopwatch-btn">スタート</button>
+        <button id="resetButton" class="stopwatch-btn">リセット</button>
+    </div>
+
+    <script>
+        const playerList = document.getElementById("playerList");
+        const bench = document.getElementById("bench");
+        const field = document.getElementById("field");
+        const tempOut = document.getElementById("tempOut");
+        const historyList = document.getElementById("history-list");
+        const inArea = document.getElementById("inArea");
+        const outArea = document.getElementById("outArea");
+        const timeDisplay = document.getElementById("timeDisplay");
+
+        // ドラッグ＆ドロップ設定
+        [bench, field, tempOut, inArea, outArea].forEach(area => {
+            area.addEventListener("dragover", event => {
+                event.preventDefault();
+            });
+
+            area.addEventListener("drop", event => {
+                event.preventDefault();
+                const playerName = event.dataTransfer.getData("text/plain");
+                const player = document.querySelector(`[data-name="${playerName}"]`);
+                if (player && event.currentTarget !== player.parentElement) {
+                    event.currentTarget.appendChild(player);
+                }
+            });
+        });
+
+        document.addEventListener("dragstart", event => {
+            if (event.target.classList.contains("player")) {
+                event.dataTransfer.setData("text/plain", event.target.dataset.name);
+            }
+        });
+
+        // 交代を記録
+        function recordSwap(reason) {
+            const inPlayer = inArea.querySelector(".player");
+            const outPlayer = outArea.querySelector(".player");
+
+            if (inPlayer && outPlayer) {
+                const inName = inPlayer.dataset.name;
+                const outName = outPlayer.dataset.name;
+
+                // 出場選手を移動
+                field.appendChild(inPlayer);
+
+                // 退場選手を移動
+                if (tempOut.contains(outPlayer)) {
+                    bench.appendChild(outPlayer);
+                } else {
+                    tempOut.appendChild(outPlayer);
+                }
+
+                // 履歴記録
+                const timestamp = timeDisplay.textContent;
+                const listItem = document.createElement("li");
+                listItem.textContent = `${timestamp}: 理由${reason}で${outName}が退出し、${inName}が出場しました。`;
+                historyList.appendChild(listItem);
+                historyList.scrollTop = historyList.scrollHeight;
+
+                // エリアをクリア
+                inArea.innerHTML = '<div class="area-title">IN用エリア</div>';
+                outArea.innerHTML = '<div class="area-title">OUT用エリア</div>';
+            } else {
+                alert("IN用エリアとOUT用エリアに選手を配置してください！");
+            }
+        }
+
+        // 理由ボタンのイベント
+        document.querySelectorAll(".swap-btn").forEach(button => {
+            button.addEventListener("click", () => {
+                const reason = button.getAttribute("data-reason");
+                recordSwap(reason);
+            });
+        });
+
+        // プレイヤー生成関数（省略）
+        function generatePlayers(playerNames) {
+            // （既存コードと同様）
+        }
+
+        // 選手リスト登録処理（省略）
+    </script>
+</body>
+</html>
