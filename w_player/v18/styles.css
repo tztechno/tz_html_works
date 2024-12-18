@@ -113,37 +113,3 @@ body {
     padding: 5px;
     width: 100%;
 }
-
-/* 履歴アイコンのベース */
-.history-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px;
-    margin: 5px 0;
-    background-color: #f9f9f9;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-/* プレイヤー名 */
-.history-player {
-    display: inline-block;
-    padding: 10px;
-    background-color: #007bff;
-    color: #fff;
-    font-weight: bold;
-    border-radius: 50%;
-    text-align: center;
-    width: 50px;
-    height: 50px;
-    line-height: 50px;
-}
-
-/* 詳細部分 */
-.history-details {
-    flex: 1;
-    font-size: 14px;
-    color: #333;
-}

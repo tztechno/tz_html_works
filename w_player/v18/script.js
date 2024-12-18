@@ -146,45 +146,22 @@
             reasonModal.style.display = "none";
         });
 
-
-
         // 移動履歴を記録
         function recordHistory(playerName, targetArea, reason) {
             const timestamp = timeDisplay.textContent; // ストップウォッチの値を使う
-        
-            // 履歴アイコンのベース要素
-            const historyItem = document.createElement("div");
-            historyItem.className = "history-item";
-        
-            // プレイヤー名
-            const playerNameElement = document.createElement("div");
-            playerNameElement.className = "history-player";
-            playerNameElement.textContent = playerName;
-        
-            // タイムスタンプと詳細
-            const details = document.createElement("div");
-            details.className = "history-details";
-        
-            let actionText = "";
+            const listItem = document.createElement("li");
+
             if (targetArea === "field") {
-                actionText = "ピッチに入りました";
+                listItem.textContent = `${timestamp}: ${playerName} が ピッチに入りました。(理由: ${reason})`;
             } else if (targetArea === "bench") {
-                actionText = "ベンチに移動しました";
+                listItem.textContent = `${timestamp}: ${playerName} が ベンチに移動しました。(理由: ${reason})`;
             } else if (targetArea === "tempOut") {
-                actionText = "ピッチ外に出ました";
+                listItem.textContent = `${timestamp}: ${playerName} が ピッチ外に出ました。(理由: ${reason})`;
             }
-            details.textContent = `${timestamp}: ${actionText} (理由: ${reason})`;
-        
-            // ベース要素に子要素を追加
-            historyItem.appendChild(playerNameElement);
-            historyItem.appendChild(details);
-        
-            // 履歴リストに追加
-            historyList.appendChild(historyItem);
+
+            historyList.appendChild(listItem);
             historyList.scrollTop = historyList.scrollHeight;
         }
-
-
 
         // 登録ボタンがクリックされたときの処理
         registerButton.addEventListener("click", () => {
