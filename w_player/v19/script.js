@@ -176,6 +176,14 @@
             commentBox.className = "comment-box";
             commentBox.placeholder = "コメントを追加...";
 
+            // ベース要素に子要素を追加
+            historyItem.appendChild(details);
+            historyItem.appendChild(commentBox);
+        
+            // 履歴リストに追加
+            historyList.appendChild(historyItem);
+            historyList.scrollTop = historyList.scrollHeight;
+                
                 
             // 追記ボタン
             const appendButton = document.createElement("button");
