@@ -146,21 +146,81 @@
             reasonModal.style.display = "none";
         });
 
-        // 移動履歴を記録
-        function recordHistory(playerName, targetArea, reason) {
-            const timestamp = timeDisplay.textContent; // ストップウォッチの値を使う
-            const listItem = document.createElement("li");
+// 移動履歴を記録
+function recordHistory(playerName, targetArea, reason) {
+    const timestamp = timeDisplay.textContent; // ストップウォッチの値を使う
 
-            if (targetArea === "field") {
-                listItem.textContent = `${timestamp}: ${playerName} が ピッチに入りました。(理由: ${reason})`;
-            } else if (targetArea === "bench") {
-                listItem.textContent = `${timestamp}: ${playerName} が ベンチに移動しました。(理由: ${reason})`;
-            } else if (targetArea === "tempOut") {
-                listItem.textContent = `${timestamp}: ${playerName} が ピッチ外に出ました。(理由: ${reason})`;
-            }
+    // 履歴アイコンのベース要素
+    const historyItem = document.createElement("div");
+    historyItem.className = "history-item";
 
-            historyList.appendChild(listItem);
-            historyList.scrollTop = historyList.scrollHeight;
+    // プレイヤー名
+    const playerNameElement = document.createElement("div");
+    playerNameElement.className = "history-player";
+    playerNameElement.textContent = playerName;
+
+    // タイムスタンプと詳細
+    const details = document.createElement("div");
+    details.className = "history-details";
+
+    let actionText = "";
+    if (targetArea === "field") {
+        actionText = "ピッチに入りました";
+    } else if (targetArea === "bench") {
+        actionText = "ベンチに移動しました";
+    } else if (targetArea === "tempOut") {
+        actionText = "ピッチ外に出ました";
+    }
+    details.textContent = `${timestamp}: ${actionText} (理由: ${reason})`;
+
+    // 追記ボタン
+    const appendButton = document.createElement("button");
+    appendButton.textContent = "追記";
+    appendButton.className = "append-button";
+    appendButton.addEventListener("click", () => openReasonWindow(playerName));
+
+    // ベース要素に子要素を追加
+    historyItem.appendChild(playerNameElement);
+    historyItem.appendChild(details);
+    historyItem.appendChild(appendButton);
+
+    // 履歴リストに追加
+    historyList.appendChild(historyItem);
+    historyList.scrollTop = historyList.scrollHeight;
+}
+
+        // 理由選択ウィンドウを開く
+        function openReasonWindow(playerName) {
+            // 理由選択用ウィンドウの作成
+            const reasonWindow = document.createElement("div");
+            reasonWindow.className = "reason-window";
+        
+            const title = document.createElement("p");
+            title.textContent = "理由を選択してください";
+            reasonWindow.appendChild(title);
+        
+            // 理由リスト
+            const reasons = ["戦術変更", "怪我対応", "疲労軽減", "その他"];
+            reasons.forEach((reason) => {
+                const button = document.createElement("button");
+                button.textContent = reason;
+                button.addEventListener("click", () => {
+                    recordHistory(playerName, "append", reason); // 新たな履歴を追加
+                    document.body.removeChild(reasonWindow); // ウィンドウを閉じる
+                });
+                reasonWindow.appendChild(button);
+            });
+        
+            // キャンセルボタン
+            const cancelButton = document.createElement("button");
+            cancelButton.textContent = "キャンセル";
+            cancelButton.addEventListener("click", () => {
+                document.body.removeChild(reasonWindow); // ウィンドウを閉じる
+            });
+            reasonWindow.appendChild(cancelButton);
+        
+            // ウィンドウを画面に追加
+            document.body.appendChild(reasonWindow);
         }
 
         // 登録ボタンがクリックされたときの処理
