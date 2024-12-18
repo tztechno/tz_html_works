@@ -200,7 +200,7 @@ function recordHistory(playerName, targetArea, reason) {
             reasonWindow.appendChild(title);
         
             // 理由リスト
-            const reasons = ["HIA>>戦術的入替", "HIA>>負傷交代", "出血>>戦術的入替", "出血>>負傷交代", "-"];
+            const reasons = ["HIA>>戦術", "HIA>>負傷", "出血>>戦術", "出血>>負傷", "-"];
             reasons.forEach((reason) => {
                 const button = document.createElement("button");
                 button.textContent = reason;
