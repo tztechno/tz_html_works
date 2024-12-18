@@ -327,36 +327,21 @@
             reasonModal.style.display = "none";
         });
 
-        
-        // プレイヤーごとの現在エリアを管理
-        const playerAreas = {}; // { playerName: currentArea }
-        
-        // プレイヤーの現在エリアを取得する関数
-        function getFromArea(playerName) {
-            return playerAreas[playerName] || "不明"; // デフォルトは "不明"
-        }
-        
-        // プレイヤーのエリアを更新する関数
-        function updatePlayerArea(playerName, newArea) {
-            playerAreas[playerName] = newArea;
-        }
-        
-        // 移動処理の例
-        function movePlayer(playerName, targetArea, reason) {
-            const fromArea = getFromArea(playerName); // 現在のエリアを取得
-            recordHistory(playerName, fromArea, targetArea, reason); // 履歴に記録
-            updatePlayerArea(playerName, targetArea); // エリアを更新
-        }
-        
         // 移動履歴を記録
-        function recordHistory(playerName, fromArea, targetArea, reason) {
+        function recordHistory(playerName, targetArea, reason) {
             const timestamp = timeDisplay.textContent; // ストップウォッチの値を使う
             const listItem = document.createElement("li");
-        
-            listItem.textContent = `${timestamp}: ${playerName} が ${fromArea} から ${targetArea} へ移動（理由: ${reason}）`;
-        
+
+            if (targetArea === "field") {
+                listItem.textContent = `${timestamp}: ${playerName} が ピッチに出ました。(理由: ${reason})`;
+            } else if (targetArea === "bench") {
+                listItem.textContent = `${timestamp}: ${playerName} が ベンチに移動しました。(理由: ${reason})`;
+            } else if (targetArea === "tempOut") {
+                listItem.textContent = `${timestamp}: ${playerName} が ピッチ外に出ました。(理由: ${reason})`;
+            }
+
             historyList.appendChild(listItem);
-            historyList.scrollTop = historyList.scrollHeight; // 履歴エリアをスクロール
+            historyList.scrollTop = historyList.scrollHeight;
         }
 
         // 登録ボタンがクリックされたときの処理
