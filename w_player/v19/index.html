@@ -29,16 +29,16 @@
     
 <div id="historyList"></div>
 
-<!-- コメント入力フォーム -->
 <div>
-    <textarea id="commentBox" placeholder="コメントを入力"></textarea>
+    <textarea id="memoBox" placeholder="メモを入力してください..."></textarea>
+    <button id="saveMemoButton" onclick="addMemoToHistory()">メモを保存</button>
 </div>
 
-<!-- 履歴保存ボタン -->
-<button id="saveButton">履歴保存</button>
 
-<!-- 履歴リセットボタン -->
-<button id="resetButton">履歴リセット</button>
+<button id="saveButton" onclick="saveHistory()">履歴保存</button>
+<button id="resetButton" onclick="resetHistory()">履歴リセット</button>
+
+    
     
     <div class="history" id="history">
         <strong>移動履歴:</strong>
