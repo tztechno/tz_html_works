@@ -147,6 +147,8 @@
         });
 
 
+
+
         // 移動履歴を記録
         function recordHistory(playerName, targetArea, reason) {
             const timestamp = timeDisplay.textContent; // ストップウォッチの値を使う
@@ -168,7 +170,13 @@
                 actionText = "追記されました";
             }
             details.textContent = `${timestamp}: ${playerName} が ${actionText} (理由: ${reason})`;
-        
+
+            // コメント入力ボックス
+            const commentBox = document.createElement("textarea");
+            commentBox.className = "comment-box";
+            commentBox.placeholder = "コメントを追加...";
+
+                
             // 追記ボタン
             const appendButton = document.createElement("button");
             appendButton.textContent = "追記";
@@ -218,6 +226,39 @@
             // ウィンドウを画面に追加
             document.body.appendChild(reasonWindow);
         }
+
+
+
+        // 履歴をCSVかTXT形式で保存
+        function saveHistory() {
+            let historyContent = [];
+        
+            // 各履歴アイテムから内容を取得
+            const historyItems = document.querySelectorAll(".history-item");
+            historyItems.forEach((item) => {
+                const text = item.querySelector("span").textContent;
+                const comment = item.querySelector(".comment-box").value;
+                historyContent.push(`${text}, ${comment}`);
+            });
+        
+            // CSV形式で保存
+            const csvContent = "data:text/csv;charset=utf-8," + historyContent.join("\n");
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "history.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        
+        // 履歴をリセット
+        function resetHistory() {
+            historyList.innerHTML = ""; // 履歴リストを全削除
+        }
+        
+
+
 
         // 登録ボタンがクリックされたときの処理
         registerButton.addEventListener("click", () => {
