@@ -228,18 +228,23 @@
         }
 
 
-        // 外部のメモを履歴に追加する
-        function addMemoToHistory() {
-            const memo = document.getElementById("memoBox").value; // 外部テキストボックスの内容を取得
-            const playerName = "選手名";  // 実際にはプレイヤー名をここで指定
-            const targetArea = "field";  // 実際には移動先エリアをここで指定
-            const reason = "理由";      // 実際には理由をここで指定
+        // メモを履歴に追加
+        function recordHistory(memo) {
+            const timestamp = timeDisplay.textContent; // ストップウォッチの値を使う
         
-            if (memo) {
-                // メモがあれば履歴に追加
-                recordHistory(playerName, targetArea, reason, memo);
-                document.getElementById("memoBox").value = ""; // メモ入力ボックスをクリア
-            }
+            // 履歴項目のリストアイテム作成
+            const historyItem = document.createElement("div");
+            historyItem.className = "history-item";
+        
+            // メモを履歴に追加
+            const memoText = document.createElement("span");
+            memoText.className = "memo-text";
+            memoText.textContent = `${timestamp}: ${memo}`;
+            historyItem.appendChild(memoText);
+        
+            // 履歴リストに追加
+            historyList.appendChild(historyItem);
+            historyList.scrollTop = historyList.scrollHeight;
         }
 
 
