@@ -171,7 +171,7 @@ function recordHistory(playerName, targetArea, reason) {
     } else if (targetArea === "tempOut") {
         actionText = "ピッチ外に出ました";
     }
-    details.textContent = `${timestamp}: ${actionText} (理由: ${reason})`;
+    details.textContent = `${timestamp}: ${actionText} (${reason})`;
 
     // 追記ボタン
     const appendButton = document.createElement("button");
@@ -200,7 +200,7 @@ function recordHistory(playerName, targetArea, reason) {
             reasonWindow.appendChild(title);
         
             // 理由リスト
-            const reasons = ["戦術変更", "怪我対応", "疲労軽減", "その他"];
+            const reasons = ["HIA>>戦術的入替", "HIA>>負傷交代", "出血>>戦術的入替", "出血>>負傷交代", "-"];
             reasons.forEach((reason) => {
                 const button = document.createElement("button");
                 button.textContent = reason;
