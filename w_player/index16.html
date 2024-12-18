@@ -333,7 +333,7 @@
             const listItem = document.createElement("li");
 
             if (targetArea === "field") {
-                listItem.textContent = `${timestamp}: ${playerName} が ピッチに出ました。(理由: ${reason})`;
+                listItem.textContent = `${timestamp}: ${playerName} が ピッチに入りました。(理由: ${reason})`;
             } else if (targetArea === "bench") {
                 listItem.textContent = `${timestamp}: ${playerName} が ベンチに移動しました。(理由: ${reason})`;
             } else if (targetArea === "tempOut") {
