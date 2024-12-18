@@ -171,14 +171,6 @@
             }
             details.textContent = `${timestamp}: ${playerName} が ${actionText} (理由: ${reason})`;
 
-            // コメント入力ボックス
-            const commentBox = document.createElement("textarea");
-            commentBox.className = "comment-box";
-            commentBox.placeholder = "コメントを追加...";
-
-            // ベース要素に子要素を追加
-            historyItem.appendChild(details);
-            historyItem.appendChild(commentBox);
         
             // 履歴リストに追加
             historyList.appendChild(historyItem);
