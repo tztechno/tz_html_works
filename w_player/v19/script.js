@@ -228,25 +228,35 @@
         }
 
 
-        // メモを履歴に追加
-        function recordHistory(memo) {
-            const timestamp = timeDisplay.textContent; // ストップウォッチの値を使う
-        
-            // 履歴項目のリストアイテム作成
-            const historyItem = document.createElement("div");
-            historyItem.className = "history-item";
-        
-            // メモを履歴に追加
-            const memoText = document.createElement("span");
-            memoText.className = "memo-text";
-            memoText.textContent = `${timestamp}: ${memo}`;
-            historyItem.appendChild(memoText);
-        
-            // 履歴リストに追加
-            historyList.appendChild(historyItem);
-            historyList.scrollTop = historyList.scrollHeight;
-        }
+// 外部のメモを履歴に追加する
+function addMemoToHistory() {
+    const memo = document.getElementById("memoBox").value; // 外部テキストボックスの内容を取得
 
+    if (memo) {
+        // メモがあれば履歴に追加
+        recordHistory(memo);
+        document.getElementById("memoBox").value = ""; // メモ入力ボックスをクリア
+    }
+}
+
+// メモを履歴に追加
+function recordHistory(memo) {
+    const timestamp = timeDisplay.textContent; // ストップウォッチの値を使う
+
+    // 履歴項目のリストアイテム作成
+    const historyItem = document.createElement("div");
+    historyItem.className = "history-item";
+
+    // メモを履歴に追加
+    const memoText = document.createElement("span");
+    memoText.className = "memo-text";
+    memoText.textContent = `${timestamp}: ${memo}`;
+    historyItem.appendChild(memoText);
+
+    // 履歴リストに追加
+    historyList.appendChild(historyItem);
+    historyList.scrollTop = historyList.scrollHeight;
+}
 
         // 履歴をCSVかTXT形式で保存
         function saveHistory() {
