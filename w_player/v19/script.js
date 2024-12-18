@@ -228,6 +228,20 @@
         }
 
 
+        // 外部のメモを履歴に追加する
+        function addMemoToHistory() {
+            const memo = document.getElementById("memoBox").value; // 外部テキストボックスの内容を取得
+            const playerName = "選手名";  // 実際にはプレイヤー名をここで指定
+            const targetArea = "field";  // 実際には移動先エリアをここで指定
+            const reason = "理由";      // 実際には理由をここで指定
+        
+            if (memo) {
+                // メモがあれば履歴に追加
+                recordHistory(playerName, targetArea, reason, memo);
+                document.getElementById("memoBox").value = ""; // メモ入力ボックスをクリア
+            }
+        }
+
 
         // 履歴をCSVかTXT形式で保存
         function saveHistory() {
