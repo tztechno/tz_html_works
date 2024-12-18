@@ -65,6 +65,7 @@ body {
     max-width: 800px;
     overflow-y: auto;
     font-size: 14px;
+    cursor: grab;
 }
 .input-container {
     margin-top: 20px;
