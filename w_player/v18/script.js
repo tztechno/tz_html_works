@@ -146,7 +146,37 @@
             reasonModal.style.display = "none";
         });
 
+        // 移動履歴を記録（アイコン形式）
+        function recordHistory(playerName, targetArea, reason) {
+            const timestamp = timeDisplay.textContent; // ストップウォッチの値を使う
+        
+            // 履歴アイコンを作成
+            const historyItem = document.createElement("div");
+            historyItem.className = "history-item";
+        
+            const playerIcon = document.createElement("div");
+            playerIcon.className = "player-icon";
+            playerIcon.textContent = playerName[0]; // 名前の頭文字を表示
+        
+            const details = document.createElement("div");
+            details.className = "history-details";
+            if (targetArea === "field") {
+                details.textContent = `${timestamp}: ${playerName} がピッチに入りました。(理由: ${reason})`;
+            } else if (targetArea === "bench") {
+                details.textContent = `${timestamp}: ${playerName} がベンチに移動しました。(理由: ${reason})`;
+            } else if (targetArea === "tempOut") {
+                details.textContent = `${timestamp}: ${playerName} がピッチ外に出ました。(理由: ${reason})`;
+            }
+        
+            historyItem.appendChild(playerIcon);
+            historyItem.appendChild(details);
+            historyList.appendChild(historyItem);
+            historyList.scrollTop = historyList.scrollHeight;
+        }
+
+```
         // 移動履歴を記録
+
         function recordHistory(playerName, targetArea, reason) {
             const timestamp = timeDisplay.textContent; // ストップウォッチの値を使う
             const listItem = document.createElement("li");
@@ -162,6 +192,7 @@
             historyList.appendChild(listItem);
             historyList.scrollTop = historyList.scrollHeight;
         }
+```
 
         // 登録ボタンがクリックされたときの処理
         registerButton.addEventListener("click", () => {
@@ -176,3 +207,8 @@
         // ストップウォッチのボタンにイベントを追加
         startStopButton.addEventListener("click", startStopwatch);
         resetButton.addEventListener("click", resetStopwatch);
+
+
+
+
+
