@@ -137,7 +137,7 @@
                 recordHistory(currentDraggedPlayer.dataset.name, targetArea.id, reason);
                 reasonModal.style.display = "none";
             } else {
-                alert("理由を選択してください。");
+                alert("理由を選択");
             }
         });
 
@@ -167,7 +167,7 @@
             } else if (targetArea === "append") {
                 actionText = "追記されました";
             }
-            details.textContent = `${timestamp}: ${playerName} が ${actionText} (理由: ${reason})`;
+            details.textContent = `${timestamp}: ${playerName} が ${actionText} (${reason})`;
         
             // 追記ボタン
             const appendButton = document.createElement("button");
@@ -232,3 +232,20 @@
         // ストップウォッチのボタンにイベントを追加
         startStopButton.addEventListener("click", startStopwatch);
         resetButton.addEventListener("click", resetStopwatch);
+
+    function saveHTML() {
+      const contentElement = document.getElementById('history-list');
+      const contentText = contentElement.innerText; // コンテンツのテキストを取得
+      const blob = new Blob([contentText], { type: 'text/plain' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'content.txt';
+      link.click();
+      URL.revokeObjectURL(link.href);
+    }
+
+    // リセットボタンの処理
+    function resetContent() {
+      const contentElement = document.getElementById('history-list');
+      contentElement.innerHTML = ''; // 指定した要素の中身をクリア
+    }
