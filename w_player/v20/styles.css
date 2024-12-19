@@ -109,6 +109,7 @@ body {
 
 .stopwatch-btn {
     padding: 5px 10px;
+    width: 30px;
     cursor: pointer;
     margin-top: 0;
 }
