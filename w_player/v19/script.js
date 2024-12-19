@@ -233,20 +233,19 @@
         startStopButton.addEventListener("click", startStopwatch);
         resetButton.addEventListener("click", resetStopwatch);
 
-   // 保存ボタンの処理
-    function saveToFile() {
-      const textArea = document.getElementById('textArea');
-      const text = textArea.value;
-      const blob = new Blob([text], { type: 'text/plain' });
+    function saveHTML() {
+      const contentElement = document.getElementById('history-list');
+      const contentText = contentElement.innerText; // コンテンツのテキストを取得
+      const blob = new Blob([contentText], { type: 'text/plain' });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
-      link.download = 'text.txt';
+      link.download = 'content.txt';
       link.click();
       URL.revokeObjectURL(link.href);
     }
 
     // リセットボタンの処理
-    function resetText() {
-      const textArea = document.getElementById('textArea');
-      textArea.value = '';
+    function resetContent() {
+      const contentElement = document.getElementById('history-list');
+      contentElement.innerHTML = ''; // 指定した要素の中身をクリア
     }
