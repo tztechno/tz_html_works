@@ -234,16 +234,20 @@
         startStopButton.addEventListener("click", startStopwatch);
         resetButton.addEventListener("click", resetStopwatch);
 
-    function saveHTML() {
-      const contentElement = document.getElementById('history-list');
-      const contentText = contentElement.innerText; // コンテンツのテキストを取得
-      const blob = new Blob([contentText], { type: 'text/plain' });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = 'content.txt';
-      link.click();
-      URL.revokeObjectURL(link.href);
-    }
+        function saveHTML() {
+          const contentElement = document.getElementById('history-list');
+          let contentText = contentElement.innerText; // コンテンツのテキストを取得
+        
+          // "追記" を含む行を削除
+          contentText = contentText.split('\n').filter(line => !line.includes('追記')).join('\n');
+          
+          const blob = new Blob([contentText], { type: 'text/plain' });
+          const link = document.createElement('a');
+          link.href = URL.createObjectURL(blob);
+          link.download = 'content.txt';
+          link.click();
+          URL.revokeObjectURL(link.href);
+        }
 
     // リセットボタンの処理
     function resetContent() {
