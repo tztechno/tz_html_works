@@ -238,7 +238,7 @@
           const contentElement = document.getElementById('history-list');
           let contentText = contentElement.innerText; // コンテンツのテキストを取得
         
-          // "追記" のみの行を削除
+          // "追記" のみの行を削除（"追記"だけの行にマッチ）
           contentText = contentText.split('\n').filter(line => line.trim() !== '追記').join('\n');
           
           const blob = new Blob([contentText], { type: 'text/plain' });
