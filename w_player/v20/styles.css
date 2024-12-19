@@ -84,16 +84,27 @@ body {
     margin-top: 20px;
     font-size: 20px;
     display: flex;
-    align-items: center;
-    gap: 10px;
+    flex-direction: column; /* 子要素を縦並びにする */
+    align-items: center; /* 水平方向に中央揃え */
+    gap: 10px; /* 要素間の間隔 */
     position: fixed;
     top: 20px;
     left: 20px;
     background-color: rgba(255, 255, 255, 0.8);
-    padding: 10px;
+    padding: 20px;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    cursor: move; /* ドラッグ可能なカーソルにする */
+    cursor: move;
+}
+
+#timeDisplay {
+    font-size: 36px; /* 時間表示の文字を大きくする */
+    font-weight: bold;
+}
+
+.buttons {
+    display: flex;
+    gap: 10px; /* ボタン間の間隔 */
 }
 
 .stopwatch-btn {
