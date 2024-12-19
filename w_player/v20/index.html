@@ -7,6 +7,19 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <div class="stopwatch">
+    <div id="timeDisplay">00:00:00</div>
+        <button id="startStopButton" class="stopwatch-btn">スタート</button>
+        <button id="resetButton" class="stopwatch-btn">リセット</button>
+    </div>
+
+    <div class="input-container">
+        <input type="text" id="playerNamesInput" class="input-box" placeholder="選手名をカンマ区切りで入力">
+        <button id="registerButton" class="register-btn">登録</button>
+        <button onclick="saveHTML()" id="saveHistoryButton" class="register-btn">履歴保存</button>
+        <button onclick="resetContent()" id="resetHistoryButton" class="register-btn">履歴リセット</button>
+    </div>
+    
     <div class="container">
         <div class="list" id="playerList">
             <div class="area-title">登録選手</div>
@@ -21,25 +34,12 @@
             <div class="area-title">ピッチ外</div>
         </div>
     </div>
-    <div class="input-container">
-        <div id="timeDisplay">00:00:00</div>
-        <button id="startStopButton" class="stopwatch-btn">スタート</button>
-        <button id="resetButton" class="stopwatch-btn">リセット</button>
 
-        <input type="text" id="playerNamesInput" class="input-box" placeholder="選手名をカンマ区切りで入力">
-        <button id="registerButton" class="register-btn">登録</button>
-        <button onclick="saveHTML()" id="saveHistoryButton" class="register-btn">履歴保存</button>
-        <button onclick="resetContent()" id="resetHistoryButton" class="register-btn">履歴リセット</button>
-    </div>
     <div class="history" id="history">
         <strong>移動履歴:</strong>
         <ul id="history-list"></ul>
     </div>
-    <div class="stopwatch">
-        <div id="timeDisplay">00:00:00</div>
-        <button id="startStopButton" class="stopwatch-btn">スタート</button>
-        <button id="resetButton" class="stopwatch-btn">リセット</button>
-    </div>
+
     <div id="reasonModal" class="modal">
         <div class="modal-content">
             <h3>移動理由を選択</h3>
