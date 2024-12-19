@@ -137,7 +137,7 @@
                 recordHistory(currentDraggedPlayer.dataset.name, targetArea.id, reason);
                 reasonModal.style.display = "none";
             } else {
-                alert("理由を選択してください。");
+                alert("理由を選択");
             }
         });
 
