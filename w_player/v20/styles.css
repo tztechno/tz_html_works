@@ -100,8 +100,8 @@ body {
 #timeDisplay {
     font-size: 48px; /* 時間表示の文字を大きくする */
     font-weight: bold;
-    color: #006747; /* ダークグリーン */
-    text-shadow: 2px 2px 4px #FFD100; /* 黄色のシャドウ */
+    color: #006747 !important; /* ダークグリーン */
+    text-shadow: 2px 2px 4px #FFD100 !important; /* 黄色のシャドウ */
 }
 
 .buttons {
