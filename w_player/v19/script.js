@@ -167,7 +167,7 @@
             } else if (targetArea === "append") {
                 actionText = "追記されました";
             }
-            details.textContent = `${timestamp}: ${playerName} が ${actionText} (理由: ${reason})`;
+            details.textContent = `${timestamp}: ${playerName} が ${actionText} (${reason})`;
         
             // 追記ボタン
             const appendButton = document.createElement("button");
