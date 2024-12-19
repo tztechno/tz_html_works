@@ -81,12 +81,16 @@ body {
 .stopwatch {
     margin-top: 20px;
     font-size: 20px;
+    display: flex; /* 横並びにする */
+    align-items: center; /* 垂直方向を中央揃えにする */
+    gap: 10px; /* 要素間の間隔を設定 */
 }
 .stopwatch-btn {
     padding: 5px 10px;
-    margin-top: 10px;
     cursor: pointer;
+    margin-top: 0; /* 横並びにしたので上余白をリセット */
 }
+
 #reasonModal {
     display: none;
     position: fixed;
