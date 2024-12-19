@@ -58,36 +58,6 @@
         }
 
 
-        // ドラッグ操作に必要な変数
-        let isDragging = false;
-        let offsetX = 0;
-        let offsetY = 0;
-        
-        // ドラッグ開始
-        document.getElementById('stopwatch').addEventListener('mousedown', function (e) {
-            isDragging = true;
-            offsetX = e.clientX - this.getBoundingClientRect().left;
-            offsetY = e.clientY - this.getBoundingClientRect().top;
-            document.body.style.userSelect = 'none'; // ドラッグ中にテキスト選択を無効化
-        });
-        
-        // ドラッグ中
-        document.addEventListener('mousemove', function (e) {
-            if (isDragging) {
-                const stopwatch = document.getElementById('stopwatch');
-                stopwatch.style.left = `${e.clientX - offsetX}px`;
-                stopwatch.style.top = `${e.clientY - offsetY}px`;
-            }
-        });
-        
-        // ドラッグ終了
-        document.addEventListener('mouseup', function () {
-            isDragging = false;
-            document.body.style.userSelect = ''; // テキスト選択を元に戻す
-        });
-
-
-
         // プレイヤーを生成する関数
         function generatePlayers(playerNames) {
             playerList.innerHTML = ''; // 既存の選手リストをクリア
