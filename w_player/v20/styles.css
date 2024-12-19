@@ -86,13 +86,14 @@ body {
     display: flex;
     align-items: center;
     gap: 10px;
-    position: fixed; /* 画面上に固定 */
-    top: 20px; /* 上からの位置 */
-    left: 20px; /* 左からの位置 */
-    background-color: rgba(255, 255, 255, 0.8); /* 背景を少し透過させる */
-    padding: 10px; /* 内部の余白 */
-    border-radius: 8px; /* 角を丸める */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* 影をつけて浮いて見えるように */
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    cursor: move; /* ドラッグ可能なカーソルにする */
 }
 
 .stopwatch-btn {
