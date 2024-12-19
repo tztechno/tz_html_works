@@ -42,7 +42,7 @@
                     }
                     timeDisplay.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
                 }, 1000);
-                startStopButton.textContent = " 停止 ";
+                startStopButton.textContent = "　停止　";
             }
             isRunning = !isRunning;
         }
