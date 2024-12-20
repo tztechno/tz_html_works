@@ -195,7 +195,7 @@
         
             // タイトル
             const title = document.createElement("p");
-            title.textContent = "理由を選択";
+            title.textContent = "追記理由を選択";
             reasonWindow.appendChild(title);
         
             // 理由リストをプルダウンメニューに変更
