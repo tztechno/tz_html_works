@@ -18,12 +18,13 @@
         let currentDraggedPlayer = null;
         let targetArea = null;
 
+
         let timer;
         let isRunning = false;
         let seconds = 0;
         let minutes = 0;
         let hours = 0;
-
+        
         // ストップウォッチの動作
         function startStopwatch() {
             if (isRunning) {
@@ -56,21 +57,22 @@
             updateDisplay();
             startStopButton.textContent = "スタート";
         }
-
+        
         function adjustTime() {
-            const input = parseInt(adjustSeconds.value, 10);
-            if (!isNaN(input)) {
-                let totalSeconds = hours * 3600 + minutes * 60 + seconds + input;
-                if (totalSeconds < 0) totalSeconds = 0; // 時間がマイナスにならないようにする
-                hours = Math.floor(totalSeconds / 3600);
+            const input = parseInt(adjustSeconds.value, 10); // 入力値を取得
+            if (!isNaN(input)) { // 有効な数値か確認
+                let totalSeconds = hours * 3600 + minutes * 60 + seconds + input; // 秒に変換して加算
+                if (totalSeconds < 0) totalSeconds = 0; // 負の時間は許容しない
+                hours = Math.floor(totalSeconds / 3600); // 時間に再計算
                 totalSeconds %= 3600;
-                minutes = Math.floor(totalSeconds / 60);
-                seconds = totalSeconds % 60;
-                updateDisplay();
+                minutes = Math.floor(totalSeconds / 60); // 分に再計算
+                seconds = totalSeconds % 60; // 秒に再計算
+                updateDisplay(); // 時間を更新
             }
         }
         
         function updateDisplay() {
+            // 時間、分、秒をフォーマットして表示
             timeDisplay.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
         }
         
@@ -78,7 +80,8 @@
         startStopButton.addEventListener("click", startStopwatch);
         resetButton.addEventListener("click", resetStopwatch);
         adjustButton.addEventListener("click", adjustTime);
-
+        
+        
 
 
         // プレイヤーを生成する関数
