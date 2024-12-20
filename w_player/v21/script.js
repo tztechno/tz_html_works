@@ -197,7 +197,7 @@
             reasonWindow.appendChild(title);
         
             // 理由リスト
-            const reasons = ["HIA>>戦術", "HIA>>負傷", "出血>>戦術", "出血>>負傷", "-"];
+            const reasons = [ "HIA IN>>戦術IN","HIA OUT>>戦術OUT","HIA IN>>負傷IN","HIA OUT>>負傷OUT","出血IN>>戦術IN","出血OUT>>戦術OUT","出血IN>>負傷IN","出血OUT>>負傷OUT","---"];
             reasons.forEach((reason) => {
                 const button = document.createElement("button");
                 button.textContent = reason;
