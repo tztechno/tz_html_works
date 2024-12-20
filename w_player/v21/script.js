@@ -186,27 +186,43 @@
         }
 
 
+
         // 理由選択ウィンドウを開く
         function openReasonWindow(playerName) {
             // 理由選択用ウィンドウの作成
             const reasonWindow = document.createElement("div");
             reasonWindow.className = "reason-window";
         
+            // タイトル
             const title = document.createElement("p");
             title.textContent = "理由を選択";
             reasonWindow.appendChild(title);
         
-            // 理由リスト
-            const reasons = [ "HIA IN>>戦術IN","HIA OUT>>戦術OUT","HIA IN>>負傷IN","HIA OUT>>負傷OUT","出血IN>>戦術IN","出血OUT>>戦術OUT","出血IN>>負傷IN","出血OUT>>負傷OUT","---"];
-            reasons.forEach((reason) => {
-                const button = document.createElement("button");
-                button.textContent = reason;
-                button.addEventListener("click", () => {
-                    recordHistory(playerName, "append", reason); // 新たな履歴を追加
-                    document.body.removeChild(reasonWindow); // ウィンドウを閉じる
-                });
-                reasonWindow.appendChild(button);
+            // 理由リストをプルダウンメニューに変更
+            const select = document.createElement("select");
+            const reasons = [
+                "HIA IN>>戦術IN", "HIA OUT>>戦術OUT", "HIA IN>>負傷IN", "HIA OUT>>負傷OUT",
+                "出血IN>>戦術IN", "出血OUT>>戦術OUT", "出血IN>>負傷IN", "出血OUT>>負傷OUT", "---"
+            ];
+            reasons.forEach(reason => {
+                const option = document.createElement("option");
+                option.value = reason;
+                option.textContent = reason;
+                select.appendChild(option);
             });
+            reasonWindow.appendChild(select);
+        
+            // OKボタン
+            const okButton = document.createElement("button");
+            okButton.textContent = "OK";
+            okButton.addEventListener("click", () => {
+                const selectedReason = select.value;
+                if (selectedReason) {
+                    recordHistory(playerName, "append", selectedReason); // 新たな履歴を追加
+                }
+                document.body.removeChild(reasonWindow); // ウィンドウを閉じる
+            });
+            reasonWindow.appendChild(okButton);
         
             // キャンセルボタン
             const cancelButton = document.createElement("button");
@@ -219,6 +235,17 @@
             // ウィンドウを画面に追加
             document.body.appendChild(reasonWindow);
         }
+        
+        // 登録ボタンがクリックされたときの処理
+        registerButton.addEventListener("click", () => {
+            const inputNames = playerNamesInput.value.trim();
+            if (inputNames) {
+                const playerNames = inputNames.split(',').map(name => name.trim()).filter(name => name);
+                generatePlayers(playerNames);
+                playerNamesInput.value = ''; // 入力ボックスをリセット
+            }
+        });
+
 
         // 登録ボタンがクリックされたときの処理
         registerButton.addEventListener("click", () => {
