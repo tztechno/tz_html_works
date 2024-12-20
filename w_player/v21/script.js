@@ -40,20 +40,20 @@
                         minutes = 0;
                         hours++;
                     }
-                    timeDisplay.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                    updateDisplay();
                 }, 1000);
                 startStopButton.textContent = "　停止　";
             }
             isRunning = !isRunning;
         }
-
+        
         function resetStopwatch() {
             clearInterval(timer);
             isRunning = false;
             seconds = 0;
             minutes = 0;
             hours = 0;
-            timeDisplay.textContent = "00:00:00";
+            updateDisplay();
             startStopButton.textContent = "スタート";
         }
 
