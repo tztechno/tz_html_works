@@ -182,6 +182,7 @@ body {
     left: 50%;
     transform: translate(-50%, -50%);
     padding: 20px;
+    width: 500px; /* 横幅を広げる */
     background-color: white;
     border: 1px solid #ccc;
     border-radius: 5px;
