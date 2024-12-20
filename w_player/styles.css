@@ -78,15 +78,43 @@ body {
     margin-top: 10px;
     cursor: pointer;
 }
+
+
 .stopwatch {
     margin-top: 20px;
     font-size: 20px;
+    display: flex;
+    flex-direction: column; /* 子要素を縦並びにする */
+    align-items: center; /* 水平方向に中央揃え */
+    gap: 10px; /* 要素間の間隔 */
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    cursor: move;
 }
+
+#timeDisplay {
+    font-size: 48px; /* 時間表示の文字を大きくする */
+    font-weight: bold;
+    color: #006747 !important; /* ダークグリーン */
+    text-shadow: 2px 2px 4px #FFD100 !important; /* 黄色のシャドウ */
+}
+
+.buttons {
+    display: flex;
+    gap: 10px; /* ボタン間の間隔 */
+}
+
 .stopwatch-btn {
     padding: 5px 10px;
-    margin-top: 10px;
     cursor: pointer;
+    margin-top: 0;
 }
+
 #reasonModal {
     display: none;
     position: fixed;
