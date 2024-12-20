@@ -57,6 +57,29 @@
             startStopButton.textContent = "スタート";
         }
 
+        function adjustTime() {
+            const input = parseInt(adjustSeconds.value, 10);
+            if (!isNaN(input)) {
+                let totalSeconds = hours * 3600 + minutes * 60 + seconds + input;
+                if (totalSeconds < 0) totalSeconds = 0; // 時間がマイナスにならないようにする
+                hours = Math.floor(totalSeconds / 3600);
+                totalSeconds %= 3600;
+                minutes = Math.floor(totalSeconds / 60);
+                seconds = totalSeconds % 60;
+                updateDisplay();
+            }
+        }
+        
+        function updateDisplay() {
+            timeDisplay.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+        
+        // ストップウォッチのボタンにイベントを追加
+        startStopButton.addEventListener("click", startStopwatch);
+        resetButton.addEventListener("click", resetStopwatch);
+        adjustButton.addEventListener("click", adjustTime);
+
+
 
         // プレイヤーを生成する関数
         function generatePlayers(playerNames) {
@@ -257,9 +280,7 @@
             }
         });
 
-        // ストップウォッチのボタンにイベントを追加
-        startStopButton.addEventListener("click", startStopwatch);
-        resetButton.addEventListener("click", resetStopwatch);
+
 
         function saveHTML() {
           const contentElement = document.getElementById('history-list');
