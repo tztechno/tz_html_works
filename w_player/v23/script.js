@@ -363,9 +363,9 @@ function recordHistory(playerName, targetArea, reason) {
     if (targetArea === "field") {
         actionText = "ピッチに入りました";
     } else if (targetArea === "bench") {
-        actionText = "ベンチに移動しました";
+        actionText = "ピッチから退きました";
     } else if (targetArea === "tempOut") {
-        actionText = "ピッチ外に出ました";
+        actionText = "ピッチから退きました";
     } else if (targetArea === "append") {
         actionText = "追記されました";
     }
