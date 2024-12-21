@@ -304,7 +304,7 @@
         
           // 保存するテキストを作成
           const finalText = `タイム:\n${formattedDate}\n\n` +
-            `履歴:\n${contentText.split('\n').filter(line => line.trim() !== '追記').join('\n')}\n\n` +
+            `履歴:\n${contentText.split('\n').filter(line => line.trim() !== '追記').join('\n')}`}\n\n` +
             `ベンチ:\n${benchText.split('\n').filter(line => line.trim() !== 'ベンチ').join('\n')}`}\n\n` +
             `ピッチ:\n${fieldText.split('\n').filter(line => line.trim() !== 'ピッチ').join('\n')}`}\n\n` +
             `ピッチ外:\n${tempOutText.split('\n').filter(line => line.trim() !== 'ピッチ外').join('\n')}`}\n\n` ;
