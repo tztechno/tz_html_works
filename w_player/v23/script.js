@@ -150,10 +150,10 @@ function recordHistory(playerName, targetArea, reason) {
             actionText = "ピッチに入りました";
             break;
         case "bench":
-            actionText = "ベンチに移動しました";
+            actionText = "ピッチから退きました";
             break;
         case "tempOut":
-            actionText = "ピッチ外に出ました";
+            actionText = "ピッチから退きました";
             break;
     }
     details.textContent = `${timestamp}: ${playerName} が ${actionText} (${reason})`;
