@@ -303,11 +303,11 @@
           const formattedDate = now.toLocaleString(); // ローカル日時形式
         
           // 保存するテキストを作成
-          const finalText = `タイム: ${formattedDate}\n\n` +
-            `ベンチ:\n${benchText}\n\n` +
-            `ピッチ:\n${fieldText}\n\n` +
-            `ピッチ外:\n${tempOutText}\n\n` +
-            `履歴:\n${contentText.split('\n').filter(line => line.trim() !== '追記').join('\n')}`;
+          const finalText = `タイム:\n${formattedDate}\n\n` +
+            `履歴:\n${contentText.split('\n').filter(line => line.trim() !== '追記').join('\n')}\n\n` +
+            `ベンチ:\n${benchText.split('\n').filter(line => line.trim() !== 'ベンチ').join('\n')}`}\n\n` +
+            `ピッチ:\n${fieldText.split('\n').filter(line => line.trim() !== 'ピッチ').join('\n')}`}\n\n` +
+            `ピッチ外:\n${tempOutText.split('\n').filter(line => line.trim() !== 'ピッチ外').join('\n')}`}\n\n` ;
         
           // テキストを保存
           const blob = new Blob([finalText], { type: 'text/plain' });
