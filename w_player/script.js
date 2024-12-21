@@ -43,7 +43,7 @@
                     }
                     updateDisplay();
                 }, 1000);
-                startStopButton.textContent = "　停止　";
+                startStopButton.textContent = "ストップ";
             }
             isRunning = !isRunning;
         }
@@ -287,18 +287,39 @@
 
         function saveHTML() {
           const contentElement = document.getElementById('history-list');
-          let contentText = contentElement.innerText; // コンテンツのテキストを取得
+          const bench = document.getElementById('bench');
+          const field = document.getElementById('field');
+          const tempOut = document.getElementById('tempOut');
         
-          // "追記" のみの行を削除（"追記"だけの行にマッチ）
-          contentText = contentText.split('\n').filter(line => line.trim() !== '追記').join('\n');
-          
-          const blob = new Blob([contentText], { type: 'text/plain' });
+          // 各要素のテキストを取得
+          const contentText = contentElement ? contentElement.innerText : ''; // history-list のテキスト
+          const benchText = bench ? bench.innerText : ''; // bench のテキスト
+          const fieldText = field ? field.innerText : ''; // field のテキスト
+          const tempOutText = tempOut ? tempOut.innerText : ''; // tempOut のテキスト
+        
+          // 現在日時を取得してフォーマット
+          const now = new Date();
+          const timestamp = now.toISOString().replace(/[-T:\.Z]/g, '').slice(0, 14); // 例: 20241221123045
+          const formattedDate = now.toLocaleString(); // ローカル日時形式
+        
+          // 保存するテキストを作成
+          const finalText = `タイム:\n${formattedDate}\n\n` +
+            `履歴:\n${contentText.split('\n').filter(line => line.trim() !== '追記').join('\n')}\n\n` +
+            `ベンチ:\n${benchText.split('\n').filter(line => line.trim() !== 'ベンチ').join('\n')}\n\n` +
+            `ピッチ:\n${fieldText.split('\n').filter(line => line.trim() !== 'ピッチ').join('\n')}\n\n` +
+            `ピッチ外:\n${tempOutText.split('\n').filter(line => line.trim() !== 'ピッチ外').join('\n')}\n\n` ;
+        
+          // テキストを保存
+          const blob = new Blob([finalText], { type: 'text/plain' });
           const link = document.createElement('a');
           link.href = URL.createObjectURL(blob);
-          link.download = 'content.txt';
+          link.download = `content_${timestamp}.txt`; // ファイル名にタイムスタンプを使用
           link.click();
           URL.revokeObjectURL(link.href);
         }
+
+
+
 
     // リセットボタンの処理
     function resetContent() {
