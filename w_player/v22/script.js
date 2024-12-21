@@ -43,7 +43,7 @@
                     }
                     updateDisplay();
                 }, 1000);
-                startStopButton.textContent = "　停止　";
+                startStopButton.textContent = "ストップ";
             }
             isRunning = !isRunning;
         }
