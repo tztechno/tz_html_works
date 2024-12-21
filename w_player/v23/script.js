@@ -326,3 +326,134 @@
       const contentElement = document.getElementById('history-list');
       contentElement.innerHTML = ''; // 指定した要素の中身をクリア
     }
+
+
+
+
+
+        // ドラッグ＆ドロップイベントの設定
+        let firstSelectedPlayer = null;
+        let secondSelectedPlayer = null;
+        
+        document.addEventListener("dragstart", event => {
+            if (event.target.classList.contains("player")) {
+                event.target.classList.add("dragging");
+                event.dataTransfer.setData("text/plain", event.target.dataset.name);
+            }
+        });
+        
+        document.addEventListener("dragend", event => {
+            if (event.target.classList.contains("player")) {
+                event.target.classList.remove("dragging");
+            }
+        });
+        
+        [bench, field, tempOut].forEach(area => {
+            area.addEventListener("dragover", event => {
+                event.preventDefault();
+            });
+        
+            area.addEventListener("drop", event => {
+                event.preventDefault();
+                const playerName = event.dataTransfer.getData("text/plain");
+                const player = document.querySelector(`[data-name="${playerName}"]`);
+                
+                // ドロップ位置に他の選手がいるか確認
+                const dropTarget = event.target.closest('.player');
+                
+                if (dropTarget && dropTarget !== player) {
+                    // 選手間の交代
+                    showReasonModalForSwap(player, dropTarget, event.currentTarget);
+                } else if (player && event.currentTarget !== player.parentElement) {
+                    // 通常の移動
+                    showReasonModal(player, event.currentTarget);
+                }
+            });
+        });
+
+        // 選手交代用の理由選択モーダル
+        function showReasonModalForSwap(player1, player2, targetArea) {
+            currentDraggedPlayer = player1;
+            firstSelectedPlayer = player1;
+            secondSelectedPlayer = player2;
+            targetArea = targetArea;
+            reasonModal.style.display = "flex";
+            moveReasonSelect.value = "";
+        }
+        
+        // 理由確定ボタンの処理を更新
+        confirmReasonBtn.addEventListener("click", () => {
+            const reason = moveReasonSelect.value;
+            if (!reason) {
+                alert("理由を選択してください");
+                return;
+            }
+        
+            if (secondSelectedPlayer) {
+                // 選手交代の場合
+                const timestamp = timeDisplay.textContent;
+                
+                // 最初の選手の移動を記録
+                const area1 = secondSelectedPlayer.parentElement.id;
+                recordHistory(firstSelectedPlayer.dataset.name, area1, `${reason}IN`);
+                
+                // 2番目の選手の移動を記録
+                const area2 = firstSelectedPlayer.parentElement.id;
+                recordHistory(secondSelectedPlayer.dataset.name, area2, `${reason}OUT`);
+                
+                // 実際の位置交換
+                const tempParent = firstSelectedPlayer.parentElement;
+                secondSelectedPlayer.parentElement.appendChild(firstSelectedPlayer);
+                tempParent.appendChild(secondSelectedPlayer);
+                
+                // リセット
+                firstSelectedPlayer = null;
+                secondSelectedPlayer = null;
+            } else {
+                // 通常の移動
+                targetArea.appendChild(currentDraggedPlayer);
+                recordHistory(currentDraggedPlayer.dataset.name, targetArea.id, reason);
+            }
+            
+            reasonModal.style.display = "none";
+        });
+        
+        // 移動履歴を記録する関数を更新
+        function recordHistory(playerName, targetArea, reason) {
+            const timestamp = timeDisplay.textContent;
+            const historyItem = document.createElement("div");
+            historyItem.className = "history-item";
+            
+            const details = document.createElement("span");
+            let actionText = "";
+            
+            switch (targetArea) {
+                case "field":
+                    actionText = "ピッチに入りました";
+                    break;
+                case "bench":
+                    actionText = "ベンチに移動しました";
+                    break;
+                case "tempOut":
+                    actionText = "ピッチ外に出ました";
+                    break;
+                case "append":
+                    actionText = "追記されました";
+                    break;
+            }
+            
+            details.textContent = `${timestamp}: ${playerName} が ${actionText} (${reason})`;
+            
+            const appendButton = document.createElement("button");
+            appendButton.textContent = "追記";
+            appendButton.className = "append-button";
+            appendButton.addEventListener("click", () => openReasonWindow(playerName));
+            
+            historyItem.appendChild(details);
+            historyItem.appendChild(appendButton);
+            historyList.appendChild(historyItem);
+            historyList.scrollTop = historyList.scrollHeight;
+        }
+
+
+
