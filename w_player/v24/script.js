@@ -86,7 +86,6 @@ resetButton.addEventListener("click", resetStopwatch);
 adjustButton.addEventListener("click", adjustTime);
 
 
-
 // プレイヤーの生成と初期配置
 function generatePlayers(playerNames) {
     playerList.innerHTML = '';
@@ -150,10 +149,10 @@ function recordHistory(playerName, targetArea, reason) {
             actionText = "ピッチに入りました";
             break;
         case "bench":
-            actionText = "ピッチから退きました";
+            actionText = "ベンチに移動しました";
             break;
         case "tempOut":
-            actionText = "ピッチから退きました";
+            actionText = "ピッチの外に移動しました";
             break;
     }
     details.textContent = `${timestamp}: ${playerName} が ${actionText} (${reason})`;
@@ -243,8 +242,6 @@ document.addEventListener("dragend", event => {
     });
 });
 
-// モーダルの確定ボタン処理
-// モーダルの確定ボタン処理を更新
 // モーダルの確定ボタン処理を更新（単独移動の場合）
 confirmReasonBtn.addEventListener("click", () => {
     const reason = moveReasonSelect.value;
@@ -275,9 +272,6 @@ confirmReasonBtn.addEventListener("click", () => {
 });
 
 
-
-// 選手交代モーダルの確定ボタン処理
-// 選手交代モーダルの確定ボタン処理を更新
 // 選手交代モーダルの確定ボタン処理を更新
 confirmReasonBtn2.addEventListener("click", () => {
     const reason = moveReasonSelect2.value;
@@ -373,8 +367,6 @@ function saveHTML() {
     link.click();
     URL.revokeObjectURL(link.href);
 }
-
-
 
 
 // リセットボタンの処理
@@ -493,7 +485,7 @@ registerButton.addEventListener("click", () => {
 });
 
 
-// 12-22 Claude ///////////////////////////////////////////
+// 12-22 ///////////////////////////////////////////
 
 // 既存の変数宣言の後に追加
 let forbiddenPlayers = new Set(); // RCまたは負傷でOUTした選手を記録
@@ -558,7 +550,6 @@ function canEnterField(playerName, targetArea, replacingPlayer = null) {
                     return true;
                 }
             }
-
             const currentCount = countBCPlayers(field);
             if (currentCount >= 4) {
                 alert('ピッチ上のB/C選手が4人を超えるため、この操作はできません');
