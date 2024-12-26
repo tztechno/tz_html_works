@@ -86,7 +86,6 @@ resetButton.addEventListener("click", resetStopwatch);
 adjustButton.addEventListener("click", adjustTime);
 
 
-
 // プレイヤーの生成と初期配置
 function generatePlayers(playerNames) {
     playerList.innerHTML = '';
@@ -150,10 +149,10 @@ function recordHistory(playerName, targetArea, reason) {
             actionText = "ピッチに入りました";
             break;
         case "bench":
-            actionText = "ピッチから退きました";
+            actionText = "ベンチに移動しました";
             break;
         case "tempOut":
-            actionText = "ピッチから退きました";
+            actionText = "ピッチの外に移動しました";
             break;
     }
     details.textContent = `${timestamp}: ${playerName} が ${actionText} (${reason})`;
@@ -243,12 +242,25 @@ document.addEventListener("dragend", event => {
     });
 });
 
-// モーダルの確定ボタン処理
+// モーダルの確定ボタン処理を更新（単独移動の場合）
 confirmReasonBtn.addEventListener("click", () => {
     const reason = moveReasonSelect.value;
     if (!reason) {
         alert("理由を選択してください");
         return;
+    }
+
+    // 移動可能かチェック
+    if (!canEnterField(currentDraggedPlayer.dataset.name, targetArea)) {
+        reasonModal.style.display = "none";
+        currentDraggedPlayer = null;
+        targetArea = null;
+        return;
+    }
+
+    // RCまたは負傷でOUTした場合、forbiddenPlayersに追加
+    if (reason.includes('RC') || (reason.includes('負傷') && reason.includes('OUT'))) {
+        forbiddenPlayers.add(currentDraggedPlayer.dataset.name);
     }
 
     targetArea.appendChild(currentDraggedPlayer);
@@ -259,12 +271,28 @@ confirmReasonBtn.addEventListener("click", () => {
     targetArea = null;
 });
 
-// 選手交代モーダルの確定ボタン処理
+
+// 選手交代モーダルの確定ボタン処理を更新
 confirmReasonBtn2.addEventListener("click", () => {
     const reason = moveReasonSelect2.value;
     if (!reason) {
         alert("理由を選択してください");
         return;
+    }
+
+    // 入場する選手のチェック（交代する選手の情報も渡す）
+    if (!canEnterField(firstSelectedPlayer2.dataset.name,
+        secondSelectedPlayer2.parentElement,
+        secondSelectedPlayer2)) {
+        reasonModal2.style.display = "none";
+        firstSelectedPlayer2 = null;
+        secondSelectedPlayer2 = null;
+        return;
+    }
+
+    // RCまたは負傷でOUTした場合、forbiddenPlayersに追加
+    if (reason.includes('RC') || (reason.includes('負傷') && reason.includes('OUT'))) {
+        forbiddenPlayers.add(secondSelectedPlayer2.dataset.name);
     }
 
     recordSubstitutionHistory(
@@ -339,8 +367,6 @@ function saveHTML() {
     link.click();
     URL.revokeObjectURL(link.href);
 }
-
-
 
 
 // リセットボタンの処理
@@ -457,3 +483,81 @@ registerButton.addEventListener("click", () => {
         playerNamesInput.value = ''; // 入力ボックスをリセット
     }
 });
+
+
+// 12-22 ///////////////////////////////////////////
+
+// 既存の変数宣言の後に追加
+let forbiddenPlayers = new Set(); // RCまたは負傷でOUTした選手を記録
+
+// 選手名の最後の文字がBまたはCの数をカウントする関数
+function countBCPlayers(area) {
+    const players = Array.from(area.getElementsByClassName('player'));
+    return players.filter(player => {
+        const name = player.dataset.name;
+        const lastChar = name[name.length - 1].toUpperCase();
+        return lastChar === 'B' || lastChar === 'C';
+    }).length;
+}
+
+// 選手がピッチに入ることができるかチェックする関数
+function canEnterField(playerName, targetArea) {
+    // RCまたは負傷でOUTした選手のチェック
+    if (forbiddenPlayers.has(playerName)) {
+        alert('この選手は再びピッチに入ることはできません');
+        return false;
+    }
+
+    // B/C制限のチェック（ピッチに入る場合のみ）
+    if (targetArea.id === 'field') {
+        const lastChar = playerName[playerName.length - 1].toUpperCase();
+        if (lastChar === 'B' || lastChar === 'C') {
+            const currentCount = countBCPlayers(field);
+            if (currentCount >= 4) {
+                alert('ピッチ上のB/C選手が4人を超えるため、この操作はできません');
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+
+// B/C選手の交代をチェックする関数
+function isBCorC(name) {
+    const lastChar = name[name.length - 1].toUpperCase();
+    return lastChar === 'B' || lastChar === 'C';
+}
+
+// 選手がピッチに入ることができるかチェックする関数を更新
+function canEnterField(playerName, targetArea, replacingPlayer = null) {
+    // RCまたは負傷でOUTした選手のチェック
+    if (forbiddenPlayers.has(playerName)) {
+        alert('この選手は再びピッチに入ることはできません');
+        return false;
+    }
+
+    // B/C制限のチェック（ピッチに入る場合のみ）
+    if (targetArea.id === 'field') {
+        const isIncomingBC = isBCorC(playerName);
+
+        if (isIncomingBC) {
+            // 交代の場合
+            if (replacingPlayer) {
+                const isReplacingBC = isBCorC(replacingPlayer.dataset.name);
+                // B/C選手同士の交代の場合は許可
+                if (isReplacingBC) {
+                    return true;
+                }
+            }
+            const currentCount = countBCPlayers(field);
+            if (currentCount >= 4) {
+                alert('ピッチ上のB/C選手が4人を超えるため、この操作はできません');
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+
