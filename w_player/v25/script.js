@@ -723,42 +723,7 @@ function deletePendingSubstitution(index) {
     updatePendingDisplay();
 }
 
-// スタイルの追加
-const style = document.createElement('style');
-style.textContent = `
-.pending-container {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background: white;
-    border: 1px solid #ccc;
-    padding: 10px;
-    max-width: 300px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-}
 
-.pending-item {
-    margin: 10px 0;
-    padding: 5px;
-    border-bottom: 1px solid #eee;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.hold-button {
-    margin: 0 5px;
-    padding: 5px 10px;
-    background-color: #ffd700;
-    border: none;
-    border-radius: 3px;
-    cursor: pointer;
-}
-
-.hold-button:hover {
-    background-color: #ffed4a;
-}
-`;
 document.head.appendChild(style);
 
 // 初期化時に保留ボタンを追加
