@@ -561,3 +561,184 @@ function canEnterField(playerName, targetArea, replacingPlayer = null) {
 }
 
 
+// 保留中の操作を保存する配列
+let pendingSubstitutions = [];
+let pendingMoves = [];
+
+// HTML要素の追加
+function addPendingAreas() {
+    const container = document.createElement('div');
+    container.className = 'pending-container';
+    container.innerHTML = `
+        <div class="pending-area">
+            <h3>保留中の選手交代</h3>
+            <div id="pendingSubstitutions"></div>
+        </div>
+        <div class="pending-area">
+            <h3>保留中の選手移動</h3>
+            <div id="pendingMoves"></div>
+        </div>
+    `;
+    document.querySelector('.container').after(container);
+}
+
+// モーダルに保留ボタンを追加
+function addHoldButtons() {
+    // 選手交代モーダルに保留ボタンを追加
+    const modal2Buttons = reasonModal2.querySelector('.button-group');
+    const holdButton2 = document.createElement('button');
+    holdButton2.textContent = '保留';
+    holdButton2.id = 'holdReasonBtn2';
+    modal2Buttons.appendChild(holdButton2);
+
+    // 単独移動モーダルに保留ボタンを追加
+    const modalButtons = reasonModal.querySelector('.modal-content');
+    const holdButton = document.createElement('button');
+    holdButton.textContent = '保留';
+    holdButton.id = 'holdReasonBtn';
+    modalButtons.appendChild(holdButton);
+}
+
+// 保留中の操作を表示する関数
+function displayPendingOperations() {
+    // 選手交代の保留表示
+    const subsArea = document.getElementById('pendingSubstitutions');
+    subsArea.innerHTML = pendingSubstitutions.map((sub, index) => `
+        <div class="pending-item">
+            <span>${sub.player1Name} ⇄ ${sub.player2Name} (${sub.reason})</span>
+            <div class="pending-buttons">
+                <button onclick="executePendingSub(${index})">実行</button>
+                <button onclick="cancelPendingSub(${index})">キャンセル</button>
+            </div>
+        </div>
+    `).join('');
+
+    // 選手移動の保留表示
+    const movesArea = document.getElementById('pendingMoves');
+    movesArea.innerHTML = pendingMoves.map((move, index) => `
+        <div class="pending-item">
+            <span>${move.playerName} → ${getAreaName(move.targetArea)} (${move.reason})</span>
+            <div class="pending-buttons">
+                <button onclick="executePendingMove(${index})">実行</button>
+                <button onclick="cancelPendingMove(${index})">キャンセル</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+// エリア名を取得する補助関数
+function getAreaName(areaId) {
+    switch (areaId) {
+        case 'field': return 'ピッチ';
+        case 'bench': return 'ベンチ';
+        case 'tempOut': return 'ピッチ外';
+        default: return areaId;
+    }
+}
+
+// 保留ボタンのイベントハンドラー
+function initializeHoldButtons() {
+    // 選手交代の保留
+    document.getElementById('holdReasonBtn2').addEventListener('click', () => {
+        const reason = moveReasonSelect2.value;
+        if (!reason) {
+            alert("理由を選択してください");
+            return;
+        }
+
+        pendingSubstitutions.push({
+            player1: firstSelectedPlayer2,
+            player2: secondSelectedPlayer2,
+            player1Name: firstSelectedPlayer2.dataset.name,
+            player2Name: secondSelectedPlayer2.dataset.name,
+            reason: reason
+        });
+
+        reasonModal2.style.display = "none";
+        firstSelectedPlayer2 = null;
+        secondSelectedPlayer2 = null;
+        displayPendingOperations();
+    });
+
+    // 単独移動の保留
+    document.getElementById('holdReasonBtn').addEventListener('click', () => {
+        const reason = moveReasonSelect.value;
+        if (!reason) {
+            alert("理由を選択してください");
+            return;
+        }
+
+        pendingMoves.push({
+            player: currentDraggedPlayer,
+            playerName: currentDraggedPlayer.dataset.name,
+            targetArea: targetArea.id,
+            reason: reason
+        });
+
+        reasonModal.style.display = "none";
+        currentDraggedPlayer = null;
+        targetArea = null;
+        displayPendingOperations();
+    });
+}
+
+// 保留中の選手交代を実行
+function executePendingSub(index) {
+    const sub = pendingSubstitutions[index];
+
+    // 移動可能かチェック
+    if (!canEnterField(sub.player1.dataset.name, sub.player2.parentElement, sub.player2)) {
+        return;
+    }
+
+    // 位置の交換
+    const tempParent = sub.player1.parentElement;
+    sub.player2.parentElement.appendChild(sub.player1);
+    tempParent.appendChild(sub.player2);
+
+    // 履歴に記録
+    recordSubstitutionHistory(sub.player1Name, sub.player2Name, sub.reason);
+
+    // 保留リストから削除
+    pendingSubstitutions.splice(index, 1);
+    displayPendingOperations();
+}
+
+// 保留中の選手移動を実行
+function executePendingMove(index) {
+    const move = pendingMoves[index];
+
+    // 移動可能かチェック
+    if (!canEnterField(move.playerName, document.getElementById(move.targetArea))) {
+        return;
+    }
+
+    // 選手を移動
+    document.getElementById(move.targetArea).appendChild(move.player);
+
+    // 履歴に記録
+    recordHistory(move.playerName, move.targetArea, move.reason);
+
+    // 保留リストから削除
+    pendingMoves.splice(index, 1);
+    displayPendingOperations();
+}
+
+// 保留中の選手交代をキャンセル
+function cancelPendingSub(index) {
+    pendingSubstitutions.splice(index, 1);
+    displayPendingOperations();
+}
+
+// 保留中の選手移動をキャンセル
+function cancelPendingMove(index) {
+    pendingMoves.splice(index, 1);
+    displayPendingOperations();
+}
+
+// ページ読み込み時に初期化
+document.addEventListener('DOMContentLoaded', () => {
+    addPendingAreas();
+    addHoldButtons();
+    initializeHoldButtons();
+});
