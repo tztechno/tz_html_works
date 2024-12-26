@@ -32,51 +32,36 @@
         
     </div>
 
-    <div class="container">
-        <div class="list" id="playerList">
-            <div class="area-title">登録選手</div>
-        </div>
-        <div class="area" id="bench">
-            <div class="area-title">ベンチ</div>
-        </div>
-        <div class="area" id="field">
-            <div class="area-title">ピッチ</div>
-        </div>
-        <div class="area" id="tempOut">
-            <div class="area-title">ピッチ外</div>
-        </div>
-    </div>
 
+<div class="container">
+    <div class="area" id="bench">
+        <div class="area-title">ベンチ</div>
+    </div>
+    <div class="area" id="field">
+        <div class="area-title">ピッチ</div>
+    </div>
+    <div class="area" id="tempOut">
+        <div class="area-title">ピッチ外</div>
+    </div>
     <div class="history" id="history">
-        <strong>移動履歴:</strong>
+        <div class="area-title">履歴</div>
         <ul id="history-list"></ul>
     </div>
+</div>
+
 
     <div id="reasonModal" class="modal">
         <div class="modal-content">
             <h3>移動理由を選択</h3>
             <select id="moveReason">
                 <option value="">理由を選択</option>
-<!--
-                <option value="戦術OUT">戦術OUT</option>
-                <option value="戦術IN">戦術IN</option>
-                <option value="出血OUT">出血OUT</option>
-                <option value="出血IN">出血IN</option>
--->                
+   
                 <option value="出血OUT>>復帰">出血OUT>>復帰</option>
                 <option value="出血IN>>OUT">出血IN>>OUT</option>
-<!--
-                <option value="負傷OUT">負傷OUT</option>
-                <option value="負傷IN">負傷IN</option>
-                <option value="HIA OUT">HIA OUT</option>
-                <option value="HIA IN">HIA IN</option>
--->                    
+       
                 <option value="HIA OUT>>復帰">HIA OUT>>復帰</option>
                 <option value="HIA IN>>OUT">HIA IN>>OUT</option>
-<!--
-                <option value="シンビンOUT">シンビンOUT</option>
-                <option value="シンビンIN">シンビンIN</option>
--->                  
+                 
                 <option value="シンビンOUT>>復帰">シンビンOUT>>復帰</option>
                 <option value="シンビンIN>>OUT">シンビンIN>>OUT</option>
 
@@ -89,11 +74,6 @@
 
                 <option value="FPRO">FPRO</option>
                 <option value="FPRO>>復帰">FPRO>>復帰</option>
-
-                <option value="FPRO/YC">FPRO/YC</option>
-                <option value="FPRO/YC>>復帰">FPRO/YC>>復帰</option>
-
-                <option value="FPRO/RC">FPRO/RC</option>
 
             </select>
             <button id="confirmReasonBtn">確定</button>

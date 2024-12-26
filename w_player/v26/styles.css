@@ -8,19 +8,20 @@ body {
 }
 
 .container {
+    margin-left: 400px;
+    margin-right: 20px;
     display: flex;
     justify-content: space-between;
-    margin-left: 250px;
     width: 90%;
-    max-width: 1000px;
+    max-width: 1160px;
     margin-top: 20px;
 }
 
 .area {
     border: 2px dashed #ccc;
     border-radius: 5px;
-    width: 30%;
-    height: 600px;
+    width: 430px;
+    max-height: 600px;
     padding: 5px;
     display: flex;
     flex-direction: column;
@@ -65,12 +66,12 @@ body {
 }
 
 .history {
-    margin-top: 20px;
-    border: 1px solid #ccc;
+    border: 2px dashed #ccc;
+    margin-top: 0px;
     padding: 10px;
-    max-height: 150px;
     width: 90%;
-    max-width: 800px;
+    height: 590px;
+    max-width: 600px;
     overflow-y: auto;
     font-size: 14px;
 }
@@ -91,32 +92,32 @@ body {
 }
 
 
+
 .stopwatch {
-    margin-top: 20px;
+    margin-top: 4px;
     font-size: 20px;
-    width: 180px;
+    width: 340px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 10px;
+    gap: 0px;
     position: fixed;
     top: 20px;
     left: 20px;
     background-color: rgba(255, 255, 255, 0.8);
-    padding: 20px;
+    padding: 10px;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     cursor: move;
+    height: 200px;
 }
 
+
 #timeDisplay {
-    font-size: 48px;
-    /* 時間表示の文字を大きくする */
+    font-size: 54px;
     font-weight: bold;
     color: #006747 !important;
-    /* ダークグリーン */
     text-shadow: 2px 2px 4px #FFD100 !important;
-    /* 黄色のシャドウ */
 }
 
 .buttons {
@@ -248,10 +249,6 @@ body {
 
 
 
-
-
-
-
 /* 履歴項目のベース */
 .history-item {
     display: flex;
@@ -294,7 +291,6 @@ body {
     transform: translate(-50%, -50%);
     padding: 20px;
     width: 500px;
-    /* 横幅を広げる */
     background-color: white;
     border: 1px solid #ccc;
     border-radius: 5px;
@@ -322,15 +318,13 @@ body {
 /* 保留エリアのコンテナ */
 .pending-container {
     position: fixed;
-    top: 20px;
-    right: 20px;
-    width: 290px;
-    /* 固定幅 */
+    top: 270px;
+    left: 20px;
+    width: 360px;
     display: flex;
     flex-direction: column;
     gap: 20px;
-    max-height: calc(100vh - 40px);
-    /* 画面の高さから上下のマージンを引く */
+    max-height: 470px;
     z-index: 100;
 }
 
@@ -341,7 +335,7 @@ body {
     border-radius: 8px;
     padding: 15px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    max-height: calc(50vh - 40px);
+    max-height: 330px;
     /* コンテナの半分の高さ */
     overflow-y: auto;
 }
@@ -445,8 +439,3 @@ body {
     background-color: #e0a800;
 }
 
-/* Stopwatchとの重なりを防ぐためのメインコンテンツの調整 */
-.container {
-    margin-right: 320px;
-    /* 保留エリアの幅 + 余白 */
-}
