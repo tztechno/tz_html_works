@@ -406,7 +406,6 @@ function recordHistory(playerName, targetArea, reason) {
 }
 
 
-
 // 理由選択ウィンドウを開く
 function openReasonWindow(playerName) {
     // 理由選択用ウィンドウの作成
@@ -421,8 +420,8 @@ function openReasonWindow(playerName) {
     // 理由リストをプルダウンメニューに変更
     const select = document.createElement("select");
     const reasons = [
-        "HIA IN>>戦術IN", "HIA OUT>>戦術OUT", "HIA IN>>負傷IN", "HIA OUT>>負傷OUT",
-        "出血IN>>戦術IN", "出血OUT>>戦術OUT", "出血IN>>負傷IN", "出血OUT>>負傷OUT", "---"
+        "HIA IN >> 戦術 IN", "HIA OUT >> 戦術 OUT", "HIA IN >> 負傷 IN", "HIA OUT >> 負傷 OUT",
+        "出血 IN >> 戦術 IN", "出血 OUT >> 戦術 OUT", "出血 IN >> 負傷 IN", "出血 OUT >> 負傷 OUT", 
     ];
     reasons.forEach(reason => {
         const option = document.createElement("option");
