@@ -1,11 +1,13 @@
 // DOM要素の取得
-const playerList = document.getElementById("playerList");
 const bench = document.getElementById("bench");
 const field = document.getElementById("field");
 const tempOut = document.getElementById("tempOut");
 const historyList = document.getElementById("history-list");
 const playerNamesInput = document.getElementById("playerNamesInput");
 const registerButton = document.getElementById("registerButton");
+
+
+
 
 // モーダル関連の要素取得
 const reasonModal = document.getElementById("reasonModal");
@@ -85,17 +87,14 @@ startStopButton.addEventListener("click", startStopwatch);
 resetButton.addEventListener("click", resetStopwatch);
 adjustButton.addEventListener("click", adjustTime);
 
-
 // プレイヤーの生成と初期配置
 function generatePlayers(playerNames) {
-    playerList.innerHTML = '';
     bench.innerHTML = '<div class="area-title">ベンチ</div>';
     field.innerHTML = '<div class="area-title">ピッチ</div>';
     tempOut.innerHTML = '<div class="area-title">ピッチ外</div>';
 
     playerNames.forEach((name, index) => {
         const player = createPlayerElement(name);
-        playerList.appendChild(createPlayerListElement(name));
         if (index < 15) {
             field.appendChild(player);
         } else {
@@ -112,12 +111,6 @@ function createPlayerElement(name) {
     player.draggable = true;
     player.dataset.name = name;
     return player;
-}
-
-function createPlayerListElement(name) {
-    const listItem = document.createElement("div");
-    listItem.textContent = name;
-    return listItem;
 }
 
 // 単独移動用のモーダル表示
