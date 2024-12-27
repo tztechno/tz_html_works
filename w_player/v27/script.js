@@ -265,45 +265,6 @@ confirmReasonBtn.addEventListener("click", () => {
 });
 
 
-// 選手交代モーダルの確定ボタン処理を更新
-confirmReasonBtn2.addEventListener("click", () => {
-    const reason = moveReasonSelect2.value;
-    if (!reason) {
-        alert("理由を選択してください");
-        return;
-    }
-
-    // 入場する選手のチェック（交代する選手の情報も渡す）
-    if (!canEnterField(firstSelectedPlayer2.dataset.name,
-        secondSelectedPlayer2.parentElement,
-        secondSelectedPlayer2)) {
-        reasonModal2.style.display = "none";
-        firstSelectedPlayer2 = null;
-        secondSelectedPlayer2 = null;
-        return;
-    }
-
-    // RCまたは負傷でOUTした場合、forbiddenPlayersに追加
-    if (reason.includes('RC') || (reason.includes('負傷') && reason.includes('OUT'))) {
-        forbiddenPlayers.add(secondSelectedPlayer2.dataset.name);
-    }
-
-    recordSubstitutionHistory(
-        firstSelectedPlayer2.dataset.name,
-        secondSelectedPlayer2.dataset.name,
-        reason
-    );
-
-    // 位置の交換
-    const tempParent = firstSelectedPlayer2.parentElement;
-    secondSelectedPlayer2.parentElement.appendChild(firstSelectedPlayer2);
-    tempParent.appendChild(secondSelectedPlayer2);
-
-    reasonModal2.style.display = "none";
-    firstSelectedPlayer2 = null;
-    secondSelectedPlayer2 = null;
-});
-
 // キャンセルボタンの処理
 cancelReasonBtn.addEventListener("click", () => {
     reasonModal.style.display = "none";
@@ -734,3 +695,258 @@ document.addEventListener('DOMContentLoaded', () => {
     addHoldButtons();
     initializeHoldButtons();
 });
+
+
+
+///////////////////////////////////////////////////////////////
+
+
+// アニメーション用のヘルパー関数
+function getElementPosition(element) {
+    const rect = element.getBoundingClientRect();
+    return {
+        x: rect.left + window.scrollX,
+        y: rect.top + window.scrollY
+    };
+}
+
+function animatePlayerSwap(player1, player2) {
+    // 両プレイヤーの初期位置を取得
+    const pos1 = getElementPosition(player1);
+    const pos2 = getElementPosition(player2);
+
+    // プレイヤー要素のクローンを作成
+    const clone1 = player1.cloneNode(true);
+    const clone2 = player2.cloneNode(true);
+
+    // クローンの絶対位置を設定
+    Object.assign(clone1.style, {
+        position: 'fixed',
+        left: `${pos1.x}px`,
+        top: `${pos1.y}px`,
+        zIndex: 1000,
+        transition: 'all 0.5s ease'
+    });
+
+    Object.assign(clone2.style, {
+        position: 'fixed',
+        left: `${pos2.x}px`,
+        top: `${pos2.y}px`,
+        zIndex: 1000,
+        transition: 'all 0.5s ease'
+    });
+
+    // クローンを body に追加
+    document.body.appendChild(clone1);
+    document.body.appendChild(clone2);
+
+    // 元のプレイヤー要素を一時的に非表示
+    player1.style.opacity = '0';
+    player2.style.opacity = '0';
+
+    // アニメーションを開始
+    requestAnimationFrame(() => {
+        clone1.style.left = `${pos2.x}px`;
+        clone1.style.top = `${pos2.y}px`;
+        clone2.style.left = `${pos1.x}px`;
+        clone2.style.top = `${pos1.y}px`;
+    });
+
+    // アニメーション完了後のクリーンアップ
+    setTimeout(() => {
+        player1.style.opacity = '1';
+        player2.style.opacity = '1';
+        clone1.remove();
+        clone2.remove();
+    }, 500);
+}
+
+
+
+// 保留中の選手交代を実行する関数を更新
+function executePendingSub(index) {
+    const sub = pendingSubstitutions[index];
+
+    if (!canEnterField(sub.player1.dataset.name, sub.player2.parentElement, sub.player2)) {
+        return;
+    }
+
+    // アニメーション付きの選手交代を実行
+    animatePlayerSwap(sub.player1, sub.player2);
+
+    // 実際の位置交換を遅延実行
+    setTimeout(() => {
+        const tempParent = sub.player1.parentElement;
+        sub.player2.parentElement.appendChild(sub.player1);
+        tempParent.appendChild(sub.player2);
+
+        recordSubstitutionHistory(sub.player1Name, sub.player2Name, sub.reason);
+
+        pendingSubstitutions.splice(index, 1);
+        displayPendingOperations();
+    }, 500);
+}
+
+
+// 要素の位置を保持するための関数
+function getGridPosition(element) {
+    const parent = element.parentElement;
+    const children = Array.from(parent.children);
+    // area-title を除外して位置を取得
+    const playerElements = children.filter(child => child.classList.contains('player'));
+    return playerElements.indexOf(element);
+}
+
+
+// 保留中の選手交代を実行する関数を更新
+function executePendingSub(index) {
+    const sub = pendingSubstitutions[index];
+
+    if (!canEnterField(sub.player1.dataset.name, sub.player2.parentElement, sub.player2)) {
+        return;
+    }
+
+    // 交代前の位置を記録
+    const pos1 = getGridPosition(sub.player1);
+    const pos2 = getGridPosition(sub.player2);
+    const parent1 = sub.player1.parentElement;
+    const parent2 = sub.player2.parentElement;
+
+    // アニメーション付きの選手交代を実行
+    animatePlayerSwap(sub.player1, sub.player2);
+
+    // 実際の位置交換を遅延実行
+    setTimeout(() => {
+        const temp1 = sub.player1.cloneNode(true);
+        const temp2 = sub.player2.cloneNode(true);
+
+        sub.player1.remove();
+        sub.player2.remove();
+
+        insertAtPosition(parent2, temp1, pos2);
+        insertAtPosition(parent1, temp2, pos1);
+
+        recordSubstitutionHistory(sub.player1Name, sub.player2Name, sub.reason);
+
+        pendingSubstitutions.splice(index, 1);
+        displayPendingOperations();
+    }, 500);
+}
+
+// 単独移動のための位置保持機能を追加
+function executePendingMove(index) {
+    const move = pendingMoves[index];
+
+    if (!canEnterField(move.playerName, document.getElementById(move.targetArea))) {
+        return;
+    }
+
+    // 移動前の位置を記録
+    const originalPos = getGridPosition(move.player);
+
+    // 選手を移動（位置を保持）
+    const targetArea = document.getElementById(move.targetArea);
+    move.player.remove();
+    insertAtPosition(targetArea, move.player, originalPos);
+
+    recordHistory(move.playerName, move.targetArea, move.reason);
+
+    pendingMoves.splice(index, 1);
+    displayPendingOperations();
+}
+
+/////
+
+// 選手交代モーダルの確定ボタン処理を更新（即時実行用）
+confirmReasonBtn2.addEventListener("click", () => {
+    const reason = moveReasonSelect2.value;
+    if (!reason) {
+        alert("理由を選択してください");
+        return;
+    }
+
+    if (!canEnterField(firstSelectedPlayer2.dataset.name,
+        secondSelectedPlayer2.parentElement,
+        secondSelectedPlayer2)) {
+        reasonModal2.style.display = "none";
+        firstSelectedPlayer2 = null;
+        secondSelectedPlayer2 = null;
+        return;
+    }
+
+    if (reason.includes('RC') || (reason.includes('負傷') && reason.includes('OUT'))) {
+        forbiddenPlayers.add(secondSelectedPlayer2.dataset.name);
+    }
+
+    // 交代前の位置を記録
+    const pos1 = getGridPosition(firstSelectedPlayer2);
+    const pos2 = getGridPosition(secondSelectedPlayer2);
+    const parent1 = firstSelectedPlayer2.parentElement;
+    const parent2 = secondSelectedPlayer2.parentElement;
+
+    recordSubstitutionHistory(
+        firstSelectedPlayer2.dataset.name,
+        secondSelectedPlayer2.dataset.name,
+        reason
+    );
+
+    // アニメーション付きの選手交代を実行
+    animatePlayerSwap(firstSelectedPlayer2, secondSelectedPlayer2);
+
+    // 実際の位置交換（位置を保持）
+    setTimeout(() => {
+        // 元の要素を削除する前に新しい要素を作成
+        const clone1 = firstSelectedPlayer2.cloneNode(true);
+        const clone2 = secondSelectedPlayer2.cloneNode(true);
+
+        // dragstart イベントリスナーを再設定
+        clone1.draggable = true;
+        clone2.draggable = true;
+
+        // 元の要素を削除
+        firstSelectedPlayer2.remove();
+        secondSelectedPlayer2.remove();
+
+        // 新しい要素を正しい位置に挿入
+        insertAtPosition(parent2, clone1, pos2);
+        insertAtPosition(parent1, clone2, pos1);
+    }, 500);
+
+    reasonModal2.style.display = "none";
+    firstSelectedPlayer2 = null;
+    secondSelectedPlayer2 = null;
+});
+
+// ドラッグ&ドロップイベントの再設定のためのヘルパー関数
+function setupDragAndDrop(element) {
+    element.addEventListener("dragstart", event => {
+        event.target.classList.add("dragging");
+        event.dataTransfer.setData("text/plain", event.target.dataset.name);
+    });
+
+    element.addEventListener("dragend", event => {
+        event.target.classList.remove("dragging");
+    });
+}
+
+// insertAtPosition 関数を更新して、ドラッグ&ドロップの再設定を含める
+function insertAtPosition(parent, element, position) {
+    const children = Array.from(parent.children);
+    const playerElements = children.filter(child => child.classList.contains('player'));
+    const titleElement = parent.querySelector('.area-title');
+
+    // ドラッグ&ドロップの設定を追加
+    element.draggable = true;
+    setupDragAndDrop(element);
+
+    if (position >= 0 && position < playerElements.length) {
+        const targetElement = playerElements[position];
+        parent.insertBefore(element, targetElement);
+    } else {
+        if (titleElement && titleElement.nextSibling) {
+            parent.insertBefore(element, titleElement.nextSibling);
+        } else {
+            parent.appendChild(element);
+        }
+    }
+}
