@@ -1,3 +1,4 @@
+
 // DOM要素の取得
 const bench = document.getElementById("bench");
 const field = document.getElementById("field");
@@ -5,9 +6,6 @@ const tempOut = document.getElementById("tempOut");
 const historyList = document.getElementById("history-list");
 const playerNamesInput = document.getElementById("playerNamesInput");
 const registerButton = document.getElementById("registerButton");
-
-
-
 
 // モーダル関連の要素取得
 const reasonModal = document.getElementById("reasonModal");
@@ -24,68 +22,6 @@ let currentDraggedPlayer = null;
 let targetArea = null;
 let firstSelectedPlayer2 = null;
 let secondSelectedPlayer2 = null;
-
-let timer;
-let isRunning = false;
-let seconds = 0;
-let minutes = 0;
-let hours = 0;
-
-// ストップウォッチの動作
-function startStopwatch() {
-    if (isRunning) {
-        clearInterval(timer);
-        startStopButton.textContent = "スタート";
-    } else {
-        timer = setInterval(() => {
-            seconds++;
-            if (seconds === 60) {
-                seconds = 0;
-                minutes++;
-            }
-            if (minutes === 60) {
-                minutes = 0;
-                hours++;
-            }
-            updateDisplay();
-        }, 1000);
-        startStopButton.textContent = "ストップ";
-    }
-    isRunning = !isRunning;
-}
-
-function resetStopwatch() {
-    clearInterval(timer);
-    isRunning = false;
-    seconds = 0;
-    minutes = 0;
-    hours = 0;
-    updateDisplay();
-    startStopButton.textContent = "スタート";
-}
-
-function adjustTime() {
-    const input = parseInt(adjustSeconds.value, 10); // 入力値を取得
-    if (!isNaN(input)) { // 有効な数値か確認
-        let totalSeconds = hours * 3600 + minutes * 60 + seconds + input; // 秒に変換して加算
-        if (totalSeconds < 0) totalSeconds = 0; // 負の時間は許容しない
-        hours = Math.floor(totalSeconds / 3600); // 時間に再計算
-        totalSeconds %= 3600;
-        minutes = Math.floor(totalSeconds / 60); // 分に再計算
-        seconds = totalSeconds % 60; // 秒に再計算
-        updateDisplay(); // 時間を更新
-    }
-}
-
-function updateDisplay() {
-    // 時間、分、秒をフォーマットして表示
-    timeDisplay.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-}
-
-// ストップウォッチのボタンにイベントを追加
-startStopButton.addEventListener("click", startStopwatch);
-resetButton.addEventListener("click", resetStopwatch);
-adjustButton.addEventListener("click", adjustTime);
 
 // プレイヤーの生成と初期配置
 function generatePlayers(playerNames) {
@@ -301,6 +237,28 @@ function saveHTML() {
     const fieldText = field ? field.innerText : ''; // field のテキスト
     const tempOutText = tempOut ? tempOut.innerText : ''; // tempOut のテキスト
 
+    // 禁止プレイヤーリストを作成 (履歴情報に基づく)
+    const forbiddenPlayer = [];
+    const historyLines = contentText.split('\n');
+    historyLines.forEach(line => {
+        if (line.includes('RC') || line.includes('負傷 OUT')) {
+            const playerName = line.split(' ')[1]; // プレイヤー名を抽出
+            if (playerName && !forbiddenPlayer.includes(playerName)) {
+                forbiddenPlayer.push(playerName);
+            }
+        }
+    });
+
+    // 保留中の選手交代をフォーマット
+    const pendingSubstitutionsText = pendingSubstitutions.map(sub => {
+        return `${sub.player1Name} ⇄ ${sub.player2Name} (${sub.reason})`;
+    }).join('\n');
+
+    // 保留中の選手移動をフォーマット
+    const pendingMovesText = pendingMoves.map(move => {
+        return `${move.playerName} → ${getAreaName(move.targetArea)} (${move.reason})`;
+    }).join('\n');
+
     // 現在日時を取得してフォーマット
     const now = new Date();
     const timestamp = now.toISOString().replace(/[-T:\.Z]/g, '').slice(0, 14); // 例: 20241221123045
@@ -308,10 +266,13 @@ function saveHTML() {
 
     // 保存するテキストを作成
     const finalText = `タイム:\n${formattedDate}\n\n` +
-        `履歴:\n${contentText.split('\n').filter(line => line.trim() !== '追記').join('\n')}\n\n` +
+        `履歴:\n${historyLines.filter(line => line.trim() !== '追記').join('\n')}\n\n` +
         `ベンチ:\n${benchText.split('\n').filter(line => line.trim() !== 'ベンチ').join('\n')}\n\n` +
         `ピッチ:\n${fieldText.split('\n').filter(line => line.trim() !== 'ピッチ').join('\n')}\n\n` +
-        `ピッチ外:\n${tempOutText.split('\n').filter(line => line.trim() !== 'ピッチ外').join('\n')}\n\n`;
+        `ピッチ外:\n${tempOutText.split('\n').filter(line => line.trim() !== 'ピッチ外').join('\n')}\n\n` +
+        `禁止プレイヤー:\n${forbiddenPlayer.join(', ')}\n\n` +
+        `保留中の選手交代:\n${pendingSubstitutionsText || 'なし'}\n\n` +
+        `保留中の選手移動:\n${pendingMovesText || 'なし'}\n\n`;
 
     // テキストを保存
     const blob = new Blob([finalText], { type: 'text/plain' });
@@ -323,11 +284,43 @@ function saveHTML() {
 }
 
 
+
 // リセットボタンの処理
 function resetContent() {
-    const contentElement = document.getElementById('history-list');
-    contentElement.innerHTML = ''; // 指定した要素の中身をクリア
+    // 入力フォームのリセット
+    playerNamesInput.value = '';
+
+    // 表示エリアのリセット
+    bench.innerHTML = '<div class="area-title">ベンチ</div>';
+    field.innerHTML = '<div class="area-title">ピッチ</div>';
+    tempOut.innerHTML = '<div class="area-title">ピッチ外</div>';
+    historyList.innerHTML = '';
+
+    // モーダル関連のリセット
+    moveReasonSelect.value = '';
+    moveReasonSelect2.value = '';
+    reasonModal.style.display = 'none';
+    reasonModal2.style.display = 'none';
+
+    // 保留中の内容のリセット
+    pendingSubstitutions = []; // 選手交代の保留をクリア
+    pendingMoves = []; // 単独移動の保留をクリア
+
+    // 保留エリアの表示をリセット
+    const pendingSubstitutionsArea = document.getElementById('pendingSubstitutions');
+    const pendingMovesArea = document.getElementById('pendingMoves');
+    if (pendingSubstitutionsArea) pendingSubstitutionsArea.innerHTML = '';
+    if (pendingMovesArea) pendingMovesArea.innerHTML = '';
+
+    // 禁止プレイヤーリストのリセット
+    forbiddenPlayers.clear();
+
+    // ボタンのリセット
+    registerButton.disabled = false;
+
+    console.log('全ての記録と表示、保留中の内容がリセットされました。');
 }
+
 
 // 移動履歴を記録
 function recordHistory(playerName, targetArea, reason) {
@@ -697,7 +690,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
-
 ///////////////////////////////////////////////////////////////
 
 
@@ -760,7 +752,6 @@ function animatePlayerSwap(player1, player2) {
         clone2.remove();
     }, 500);
 }
-
 
 
 // 保留中の選手交代を実行する関数を更新
@@ -855,19 +846,17 @@ function executePendingMove(index) {
     displayPendingOperations();
 }
 
-/////
 
 // 選手交代モーダルの確定ボタン処理を更新（即時実行用）
 confirmReasonBtn2.addEventListener("click", () => {
     const reason = moveReasonSelect2.value;
+
     if (!reason) {
         alert("理由を選択してください");
         return;
     }
 
-    if (!canEnterField(firstSelectedPlayer2.dataset.name,
-        secondSelectedPlayer2.parentElement,
-        secondSelectedPlayer2)) {
+    if (!canEnterField(firstSelectedPlayer2.dataset.name, secondSelectedPlayer2.parentElement, secondSelectedPlayer2)) {
         reasonModal2.style.display = "none";
         firstSelectedPlayer2 = null;
         secondSelectedPlayer2 = null;
@@ -878,44 +867,44 @@ confirmReasonBtn2.addEventListener("click", () => {
         forbiddenPlayers.add(secondSelectedPlayer2.dataset.name);
     }
 
-    // 交代前の位置を記録
+    // 交代前の位置と親要素を記録
     const pos1 = getGridPosition(firstSelectedPlayer2);
     const pos2 = getGridPosition(secondSelectedPlayer2);
     const parent1 = firstSelectedPlayer2.parentElement;
     const parent2 = secondSelectedPlayer2.parentElement;
 
-    recordSubstitutionHistory(
-        firstSelectedPlayer2.dataset.name,
-        secondSelectedPlayer2.dataset.name,
-        reason
-    );
+    // 履歴を記録
+    recordSubstitutionHistory(firstSelectedPlayer2.dataset.name, secondSelectedPlayer2.dataset.name, reason);
 
     // アニメーション付きの選手交代を実行
     animatePlayerSwap(firstSelectedPlayer2, secondSelectedPlayer2);
 
-    // 実際の位置交換（位置を保持）
+    // アニメーション完了後に DOM の位置を更新
     setTimeout(() => {
-        // 元の要素を削除する前に新しい要素を作成
+        // 元の要素を削除する前にクローンを作成
         const clone1 = firstSelectedPlayer2.cloneNode(true);
         const clone2 = secondSelectedPlayer2.cloneNode(true);
 
-        // dragstart イベントリスナーを再設定
-        clone1.draggable = true;
-        clone2.draggable = true;
+        // ドラッグ&ドロップのイベントリスナーを再設定
+        setupDragAndDrop(clone1);
+        setupDragAndDrop(clone2);
 
         // 元の要素を削除
         firstSelectedPlayer2.remove();
         secondSelectedPlayer2.remove();
 
-        // 新しい要素を正しい位置に挿入
+        // 新しい要素を挿入
         insertAtPosition(parent2, clone1, pos2);
         insertAtPosition(parent1, clone2, pos1);
-    }, 500);
 
-    reasonModal2.style.display = "none";
-    firstSelectedPlayer2 = null;
-    secondSelectedPlayer2 = null;
+        // 状態リセット
+        reasonModal2.style.display = "none";
+        firstSelectedPlayer2 = null;
+        secondSelectedPlayer2 = null;
+    }, 500); // アニメーション時間に同期
 });
+
+
 
 // ドラッグ&ドロップイベントの再設定のためのヘルパー関数
 function setupDragAndDrop(element) {
@@ -949,4 +938,84 @@ function insertAtPosition(parent, element, position) {
             parent.appendChild(element);
         }
     }
+}
+
+
+////////////////////////////////////////////////////////////
+
+
+// 位置情報を保持するための関数を更新
+function getGridPosition(element) {
+    const parent = element.parentElement;
+    const children = Array.from(parent.children);
+    // area-title を除外して位置を取得
+    const playerElements = children.filter(child => child.classList.contains('player'));
+    return playerElements.indexOf(element);
+}
+
+// 指定した位置に要素を挿入する関数を更新
+function insertAtPosition(parent, element, position) {
+    const children = Array.from(parent.children);
+    const playerElements = children.filter(child => child.classList.contains('player'));
+    const titleElement = parent.querySelector('.area-title');
+
+    // ドラッグ&ドロップの設定を追加
+    element.draggable = true;
+    setupDragAndDrop(element);
+
+    if (position >= 0 && position < playerElements.length) {
+        const targetElement = playerElements[position];
+        parent.insertBefore(element, targetElement);
+    } else {
+        if (titleElement && titleElement.nextSibling) {
+            parent.insertBefore(element, titleElement.nextSibling);
+        } else {
+            parent.appendChild(element);
+        }
+    }
+}
+
+// 保留中の選手交代を実行する関数を更新
+function executePendingSub(index) {
+    const sub = pendingSubstitutions[index];
+
+    // forbidden playersのチェックを追加
+    if (forbiddenPlayers.has(sub.player1.dataset.name) && sub.player2.parentElement.id === 'field') {
+        alert('この選手は再びピッチに入ることはできません');
+        return;
+    }
+
+    if (!canEnterField(sub.player1.dataset.name, sub.player2.parentElement, sub.player2)) {
+        return;
+    }
+
+    // 交代前の位置と親要素を記録
+    const pos1 = getGridPosition(sub.player1);
+    const pos2 = getGridPosition(sub.player2);
+    const parent1 = sub.player1.parentElement;
+    const parent2 = sub.player2.parentElement;
+
+    // アニメーション付きの選手交代を実行
+    animatePlayerSwap(sub.player1, sub.player2);
+
+    // 実際の位置交換を遅延実行
+    setTimeout(() => {
+        const temp1 = sub.player1.cloneNode(true);
+        const temp2 = sub.player2.cloneNode(true);
+
+        // 元の要素を削除
+        sub.player1.remove();
+        sub.player2.remove();
+
+        // 新しい要素を指定位置に挿入
+        insertAtPosition(parent2, temp1, pos2);
+        insertAtPosition(parent1, temp2, pos1);
+
+        // 履歴を記録
+        recordSubstitutionHistory(sub.player1Name, sub.player2Name, sub.reason);
+
+        // 保留リストから削除
+        pendingSubstitutions.splice(index, 1);
+        displayPendingOperations();
+    }, 500); // アニメーション時間に同期
 }
