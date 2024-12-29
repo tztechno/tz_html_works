@@ -1,9 +1,16 @@
+// 修正 2024-12-29 09:33
 
 let timer;
 let isRunning = false;
 let seconds = 0;
 let minutes = 0;
 let hours = 0;
+
+// DOM要素の取得
+const startStopButton = document.getElementById("startStopButton");
+const resetButton = document.getElementById("resetButton");
+const adjustButton = document.getElementById("adjustButton");
+const timeDisplay = document.getElementById("timeDisplay");
 
 // ストップウォッチの動作
 function startStopwatch() {
@@ -39,8 +46,8 @@ function resetStopwatch() {
 }
 
 function adjustTime() {
-    const input = parseInt(adjustSeconds.value, 10); // 入力値を取得
-    if (!isNaN(input)) { // 有効な数値か確認
+    const input = parseInt(document.getElementById("adjustSeconds").value, 10); // 入力値を取得
+    if (!isNaN(input)) {
         let totalSeconds = hours * 3600 + minutes * 60 + seconds + input; // 秒に変換して加算
         if (totalSeconds < 0) totalSeconds = 0; // 負の時間は許容しない
         hours = Math.floor(totalSeconds / 3600); // 時間に再計算
@@ -52,12 +59,13 @@ function adjustTime() {
 }
 
 function updateDisplay() {
-    // 時間、分、秒をフォーマットして表示
-    timeDisplay.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    if (timeDisplay) {
+        timeDisplay.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        stopWatchTime = timeDisplay.textContent;
+    }
 }
 
-// ストップウォッチのボタンにイベントを追加
-startStopButton.addEventListener("click", startStopwatch);
-resetButton.addEventListener("click", resetStopwatch);
-adjustButton.addEventListener("click", adjustTime);
-
+// ボタンにイベントを追加
+if (startStopButton) startStopButton.addEventListener("click", startStopwatch);
+if (resetButton) resetButton.addEventListener("click", resetStopwatch);
+if (adjustButton) adjustButton.addEventListener("click", adjustTime);

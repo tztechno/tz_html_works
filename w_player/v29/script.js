@@ -263,16 +263,17 @@ function saveHTML() {
     const now = new Date();
     const timestamp = now.toISOString().replace(/[-T:\.Z]/g, '').slice(0, 14); // 例: 20241221123045
     const formattedDate = now.toLocaleString(); // ローカル日時形式
-
+    
     // 保存するテキストを作成
     const finalText = `タイム:\n${formattedDate}\n\n` +
+        `Stop Watch:\n${stopWatchTime}\n\n` +
         `履歴:\n${historyLines.filter(line => line.trim() !== '追記').join('\n')}\n\n` +
         `ベンチ:\n${benchText.split('\n').filter(line => line.trim() !== 'ベンチ').join('\n')}\n\n` +
         `ピッチ:\n${fieldText.split('\n').filter(line => line.trim() !== 'ピッチ').join('\n')}\n\n` +
         `ピッチ外:\n${tempOutText.split('\n').filter(line => line.trim() !== 'ピッチ外').join('\n')}\n\n` +
         `禁止プレイヤー:\n${forbiddenPlayer.join(', ')}\n\n` +
-        `保留中の選手交代:\n${pendingSubstitutionsText || 'なし'}\n\n` +
-        `保留中の選手移動:\n${pendingMovesText || 'なし'}\n\n`;
+        `保留中の選手交代:\n${pendingSubstitutionsText}\n\n` +
+        `保留中の選手移動:\n${pendingMovesText}\n\n`;
 
     // テキストを保存
     const blob = new Blob([finalText], { type: 'text/plain' });
@@ -285,27 +286,40 @@ function saveHTML() {
 
 
 
+// リセットボタンの処理
 function resetContent() {
-    // DOM要素と状態のリセット
+    // 入力フォームのリセット
     playerNamesInput.value = '';
+
+    // 表示エリアのリセット
     bench.innerHTML = '<div class="area-title">ベンチ</div>';
     field.innerHTML = '<div class="area-title">ピッチ</div>';
     tempOut.innerHTML = '<div class="area-title">ピッチ外</div>';
     historyList.innerHTML = '';
+
+    // モーダル関連のリセット
     moveReasonSelect.value = '';
     moveReasonSelect2.value = '';
     reasonModal.style.display = 'none';
     reasonModal2.style.display = 'none';
-    pendingSubstitutions = [];
-    pendingMoves = [];
+
+    // 保留中の内容のリセット
+    pendingSubstitutions = []; // 選手交代の保留をクリア
+    pendingMoves = []; // 単独移動の保留をクリア
+
+    // 保留エリアの表示をリセット
+    const pendingSubstitutionsArea = document.getElementById('pendingSubstitutions');
+    const pendingMovesArea = document.getElementById('pendingMoves');
+    if (pendingSubstitutionsArea) pendingSubstitutionsArea.innerHTML = '';
+    if (pendingMovesArea) pendingMovesArea.innerHTML = '';
+
+    // 禁止プレイヤーリストのリセット
     forbiddenPlayers.clear();
-    displayPendingOperations();
 
-    // localStorage のクリア
-    localStorage.removeItem('savedData');
-    console.log('localStorageの内容をクリアしました。');
+    // ボタンのリセット
+    registerButton.disabled = false;
 
-    console.log('データをリセットしました。');
+    console.log('全ての記録と表示、保留中の内容がリセットされました。');
 }
 
 
@@ -1006,68 +1020,3 @@ function executePendingSub(index) {
         displayPendingOperations();
     }, 500); // アニメーション時間に同期
 }
-
-
-
-////////// local storage /////////////////////////////////
-
-function syncToLocalStorage() {
-    const contentElement = document.getElementById('history-list');
-    const bench = document.getElementById('bench');
-    const field = document.getElementById('field');
-    const tempOut = document.getElementById('tempOut');
-
-    // 保存するデータを構造化
-    const saveData = {
-        timestamp: new Date().toLocaleString(),
-        history: contentElement ? contentElement.innerHTML : '',
-        bench: bench ? bench.innerHTML : '',
-        field: field ? field.innerHTML : '',
-        tempOut: tempOut ? tempOut.innerHTML : '',
-        pendingSubstitutions: pendingSubstitutions,
-        pendingMoves: pendingMoves,
-        forbiddenPlayers: Array.from(forbiddenPlayers)
-    };
-
-    // localStorage に保存
-    localStorage.setItem('savedData', JSON.stringify(saveData));
-    console.log('localStorageにデータを同期しました:', saveData);
-}
-
-// 操作イベントを検知して保存
-document.addEventListener('DOMContentLoaded', () => {
-    const saveEvents = ['click', 'input', 'change', 'dragend', 'drop'];
-    saveEvents.forEach(eventType => {
-        document.body.addEventListener(eventType, syncToLocalStorage);
-    });
-});
-
-function loadFromLocalStorage() {
-    const savedData = JSON.parse(localStorage.getItem('savedData'));
-    if (savedData) {
-        // DOM要素を復元
-        document.getElementById('history-list').innerHTML = savedData.history || '';
-        document.getElementById('bench').innerHTML = savedData.bench || '<div class="area-title">ベンチ</div>';
-        document.getElementById('field').innerHTML = savedData.field || '<div class="area-title">ピッチ</div>';
-        document.getElementById('tempOut').innerHTML = savedData.tempOut || '<div class="area-title">ピッチ外</div>';
-
-        // 保留中の内容を復元
-        pendingSubstitutions = savedData.pendingSubstitutions || [];
-        pendingMoves = savedData.pendingMoves || [];
-
-        // 禁止プレイヤーリストを復元
-        forbiddenPlayers = new Set(savedData.forbiddenPlayers || []);
-
-        // 保留エリアを再描画
-        displayPendingOperations();
-
-        console.log('localStorageからデータを再現しました:', savedData);
-    } else {
-        console.log('localStorageに保存されたデータはありません。');
-    }
-}
-
-// ページロード時に再現を実行
-document.addEventListener('DOMContentLoaded', loadFromLocalStorage);
-
-
