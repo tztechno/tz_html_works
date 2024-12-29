@@ -58,6 +58,7 @@ function adjustTime() {
     }
 }
 
+let stopWatchTime = "00:00:00";
 function updateDisplay() {
     if (timeDisplay) {
         timeDisplay.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
@@ -65,7 +66,13 @@ function updateDisplay() {
     }
 }
 
+// 外部からアクセスできるように
+function getStopWatchTime() {
+    return stopWatchTime;
+}
+
 // ボタンにイベントを追加
 if (startStopButton) startStopButton.addEventListener("click", startStopwatch);
 if (resetButton) resetButton.addEventListener("click", resetStopwatch);
 if (adjustButton) adjustButton.addEventListener("click", adjustTime);
+
