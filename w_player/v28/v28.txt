@@ -1,0 +1,6 @@
+localstorageに同時記録し、reload出来るようにすることを目指し
+履歴にstop wathchを追加
+履歴の記録機能を強化したはず
+
+
+

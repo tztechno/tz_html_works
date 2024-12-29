@@ -263,16 +263,17 @@ function saveHTML() {
     const now = new Date();
     const timestamp = now.toISOString().replace(/[-T:\.Z]/g, '').slice(0, 14); // 例: 20241221123045
     const formattedDate = now.toLocaleString(); // ローカル日時形式
-
+    
     // 保存するテキストを作成
     const finalText = `タイム:\n${formattedDate}\n\n` +
+        `Stop Watch:\n${stopWatchTime}\n\n` +
         `履歴:\n${historyLines.filter(line => line.trim() !== '追記').join('\n')}\n\n` +
         `ベンチ:\n${benchText.split('\n').filter(line => line.trim() !== 'ベンチ').join('\n')}\n\n` +
         `ピッチ:\n${fieldText.split('\n').filter(line => line.trim() !== 'ピッチ').join('\n')}\n\n` +
         `ピッチ外:\n${tempOutText.split('\n').filter(line => line.trim() !== 'ピッチ外').join('\n')}\n\n` +
         `禁止プレイヤー:\n${forbiddenPlayer.join(', ')}\n\n` +
-        `保留中の選手交代:\n${pendingSubstitutionsText || 'なし'}\n\n` +
-        `保留中の選手移動:\n${pendingMovesText || 'なし'}\n\n`;
+        `保留中の選手交代:\n${pendingSubstitutionsText}\n\n` +
+        `保留中の選手移動:\n${pendingMovesText}\n\n`;
 
     // テキストを保存
     const blob = new Blob([finalText], { type: 'text/plain' });
