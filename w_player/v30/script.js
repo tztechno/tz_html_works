@@ -1021,8 +1021,6 @@ function executePendingSub(index) {
     }, 500); // アニメーション時間に同期
 }
 
-
-
 ////////////////////////////////////////////////////
 ////////////////////////////////////////////////////
 ////////////////////////////////////////////////////
@@ -1032,5 +1030,168 @@ function executePendingSub(index) {
 ////////////////////////////////////////////////////
 
 
+// ローカルストレージのキー
+const STORAGE_KEYS = {
+    HISTORY: 'matchHistory',
+    BENCH: 'benchPlayers',
+    FIELD: 'fieldPlayers',
+    TEMP_OUT: 'tempOutPlayers',
+    FORBIDDEN: 'forbiddenPlayers',
+    PENDING_SUBS: 'pendingSubstitutions',
+    PENDING_MOVES: 'pendingMoves'
+};
 
+// 状態を保存する関数
+function saveState() {
+    // 履歴の保存
+    const historyItems = Array.from(historyList.children).map(item => ({
+        text: item.querySelector('span').textContent,
+        timestamp: item.querySelector('span').textContent.split(':')[0]
+    }));
+    localStorage.setItem(STORAGE_KEYS.HISTORY, JSON.stringify(historyItems));
+
+    // エリアごとの選手の保存
+    ['bench', 'field', 'tempOut'].forEach(areaId => {
+        const area = document.getElementById(areaId);
+        const players = Array.from(area.getElementsByClassName('player')).map(player => ({
+            name: player.dataset.name,
+            position: getGridPosition(player)
+        }));
+        localStorage.setItem(STORAGE_KEYS[areaId.toUpperCase()], JSON.stringify(players));
+    });
+
+    // 禁止プレイヤーの保存
+    localStorage.setItem(STORAGE_KEYS.FORBIDDEN, JSON.stringify(Array.from(forbiddenPlayers)));
+
+    // 保留中の選手交代の保存
+    const serializedSubs = pendingSubstitutions.map(sub => ({
+        player1Name: sub.player1Name,
+        player2Name: sub.player2Name,
+        reason: sub.reason
+    }));
+    localStorage.setItem(STORAGE_KEYS.PENDING_SUBS, JSON.stringify(serializedSubs));
+
+    // 保留中の選手移動の保存
+    const serializedMoves = pendingMoves.map(move => ({
+        playerName: move.playerName,
+        targetArea: move.targetArea,
+        reason: move.reason
+    }));
+    localStorage.setItem(STORAGE_KEYS.PENDING_MOVES, JSON.stringify(serializedMoves));
+}
+
+// 状態を復元する関数
+function loadState() {
+    // 履歴の復元
+    const savedHistory = JSON.parse(localStorage.getItem(STORAGE_KEYS.HISTORY) || '[]');
+    historyList.innerHTML = '';
+    savedHistory.forEach(item => {
+        const historyItem = document.createElement('div');
+        historyItem.className = 'history-item';
+
+        const details = document.createElement('span');
+        details.textContent = item.text;
+
+        const appendButton = document.createElement('button');
+        appendButton.textContent = '追記';
+        appendButton.className = 'append-button';
+        appendButton.addEventListener('click', () =>
+            openReasonWindow(item.text.split(' ')[1])
+        );
+
+        historyItem.appendChild(details);
+        historyItem.appendChild(appendButton);
+        historyList.appendChild(historyItem);
+    });
+
+    // エリアごとの選手の復元
+    ['bench', 'field', 'tempOut'].forEach(areaId => {
+        const area = document.getElementById(areaId);
+        const savedPlayers = JSON.parse(localStorage.getItem(STORAGE_KEYS[areaId.toUpperCase()]) || '[]');
+
+        // エリアタイトルの保持
+        const areaTitle = area.querySelector('.area-title');
+        area.innerHTML = '';
+        area.appendChild(areaTitle);
+
+        // 選手の復元
+        savedPlayers.sort((a, b) => a.position - b.position).forEach(playerData => {
+            const player = createPlayerElement(playerData.name);
+            area.appendChild(player);
+        });
+    });
+
+    // 禁止プレイヤーの復元
+    const savedForbidden = JSON.parse(localStorage.getItem(STORAGE_KEYS.FORBIDDEN) || '[]');
+    forbiddenPlayers = new Set(savedForbidden);
+
+    // 保留中の選手交代の復元
+    const savedSubs = JSON.parse(localStorage.getItem(STORAGE_KEYS.PENDING_SUBS) || '[]');
+    pendingSubstitutions = savedSubs.map(sub => {
+        const player1 = document.querySelector(`[data-name="${sub.player1Name}"]`);
+        const player2 = document.querySelector(`[data-name="${sub.player2Name}"]`);
+        return {
+            player1,
+            player2,
+            player1Name: sub.player1Name,
+            player2Name: sub.player2Name,
+            reason: sub.reason
+        };
+    });
+
+    // 保留中の選手移動の復元
+    const savedMoves = JSON.parse(localStorage.getItem(STORAGE_KEYS.PENDING_MOVES) || '[]');
+    pendingMoves = savedMoves.map(move => {
+        const player = document.querySelector(`[data-name="${move.playerName}"]`);
+        return {
+            player,
+            playerName: move.playerName,
+            targetArea: move.targetArea,
+            reason: move.reason
+        };
+    });
+
+    // 保留中の操作の表示を更新
+    displayPendingOperations();
+}
+
+// 状態変更時に保存を実行する関数
+function updateAndSave() {
+    saveState();
+}
+
+// イベントリスナーの追加
+document.addEventListener('DOMContentLoaded', () => {
+    loadState();
+
+    // 既存のイベントリスナーに状態保存を追加
+    ['drop', 'dragend'].forEach(eventName => {
+        [bench, field, tempOut].forEach(area => {
+            area.addEventListener(eventName, () => {
+                setTimeout(updateAndSave, 600); // アニメーション完了後に保存
+            });
+        });
+    });
+});
+
+// 履歴記録関数の更新
+const originalRecordHistory = recordHistory;
+recordHistory = function (...args) {
+    originalRecordHistory.apply(this, args);
+    updateAndSave();
+};
+
+// 選手交代履歴記録関数の更新
+const originalRecordSubstitutionHistory = recordSubstitutionHistory;
+recordSubstitutionHistory = function (...args) {
+    originalRecordSubstitutionHistory.apply(this, args);
+    updateAndSave();
+};
+
+// リセットボタンの処理を更新
+const originalResetContent = resetContent;
+resetContent = function () {
+    originalResetContent();
+    localStorage.clear(); // ローカルストレージをクリア
+};
 
