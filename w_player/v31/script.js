@@ -56,7 +56,7 @@ function showReasonModal(player, target) {
     currentDraggedPlayer = player;
     targetArea = target;
     reasonModal.style.display = "flex";
-    moveReasonSelect.value = "";
+    moveReasonSelect.value = "YC";
 }
 
 // 選手交代用のモーダル表示
@@ -64,7 +64,7 @@ function showReasonModalForSwap2(player1, player2, target) {
     firstSelectedPlayer2 = player1;
     secondSelectedPlayer2 = player2;
     reasonModal2.style.display = "flex";
-    moveReasonSelect2.value = "";
+    moveReasonSelect2.value = "戦術";
 }
 
 // 単独移動の履歴記録
@@ -86,7 +86,7 @@ function recordHistory(playerName, targetArea, reason) {
             actionText = "ピッチの外に移動しました";
             break;
     }
-    details.textContent = `${timestamp}: ${playerName} が ${actionText} (${reason})`;
+    details.textContent = `${reason} ${timestamp} ${playerName}`;
 
     const appendButton = document.createElement("button");
     appendButton.textContent = "追記";
@@ -107,7 +107,7 @@ function recordSubstitutionHistory(inPlayer, outPlayer, reason) {
     const outHistoryItem = document.createElement("div");
     outHistoryItem.className = "history-item";
     const outDetails = document.createElement("span");
-    outDetails.textContent = `${timestamp}: ${outPlayer} が ピッチから退きました (${reason} OUT)`;
+    outDetails.textContent = `${reason}OUT ${timestamp} ${outPlayer}`;
 
     const outAppendButton = document.createElement("button");
     outAppendButton.textContent = "追記";
@@ -121,7 +121,7 @@ function recordSubstitutionHistory(inPlayer, outPlayer, reason) {
     const inHistoryItem = document.createElement("div");
     inHistoryItem.className = "history-item";
     const inDetails = document.createElement("span");
-    inDetails.textContent = `${timestamp}: ${inPlayer} が ピッチに入りました (${reason} IN)`;
+    inDetails.textContent = `${reason}IN ${timestamp} ${inPlayer}`;
 
     const inAppendButton = document.createElement("button");
     inAppendButton.textContent = "追記";
@@ -243,8 +243,8 @@ function saveHTML() {
     const forbiddenPlayer = [];
     const historyLines = contentText.split('\n');
     historyLines.forEach(line => {
-        if (line.includes('RC') || line.includes('負傷 OUT')) {
-            const playerName = line.split(' ')[1]; // プレイヤー名を抽出
+        if (line.includes('RC') || line.includes('負傷OUT')) {
+            const playerName = line.split(' ')[2]; // プレイヤー名を抽出
             if (playerName && !forbiddenPlayer.includes(playerName)) {
                 forbiddenPlayer.push(playerName);
             }
@@ -300,8 +300,8 @@ function resetContent() {
     historyList.innerHTML = '';
 
     // モーダル関連のリセット
-    moveReasonSelect.value = '';
-    moveReasonSelect2.value = '';
+    moveReasonSelect.value = 'YC';
+    moveReasonSelect2.value = '戦術';
     reasonModal.style.display = 'none';
     reasonModal2.style.display = 'none';
 
@@ -345,7 +345,7 @@ function recordHistory(playerName, targetArea, reason) {
     } else if (targetArea === "append") {
         actionText = "追記されました";
     }
-    details.textContent = `${timestamp}: ${playerName} が ${actionText} (${reason})`;
+    details.textContent = `${reason} ${timestamp} ${playerName}`;
 
     // 追記ボタン
     const appendButton = document.createElement("button");
@@ -377,8 +377,8 @@ function openReasonWindow(playerName) {
     // 理由リストをプルダウンメニューに変更
     const select = document.createElement("select");
     const reasons = [
-        "HIA IN >> 戦術 IN", "HIA OUT >> 戦術 OUT", "HIA IN >> 負傷 IN", "HIA OUT >> 負傷 OUT",
-        "出血 IN >> 戦術 IN", "出血 OUT >> 戦術 OUT", "出血 IN >> 負傷 IN", "出血 OUT >> 負傷 OUT", 
+        "HIA_IN >> 戦術IN", "HIA_OUT >> 戦術OUT", "HIA_IN >> 負傷IN", "HIA_OUT >> 負傷OUT",
+        "出血IN >> 戦術IN", "出血OUT >> 戦術OUT", "出血IN >> 負傷IN", "出血OUT >> 負傷OUT", 
     ];
     reasons.forEach(reason => {
         const option = document.createElement("option");
