@@ -439,3 +439,53 @@ body {
     background-color: #e0a800;
 }
 
+
+
+/* 
+この部分はマルチラインコメントです。
+複数行にわたるコメントを記述する場合に便利です。
+*/
+
+
+
+.history-button-container {
+    display: flex;
+    gap: 8px;
+    margin-left: auto;
+}
+
+.history-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 5px;
+    border-bottom: 1px solid #ccc;
+}
+
+.append-button,
+.delete-button {
+    padding: 2px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.append-button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+}
+
+.delete-button {
+    background-color: #f44336;
+    color: white;
+    border: none;
+}
+
+.append-button:hover {
+    background-color: #45a049;
+}
+
+.delete-button:hover {
+    background-color: #da190b;
+}

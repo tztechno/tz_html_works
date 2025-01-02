@@ -67,26 +67,21 @@ function showReasonModalForSwap2(player1, player2, target) {
     moveReasonSelect2.value = "戦術";
 }
 
-// 単独移動の履歴記録
+
+// 移動履歴を記録する関数を修正
 function recordHistory(playerName, targetArea, reason) {
-    const timestamp = timeDisplay.textContent;
     const historyItem = document.createElement("div");
     historyItem.className = "history-item";
 
     const details = document.createElement("span");
-    let actionText = "";
-    switch (targetArea) {
-        case "field":
-            actionText = "ピッチに入りました";
-            break;
-        case "bench":
-            actionText = "ベンチに移動しました";
-            break;
-        case "tempOut":
-            actionText = "ピッチの外に移動しました";
-            break;
+    if (targetArea === "append") {
+        // 追記の場合は reason に完全な文字列が含まれているのでそのまま使用
+        details.textContent = reason;
+    } else {
+        // 通常の移動の場合
+        const timestamp = timeDisplay.textContent;
+        details.textContent = `${reason} ${timestamp} ${playerName}`;
     }
-    details.textContent = `${reason} ${timestamp} ${playerName}`;
 
     const appendButton = document.createElement("button");
     appendButton.textContent = "追記";
@@ -99,43 +94,33 @@ function recordHistory(playerName, targetArea, reason) {
     historyList.scrollTop = historyList.scrollHeight;
 }
 
-// 選手交代の履歴記録
+
+
+// 選手交代の履歴記録を1つにまとめる
 function recordSubstitutionHistory(inPlayer, outPlayer, reason) {
     const timestamp = timeDisplay.textContent;
+    const historyItem = document.createElement("div");
+    historyItem.className = "history-item";
 
-    // OUT選手の履歴
-    const outHistoryItem = document.createElement("div");
-    outHistoryItem.className = "history-item";
-    const outDetails = document.createElement("span");
-    outDetails.textContent = `${reason}OUT ${timestamp} ${outPlayer}`;
+    // 一つの履歴項目として記録
+    const details = document.createElement("span");
+    details.textContent = `${reason} ${timestamp} ${inPlayer} ⇄ ${outPlayer}`;
 
-    const outAppendButton = document.createElement("button");
-    outAppendButton.textContent = "追記";
-    outAppendButton.className = "append-button";
-    outAppendButton.addEventListener("click", () => openReasonWindow(outPlayer));
+    const appendButton = document.createElement("button");
+    appendButton.textContent = "追記";
+    appendButton.className = "append-button";
+    appendButton.addEventListener("click", () => openReasonWindow(`${inPlayer} ⇄ ${outPlayer}`));
 
-    outHistoryItem.appendChild(outDetails);
-    outHistoryItem.appendChild(outAppendButton);
-
-    // IN選手の履歴
-    const inHistoryItem = document.createElement("div");
-    inHistoryItem.className = "history-item";
-    const inDetails = document.createElement("span");
-    inDetails.textContent = `${reason}IN ${timestamp} ${inPlayer}`;
-
-    const inAppendButton = document.createElement("button");
-    inAppendButton.textContent = "追記";
-    inAppendButton.className = "append-button";
-    inAppendButton.addEventListener("click", () => openReasonWindow(inPlayer));
-
-    inHistoryItem.appendChild(inDetails);
-    inHistoryItem.appendChild(inAppendButton);
-
-    // 履歴に追加（OUT→INの順）
-    historyList.appendChild(outHistoryItem);
-    historyList.appendChild(inHistoryItem);
+    historyItem.appendChild(details);
+    historyItem.appendChild(appendButton);
+    historyList.appendChild(historyItem);
     historyList.scrollTop = historyList.scrollHeight;
 }
+
+
+
+
+
 
 // ドラッグ&ドロップイベントの設定
 document.addEventListener("dragstart", event => {
@@ -269,7 +254,7 @@ function saveHTML() {
     // 保存するテキストを作成
     const finalText = `日時:\n${formattedDate}\n\n` +
         `タイム:\n${stopWatchTime}\n\n` +
-        `履歴:\n${historyLines.filter(line => line.trim() !== '追記').join('\n')}\n\n` +
+        `履歴:\n${historyLines.filter(line => !['追記', '削除'].includes(line.trim())).join('\n')}\n\n` +
         `ベンチ:\n${benchText.split('\n').filter(line => line.trim() !== 'ベンチ').join('\n')}\n\n` +
         `ピッチ:\n${fieldText.split('\n').filter(line => line.trim() !== 'ピッチ').join('\n')}\n\n` +
         `ピッチ外:\n${tempOutText.split('\n').filter(line => line.trim() !== 'ピッチ外').join('\n')}\n\n` +
@@ -325,60 +310,21 @@ function resetContent() {
 }
 
 
-// 移動履歴を記録
-function recordHistory(playerName, targetArea, reason) {
-    const timestamp = timeDisplay.textContent; // ストップウォッチの値を使う
-
-    // 履歴項目のリストアイテム作成
-    const historyItem = document.createElement("div");
-    historyItem.className = "history-item";
-
-    // 詳細テキスト
-    const details = document.createElement("span");
-    let actionText = "";
-    if (targetArea === "field") {
-        actionText = "ピッチに入りました";
-    } else if (targetArea === "bench") {
-        actionText = "ピッチから退きました";
-    } else if (targetArea === "tempOut") {
-        actionText = "ピッチから退きました";
-    } else if (targetArea === "append") {
-        actionText = "追記されました";
-    }
-    details.textContent = `${reason} ${timestamp} ${playerName}`;
-
-    // 追記ボタン
-    const appendButton = document.createElement("button");
-    appendButton.textContent = "追記";
-    appendButton.className = "append-button";
-    appendButton.addEventListener("click", () => openReasonWindow(playerName));
-
-    // リストアイテムに子要素を追加
-    historyItem.appendChild(details);
-    historyItem.appendChild(appendButton);
-
-    // 履歴リストに追加
-    historyList.appendChild(historyItem);
-    historyList.scrollTop = historyList.scrollHeight;
-}
-
 
 // 理由選択ウィンドウを開く
+// 理由選択ウィンドウを開く関数を修正
 function openReasonWindow(playerName) {
-    // 理由選択用ウィンドウの作成
     const reasonWindow = document.createElement("div");
     reasonWindow.className = "reason-window";
 
-    // タイトル
     const title = document.createElement("p");
     title.textContent = "追記理由を選択";
     reasonWindow.appendChild(title);
 
-    // 理由リストをプルダウンメニューに変更
     const select = document.createElement("select");
     const reasons = [
         "HIA_IN >> 戦術IN", "HIA_OUT >> 戦術OUT", "HIA_IN >> 負傷IN", "HIA_OUT >> 負傷OUT",
-        "出血IN >> 戦術IN", "出血OUT >> 戦術OUT", "出血IN >> 負傷IN", "出血OUT >> 負傷OUT", 
+        "出血IN >> 戦術IN", "出血OUT >> 戦術OUT", "出血IN >> 負傷IN", "出血OUT >> 負傷OUT",
     ];
     reasons.forEach(reason => {
         const option = document.createElement("option");
@@ -388,30 +334,28 @@ function openReasonWindow(playerName) {
     });
     reasonWindow.appendChild(select);
 
-    // OKボタン
     const okButton = document.createElement("button");
     okButton.textContent = "OK";
     okButton.addEventListener("click", () => {
         const selectedReason = select.value;
         if (selectedReason) {
-            recordHistory(playerName, "append", selectedReason); // 新たな履歴を追加
+            // 理由、時刻、選手名の順で記録
+            const timestamp = timeDisplay.textContent;
+            recordHistory(playerName, "append", `${selectedReason} ${timestamp} ${playerName}`);
         }
-        document.body.removeChild(reasonWindow); // ウィンドウを閉じる
+        document.body.removeChild(reasonWindow);
     });
     reasonWindow.appendChild(okButton);
 
-    // キャンセルボタン
     const cancelButton = document.createElement("button");
     cancelButton.textContent = "キャンセル";
     cancelButton.addEventListener("click", () => {
-        document.body.removeChild(reasonWindow); // ウィンドウを閉じる
+        document.body.removeChild(reasonWindow);
     });
     reasonWindow.appendChild(cancelButton);
 
-    // ウィンドウを画面に追加
     document.body.appendChild(reasonWindow);
 }
-
 // 登録ボタンがクリックされたときの処理
 registerButton.addEventListener("click", () => {
     const inputNames = playerNamesInput.value.trim();
@@ -433,8 +377,6 @@ registerButton.addEventListener("click", () => {
     }
 });
 
-
-// 12-22 ///////////////////////////////////////////
 
 // 既存の変数宣言の後に追加
 let forbiddenPlayers = new Set(); // RCまたは負傷でOUTした選手を記録
@@ -548,7 +490,8 @@ function addHoldButtons() {
     modalButtons.appendChild(holdButton);
 }
 
-// 保留中の操作を表示する関数
+
+// 保留中の選手交代の表示を更新
 function displayPendingOperations() {
     // 選手交代の保留表示
     const subsArea = document.getElementById('pendingSubstitutions');
@@ -562,7 +505,7 @@ function displayPendingOperations() {
         </div>
     `).join('');
 
-    // 選手移動の保留表示
+    // 選手移動の保留表示（変更なし）
     const movesArea = document.getElementById('pendingMoves');
     movesArea.innerHTML = pendingMoves.map((move, index) => `
         <div class="pending-item">
@@ -574,6 +517,9 @@ function displayPendingOperations() {
         </div>
     `).join('');
 }
+
+
+
 
 // エリア名を取得する補助関数
 function getAreaName(areaId) {
@@ -610,7 +556,7 @@ function initializeHoldButtons() {
         displayPendingOperations();
 
         // 状態保存
-        updateAndSave();        
+        updateAndSave();
     });
 
     // 単独移動の保留
@@ -635,7 +581,7 @@ function initializeHoldButtons() {
         displayPendingOperations();
 
         // 状態保存
-        updateAndSave();        
+        updateAndSave();
     });
 }
 
@@ -724,7 +670,7 @@ function deletePendingMove(index) {
     displayPendingOperations();
 
     // 状態保存
-    updateAndSave();    
+    updateAndSave();
 }
 
 // ページ読み込み時に初期化
@@ -1114,7 +1060,7 @@ function saveState() {
         player2Name: sub.player2Name,
         reason: sub.reason
     }));
-    
+
 
     localStorage.setItem(STORAGE_KEYS.PENDING_SUBS, JSON.stringify(serializedSubs));
     //console.log('Current pendingSubstitutions:', pendingSubstitutions);
@@ -1126,7 +1072,7 @@ function saveState() {
         targetArea: move.targetArea,
         reason: move.reason
     }));
-    
+
     //const stopWatchTime = stopWatchTime
 
     localStorage.setItem(STORAGE_KEYS.PENDING_MOVES, JSON.stringify(serializedMoves));
@@ -1196,7 +1142,7 @@ function loadState() {
             reason: sub.reason
         };
     });
-    
+
 
     // 保留中の選手移動の復元
     const savedMoves = JSON.parse(localStorage.getItem(STORAGE_KEYS.PENDING_MOVES) || '[]');
@@ -1213,7 +1159,7 @@ function loadState() {
             reason: move.reason
         };
     });
-    
+
 
     // 保留中の操作の表示を更新
     displayPendingOperations();
@@ -1263,4 +1209,441 @@ resetContent = function () {
     originalResetContent();
     localStorage.clear(); // ローカルストレージをクリア
 };
+
+
+
+
+///////////////////////////////////////////////
+///////////2025-01-01 21:50 //////////////////
+///////////////////////////////////////////////
+
+
+// 理由選択ウィンドウを開く関数を更新
+function openReasonWindow(playerInfo) {
+    const reasonWindow = document.createElement("div");
+    reasonWindow.className = "reason-window";
+
+    const title = document.createElement("p");
+    title.textContent = "追記理由を選択";
+    reasonWindow.appendChild(title);
+
+    const select = document.createElement("select");
+    const reasons = [
+        "出血>>戦術",
+        "出血>>負傷",
+        "HIA>>戦術",
+        "HIA>>負傷"
+    ];
+    reasons.forEach(reason => {
+        const option = document.createElement("option");
+        option.value = reason;
+        option.textContent = reason;
+        select.appendChild(option);
+    });
+    reasonWindow.appendChild(select);
+
+    const okButton = document.createElement("button");
+    okButton.textContent = "OK";
+    okButton.addEventListener("click", () => {
+        const selectedReason = select.value;
+        if (selectedReason) {
+            const timestamp = timeDisplay.textContent;
+            recordHistory(playerInfo, "append", `${selectedReason} ${timestamp} ${playerInfo}`);
+        }
+        document.body.removeChild(reasonWindow);
+    });
+    reasonWindow.appendChild(okButton);
+
+    const cancelButton = document.createElement("button");
+    cancelButton.textContent = "キャンセル";
+    cancelButton.addEventListener("click", () => {
+        document.body.removeChild(reasonWindow);
+    });
+    reasonWindow.appendChild(cancelButton);
+
+    document.body.appendChild(reasonWindow);
+}
+
+// 移動履歴の削除機能を追加した記録関数
+function recordHistory(playerName, targetArea, reason) {
+    const historyItem = document.createElement("div");
+    historyItem.className = "history-item";
+
+    const details = document.createElement("span");
+    if (targetArea === "append") {
+        details.textContent = reason;
+    } else {
+        const timestamp = timeDisplay.textContent;
+        details.textContent = `${reason} ${timestamp} ${playerName}`;
+    }
+
+    // ボタンを格納するコンテナ
+    const buttonContainer = document.createElement("div");
+    buttonContainer.className = "history-button-container";
+
+    // 追記ボタン
+    const appendButton = document.createElement("button");
+    appendButton.textContent = "追記";
+    appendButton.className = "append-button";
+    appendButton.addEventListener("click", () =>
+        openReasonWindow(playerName)
+    );
+
+    // 削除ボタン
+    const deleteButton = document.createElement("button");
+    deleteButton.textContent = "削除";
+    deleteButton.className = "delete-button";
+
+    deleteButton.addEventListener("click", () => {
+        historyItem.remove();
+        updateAndSave(); // 状態を保存
+    });
+
+    buttonContainer.appendChild(appendButton);
+    buttonContainer.appendChild(deleteButton);
+    historyItem.appendChild(details);
+    historyItem.appendChild(buttonContainer);
+    historyList.appendChild(historyItem);
+    historyList.scrollTop = historyList.scrollHeight;
+}
+
+// 選手交代の履歴記録関数も更新
+function recordSubstitutionHistory(inPlayer, outPlayer, reason) {
+    const timestamp = timeDisplay.textContent;
+    const historyItem = document.createElement("div");
+    historyItem.className = "history-item";
+
+    const details = document.createElement("span");
+    details.textContent = `${reason} ${timestamp} ${inPlayer} ⇄ ${outPlayer}`;
+
+    // ボタンを格納するコンテナ
+    const buttonContainer = document.createElement("div");
+    buttonContainer.className = "history-button-container";
+
+    // 追記ボタン
+    const appendButton = document.createElement("button");
+    appendButton.textContent = "追記";
+    appendButton.className = "append-button";
+    appendButton.addEventListener("click", () =>
+        openReasonWindow(`${inPlayer} ⇄ ${outPlayer}`)
+    );
+
+    // 削除ボタン
+    const deleteButton = document.createElement("button");
+    deleteButton.textContent = "削除";
+    deleteButton.className = "delete-button";
+
+    deleteButton.addEventListener("click", () => {
+            historyItem.remove();
+            updateAndSave(); // 状態を保存
+        });
+
+    buttonContainer.appendChild(appendButton);
+    buttonContainer.appendChild(deleteButton);
+    historyItem.appendChild(details);
+    historyItem.appendChild(buttonContainer);
+    historyList.appendChild(historyItem);
+    historyList.scrollTop = historyList.scrollHeight;
+}
+
+// 状態保存関数を更新して削除された履歴を反映
+function saveState() {
+    // 履歴の保存（削除された項目は自動的に除外される）
+    const historyItems = Array.from(historyList.children).map(item => ({
+        text: item.querySelector('span').textContent,
+        timestamp: item.querySelector('span').textContent.split(' ')[1]
+    }));
+    localStorage.setItem(STORAGE_KEYS.HISTORY, JSON.stringify(historyItems));
+
+    // 他の状態保存処理は変更なし
+    ['bench', 'field', 'tempOut'].forEach(areaId => {
+        const area = document.getElementById(areaId);
+        const players = Array.from(area.getElementsByClassName('player')).map(player => ({
+            name: player.dataset.name,
+            position: getGridPosition(player)
+        }));
+        localStorage.setItem(STORAGE_KEYS[areaId.toUpperCase()], JSON.stringify(players));
+    });
+
+    localStorage.setItem(STORAGE_KEYS.FORBIDDEN, JSON.stringify(Array.from(forbiddenPlayers)));
+
+    const serializedSubs = pendingSubstitutions.map(sub => ({
+        player1Name: sub.player1Name,
+        player2Name: sub.player2Name,
+        reason: sub.reason
+    }));
+    localStorage.setItem(STORAGE_KEYS.PENDING_SUBS, JSON.stringify(serializedSubs));
+
+    const serializedMoves = pendingMoves.map(move => ({
+        playerName: move.playerName,
+        targetArea: move.targetArea,
+        reason: move.reason
+    }));
+    localStorage.setItem(STORAGE_KEYS.PENDING_MOVES, JSON.stringify(serializedMoves));
+}
+
+// 履歴の読み込み処理も更新
+function loadState() {
+    const savedHistory = JSON.parse(localStorage.getItem(STORAGE_KEYS.HISTORY) || '[]');
+    historyList.innerHTML = '';
+    savedHistory.forEach(item => {
+        const historyItem = document.createElement('div');
+        historyItem.className = 'history-item';
+
+        const details = document.createElement('span');
+        details.textContent = item.text;
+
+        // ボタンを格納するコンテナ
+        const buttonContainer = document.createElement("div");
+        buttonContainer.className = "history-button-container";
+
+        // 追記ボタン
+        const appendButton = document.createElement('button');
+        appendButton.textContent = '追記';
+        appendButton.className = 'append-button';
+        appendButton.addEventListener('click', () => {
+            // 選手交代の場合と単独移動の場合で処理を分ける
+            const text = item.text;
+            if (text.includes('⇄')) {
+                const players = text.split(' ').slice(-3).join(' ');
+                openReasonWindow(players);
+            } else {
+                const playerName = text.split(' ').slice(-1)[0];
+                openReasonWindow(playerName);
+            }
+        });
+
+        // 削除ボタン
+        const deleteButton = document.createElement('button');
+        deleteButton.textContent = '削除';
+        deleteButton.className = 'delete-button';
+        deleteButton.addEventListener('click', () => {
+                historyItem.remove();
+                updateAndSave();
+            });
+
+        buttonContainer.appendChild(appendButton);
+        buttonContainer.appendChild(deleteButton);
+        historyItem.appendChild(details);
+        historyItem.appendChild(buttonContainer);
+        historyList.appendChild(historyItem);
+    });
+
+}
+
+
+//////////////////////////////////////////////////////////////
+//////////////// 2024-01-01 23:00 ////////////////////////////
+//////////////////////////////////////////////////////////////
+
+
+// 選手の元の位置を保存するためのグローバルマップ
+let playerPositions = new Map();
+
+// ローカルストレージのキーを追加
+STORAGE_KEYS.PLAYER_POSITIONS = 'playerPositions';
+
+// 選手の位置を保存する関数
+function savePlayerPosition(player, areaId) {
+    if (areaId === 'field') {
+        const position = getGridPosition(player);
+        const siblings = Array.from(player.parentElement.children)
+            .filter(child => child.classList.contains('player'));
+
+        playerPositions.set(player.dataset.name, {
+            position: position,
+            totalPlayers: siblings.length
+        });
+    }
+}
+
+// 指定した位置に要素を挿入する関数を更新
+function insertAtPosition(parent, element, position, isReturn = false) {
+    const children = Array.from(parent.children);
+    const playerElements = children.filter(child => child.classList.contains('player'));
+    const titleElement = parent.querySelector('.area-title');
+
+    element.draggable = true;
+    setupDragAndDrop(element);
+
+    // ピッチに戻る場合で、保存された位置がある場合
+    if (isReturn && parent.id === 'field' && playerPositions.has(element.dataset.name)) {
+        const savedData = playerPositions.get(element.dataset.name);
+        const currentPlayers = playerElements.length;
+
+        // 保存された位置が現在のプレイヤー数よりも小さい場合のみ使用
+        if (savedData.position < currentPlayers) {
+            if (playerElements[savedData.position]) {
+                parent.insertBefore(element, playerElements[savedData.position]);
+            } else {
+                parent.appendChild(element);
+            }
+            // 位置情報を使用したので削除
+            playerPositions.delete(element.dataset.name);
+            return;
+        }
+    }
+
+    // 通常の挿入ロジック
+    if (position >= 0 && position < playerElements.length) {
+        const targetElement = playerElements[position];
+        parent.insertBefore(element, targetElement);
+    } else {
+        if (titleElement && titleElement.nextSibling) {
+            parent.insertBefore(element, titleElement.nextSibling);
+        } else {
+            parent.appendChild(element);
+        }
+    }
+}
+
+// 単独移動の実行関数を更新
+function executePendingMove(index) {
+    const move = pendingMoves[index];
+    const player = move.player;
+    const sourceArea = player.parentElement.id;
+    const targetArea = document.getElementById(move.targetArea);
+
+    if (!canEnterField(move.playerName, targetArea)) {
+        return;
+    }
+
+    // ピッチから出る場合は位置を保存
+    if (sourceArea === 'field' && move.targetArea !== 'field') {
+        savePlayerPosition(player, sourceArea);
+    }
+
+    // 要素を移動（ピッチに戻る場合は isReturn フラグを true に）
+    player.remove();
+    insertAtPosition(
+        targetArea,
+        player,
+        0,
+        sourceArea !== 'field' && move.targetArea === 'field'
+    );
+
+    recordHistory(move.playerName, move.targetArea, move.reason);
+    pendingMoves.splice(index, 1);
+    displayPendingOperations();
+    updateAndSave();
+}
+
+// 状態保存関数を更新
+const originalSaveState = saveState;
+saveState = function () {
+    originalSaveState();
+    // 位置情報をJSON形式で保存
+    const positionsObj = Object.fromEntries(playerPositions);
+    localStorage.setItem(STORAGE_KEYS.PLAYER_POSITIONS, JSON.stringify(positionsObj));
+};
+
+// 状態読み込み関数を更新
+const originalLoadState = loadState;
+loadState = function () {
+    originalLoadState();
+    // 位置情報を復元
+    const savedPositions = JSON.parse(localStorage.getItem(STORAGE_KEYS.PLAYER_POSITIONS) || '{}');
+    playerPositions = new Map(Object.entries(savedPositions));
+};
+
+/////////////////////////////////////////////
+///////// 2024-01-01 0:00 ///////////////////
+/////////////////////////////////////////////
+
+
+// モーダル選択肢を動的に更新する関数
+function updateMoveReasonOptions(isMovingToField) {
+    const moveReasonSelect = reasonModal.querySelector("#moveReason");
+    moveReasonSelect.innerHTML = ''; // 既存の選択肢をクリア
+
+    if (isMovingToField) {
+        // ピッチへの移動理由
+        const toFieldReasons = [
+            { value: "YC復帰", label: "YC復帰" },
+            { value: "FPRO復帰", label: "FPRO復帰" },
+        ];
+
+        toFieldReasons.forEach(reason => {
+            const option = document.createElement("option");
+            option.value = reason.value;
+            option.textContent = reason.label;
+            moveReasonSelect.appendChild(option);
+        });
+    } else {
+        // ピッチ外への移動理由
+        const fromFieldReasons = [
+            { value: "YC", label: "YC" },
+            { value: "RC", label: "RC" },
+            { value: "FPRO", label: "FPRO" },
+        ];
+
+        fromFieldReasons.forEach(reason => {
+            const option = document.createElement("option");
+            option.value = reason.value;
+            option.textContent = reason.label;
+            moveReasonSelect.appendChild(option);
+        });
+    }
+}
+
+// 単独移動用のモーダル表示関数を更新
+function showReasonModal(player, target) {
+    currentDraggedPlayer = player;
+    targetArea = target;
+
+    // プレイヤーがピッチに移動するかどうかを判定
+    const isMovingToField = target.id === 'field';
+
+    // ピッチからの移動とピッチへの移動で選択肢を変更
+    updateMoveReasonOptions(isMovingToField);
+
+    // モーダルのタイトルを更新
+    const modalTitle = reasonModal.querySelector(".modal-title");
+    if (modalTitle) {
+        modalTitle.textContent = isMovingToField ?
+            "ピッチへの移動理由を選択" :
+            "ピッチ外への移動理由を選択";
+    }
+
+    reasonModal.style.display = "flex";
+}
+
+// モーダル確定ボタンの処理を更新
+confirmReasonBtn.addEventListener("click", () => {
+    const reason = moveReasonSelect.value;
+    if (!currentDraggedPlayer || !targetArea) {
+        return;
+    }
+
+    if (!reason) {
+        alert("理由を選択してください");
+        return;
+    }
+
+    const playerName = currentDraggedPlayer.dataset.name;
+    const isToTempOut = targetArea.id === 'tempOut';
+    const isFromField = currentDraggedPlayer.parentElement.id === 'field';
+    const isToField = targetArea.id === 'field';
+
+    if (isToField && !canEnterField(playerName, targetArea)) {
+        reasonModal.style.display = "none";
+        currentDraggedPlayer = null;
+        targetArea = null;
+        return;
+    }
+
+    if (isToTempOut && isFromField) {
+        setupPlaceholder(currentDraggedPlayer, targetArea);
+    } else if (placeholderPlayers.has(playerName)) {
+        returnToPlaceholder(currentDraggedPlayer, placeholderPlayers.get(playerName));
+    } else {
+        targetArea.appendChild(currentDraggedPlayer);
+    }
+
+    recordHistory(playerName, targetArea.id, reason);
+    reasonModal.style.display = "none";
+    currentDraggedPlayer = null;
+    targetArea = null;
+    updateAndSave();
+});
 
