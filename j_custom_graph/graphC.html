@@ -198,6 +198,22 @@
                 }
             });
         });
+function getLocalStorageUsage() {
+    let total = 0;
+    for (let key in localStorage) {
+        if (localStorage.hasOwnProperty(key)) {
+            let value = localStorage[key];
+            // キーと値の長さを計算
+            total += key.length + value.length;
+        }
+    }
+    // バイトをKBに変換して表示
+    console.log(`使用容量: ${(total / 1024).toFixed(2)} KB`);
+    console.log(`最大容量: 約5 MB`);
+}
+
+getLocalStorageUsage();
+        
     </script>
 </body>
 
