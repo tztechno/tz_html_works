@@ -20,7 +20,7 @@ body {
 .area {
     border: 2px dashed #ccc;
     border-radius: 5px;
-    width: 430px;
+    width: 440px;
     max-height: 600px;
     padding: 5px;
     display: flex;
@@ -56,7 +56,7 @@ body {
     padding: 5px;
     margin: 5px;
     cursor: grab;
-    width: 170px;
+    width: 180px;
     text-align: center;
     font-size: 11px;
 }
@@ -488,4 +488,40 @@ body {
 
 .delete-button:hover {
     background-color: #da190b;
+}
+
+
+/* 空席のとき点線で枠を描画 */
+.seat {
+    width: 200px;
+    height: 37px;
+    border: 0px dashed #ccc;
+    display: flex;
+    justify-content: center;
+    /* 横方向の中央揃えはそのまま */
+    align-items: flex-start;
+    /* 縦方向を上揃えに変更 */
+    position: relative;
+}
+
+.seat.empty {
+    background-color: #f9f9f9;
+}
+
+.placeholder {
+    font-size: 12px;
+    color: #888;
+    text-align: center;
+    pointer-events: none;
+    /* ドラッグ操作に影響しないように設定 */
+}
+
+.seat .placeholder {
+    display: block;
+    /* デフォルトで表示 */
+}
+
+.seat.occupied .placeholder {
+    display: none;
+    /* 選手が座ると非表示に */
 }

@@ -1,4 +1,8 @@
 
+/////////////////////////////////////////////////////////////////////
+//////// ピッチ外からピッチ内移動メニュー消えた v14 as baseline ////////////
+//////////////////////////////////////////////////////////////////////
+
 // DOM要素の取得
 const bench = document.getElementById("bench");
 const field = document.getElementById("field");
@@ -22,34 +26,10 @@ let currentDraggedPlayer = null;
 let targetArea = null;
 let firstSelectedPlayer2 = null;
 let secondSelectedPlayer2 = null;
-
-// プレイヤーの生成と初期配置
-function generatePlayers(playerNames) {
-    bench.innerHTML = '<div class="area-title">ベンチ</div>';
-    field.innerHTML = '<div class="area-title">ピッチ</div>';
-    tempOut.innerHTML = '<div class="area-title">ピッチ外</div>';
-
-    playerNames.forEach((name, index) => {
-        const player = createPlayerElement(name);
-        if (index < 15) {
-            field.appendChild(player);
-        } else {
-            bench.appendChild(player);
-        }
-    });
-    // 状態保存
-    updateAndSave();
-}
-
-// 選手要素の作成
-function createPlayerElement(name) {
-    const player = document.createElement("div");
-    player.className = "player";
-    player.textContent = name;
-    player.draggable = true;
-    player.dataset.name = name;
-    return player;
-}
+let targetSeat = null;
+let dragStartSeat = null;
+let isDragging = false;
+let isProcessingMove = false;
 
 // 単独移動用のモーダル表示
 function showReasonModal(player, target) {
@@ -67,34 +47,247 @@ function showReasonModalForSwap2(player1, player2, target) {
     moveReasonSelect2.value = "戦術";
 }
 
+function generatePlayers(playerNames) {
+    // エリアの初期化（タイトル部分も含む）
+    bench.innerHTML = '<div class="area-title">ベンチ</div>';
+    field.innerHTML = '<div class="area-title">ピッチ</div>';
+    tempOut.innerHTML = '<div class="area-title">ピッチ外</div>';
 
-// 移動履歴を記録する関数を修正
-function recordHistory(playerName, targetArea, reason) {
-    const historyItem = document.createElement("div");
-    historyItem.className = "history-item";
-
-    const details = document.createElement("span");
-    if (targetArea === "append") {
-        // 追記の場合は reason に完全な文字列が含まれているのでそのまま使用
-        details.textContent = reason;
-    } else {
-        // 通常の移動の場合
-        const timestamp = timeDisplay.textContent;
-        details.textContent = `${reason} ${timestamp} ${playerName}`;
+    // ピッチ用の席を15個作成（ピッチ内）
+    for (let i = 0; i < 15; i++) {
+        const seat = createSeatElement(i + 1);
+        field.appendChild(seat);
     }
 
-    const appendButton = document.createElement("button");
-    appendButton.textContent = "追記";
-    appendButton.className = "append-button";
-    appendButton.addEventListener("click", () => openReasonWindow(playerName));
+    // ピッチ外エリアにはシートを作成しない
 
-    historyItem.appendChild(details);
-    historyItem.appendChild(appendButton);
-    historyList.appendChild(historyItem);
-    historyList.scrollTop = historyList.scrollHeight;
+    // プレイヤーの配置
+    playerNames.forEach((name, index) => {
+        const player = createPlayerElement(name);
+
+        if (index < 15) {
+            // ピッチ内の席に選手を配置
+            const seat = field.querySelector(`.seat[data-position="${index + 1}"]`);
+            if (seat) {
+                seat.appendChild(player);
+                markSeatOccupied(seat);
+            }
+        } else if (index < 23) {
+            bench.appendChild(player);
+        } else {
+            // ピッチ外に選手を配置（直接エリアに追加）
+            tempOut.appendChild(player);
+        }
+    });
+    console.log(playerNames);
+    updateAndSave();  // 状態の更新と保存処理
+}
+
+// 座席が占有された場合にスタイルを変更
+function markSeatOccupied(seat) {
+    seat.classList.add('occupied');
+}
+
+// 状態の更新と保存処理（ダミー）
+function updateAndSave() {
+    console.log("状態の更新と保存処理");
 }
 
 
+// 席の状態を占有済みに変更
+function markSeatOccupied(seat) {
+    seat.classList.remove('empty');
+    seat.classList.add('occupied');
+
+    // プレースホルダーがあれば削除
+    const placeholder = seat.querySelector('.placeholder');
+    if (placeholder) {
+        placeholder.remove();
+    }
+}
+
+// 選手が席を抜けた際に空席印を表示する
+function markSeatEmpty(seat) {
+    seat.classList.add("empty");     
+    const placeholder = seat.querySelector(".placeholder");
+    if (placeholder) {
+        placeholder.style.display = "block";
+        console.log('markseatempty block')
+    } else {
+        // プレースホルダーが存在しない場合は新規作成
+        const newPlaceholder = document.createElement("div");
+        newPlaceholder.className = "placeholder";
+        newPlaceholder.textContent = "空席";
+        seat.appendChild(newPlaceholder);
+        console.log('newPlaceholder.textContent')
+    }
+}
+
+// 選手が座る席の空席印を非表示にする
+function markSeatOccupied(seat) {
+    seat.classList.remove("empty");
+    const placeholder = seat.querySelector(".placeholder");
+    if (placeholder) {
+        placeholder.style.display = "none";
+    }
+}
+
+
+// プレイヤーのドラッグ開始時の処理
+function dragPlayer(event) {
+    currentDraggedPlayer = event.target;
+    dragStartSeat = event.target.parentElement;
+    isDragging = true;
+    event.dataTransfer.setData("text/plain", event.target.dataset.name);
+}
+// ドラッグ終了時の処理
+function handleDragEnd(event) {
+    if (!isDragging) return;
+
+    isDragging = false;
+    //currentDraggedPlayer = null;
+    dragStartSeat = null;
+}
+
+// ドロップ可能かどうかの判定
+function allowDrop(event) {
+    event.preventDefault();
+    const targetSeat = event.currentTarget;
+
+    // ドロップ先が同じ席の場合は処理しない
+    if (dragStartSeat === targetSeat) {
+        return false;
+    }
+}
+
+// シート要素の作成関数を更新
+function createSeatElement(position) {
+    const seat = document.createElement("div");
+    seat.className = "seat";
+    seat.dataset.position = position;
+
+    // 空席の印（常に存在するが表示/非表示が切り替わる）
+    const placeholder = document.createElement("div");
+    placeholder.className = "placeholder";
+    placeholder.textContent = "空席";
+    seat.appendChild(placeholder);
+
+    seat.ondragover = allowDrop;
+    seat.ondrop = dropPlayer;
+
+    return seat;
+}
+
+// プレイヤー要素の作成関数を更新
+function createPlayerElement(name) {
+    const player = document.createElement("div");
+    player.className = "player";
+    player.textContent = name;
+    player.draggable = true;
+    player.dataset.name = name;
+    player.ondragstart = dragPlayer;
+    player.ondragend = handleDragEnd;
+    return player;
+}
+
+// シートの状態チェック - 修正版
+function isSeatEmpty(seat) {
+    const player = seat.querySelector('.player');
+    const placeholder = seat.querySelector('.placeholder');
+    return !player && placeholder && placeholder.style.display !== 'none';
+}
+
+// ドロップ時の処理 - 修正版
+function dropPlayer(event) {
+    event.preventDefault();
+    const targetSeat = event.currentTarget;
+
+    // 同じ席へのドロップは無視
+    if (dragStartSeat === targetSeat) return;
+
+    // すでに処理中の場合は無視
+    if (isProcessingMove) return;
+
+    const targetPlayer = targetSeat.querySelector('.player');
+
+    if (!targetPlayer) {
+        // 移動の場合
+        handlePlayerMove(currentDraggedPlayer, targetSeat);
+    } else {
+        // 交代の場合
+        handlePlayerSwap(currentDraggedPlayer, targetPlayer, targetSeat);
+    }
+
+    updateAndSave();
+}
+
+// 選手の移動処理 - 修正版 使われているが失敗  add dragStartSeat
+function handlePlayerMove(player, targetSeat) {
+    if (isProcessingMove) return;
+    isProcessingMove = true;
+
+    const fromArea = dragStartSeat.closest('.area').id;
+    const toArea = targetSeat.closest('.area').id;
+
+    showReasonModal(player, targetSeat);
+
+    confirmReasonBtn.onclick = () => {
+        // 移動元の席を空席状態に
+        //markSeatEmpty(dragStartSeat);  ///すでに空席なので不要
+
+        // 移動先の席に選手を配置
+        targetSeat.appendChild(player);
+        markSeatOccupied(targetSeat);
+
+        // 履歴に記録
+        addToHistory('move', {
+            player: player.dataset.name,
+            reason: moveReasonSelect.value,
+            fromArea,
+            toArea
+        });
+
+        reasonModal.style.display = "none";
+        updateAndSave();
+
+        // 処理完了後にフラグをリセット
+        setTimeout(() => {
+            isProcessingMove = false;
+            currentDraggedPlayer = null;
+        }, 100);        
+    };
+}
+
+
+// 選手交代の処理 - 修正版
+function handlePlayerSwap(outgoingPlayer, incomingPlayer, targetSeat) {
+    const fromArea = dragStartSeat.closest('.area').id;
+    const toArea = targetSeat.closest('.area').id;
+
+    showReasonModalForSwap2(outgoingPlayer, incomingPlayer, targetSeat);
+
+    confirmReasonBtn2.onclick = () => {
+        // 選手の交換
+        targetSeat.appendChild(outgoingPlayer);
+        dragStartSeat.appendChild(incomingPlayer);
+
+        // 両方の席を占有状態に
+        markSeatOccupied(targetSeat);
+        //markSeatOccupied(dragStartSeat);
+
+        // 履歴に記録
+        addToHistory('swap', {
+            player1: outgoingPlayer.dataset.name,
+            player2: incomingPlayer.dataset.name,
+            reason: moveReasonSelect2.value,
+            fromArea,
+            toArea
+        });
+
+        reasonModal2.style.display = "none";
+        updateAndSave();
+    };
+}
 
 // 選手交代の履歴記録を1つにまとめる
 function recordSubstitutionHistory(inPlayer, outPlayer, reason) {
@@ -104,22 +297,18 @@ function recordSubstitutionHistory(inPlayer, outPlayer, reason) {
 
     // 一つの履歴項目として記録
     const details = document.createElement("span");
-    details.textContent = `${reason} ${timestamp} ${inPlayer} ⇄ ${outPlayer}`;
+    details.textContent = `${reason} ${timestamp} ${inPlayer} → ${outPlayer}`;
 
     const appendButton = document.createElement("button");
     appendButton.textContent = "追記";
     appendButton.className = "append-button";
-    appendButton.addEventListener("click", () => openReasonWindow(`${inPlayer} ⇄ ${outPlayer}`));
+    appendButton.addEventListener("click", () => openReasonWindow(`${inPlayer} → ${outPlayer}`));
 
     historyItem.appendChild(details);
     historyItem.appendChild(appendButton);
     historyList.appendChild(historyItem);
     historyList.scrollTop = historyList.scrollHeight;
 }
-
-
-
-
 
 
 // ドラッグ&ドロップイベントの設定
@@ -136,57 +325,31 @@ document.addEventListener("dragend", event => {
     }
 });
 
+
+// 修正4: イベントリスナーの更新
 [bench, field, tempOut].forEach(area => {
     area.addEventListener("dragover", event => {
         event.preventDefault();
     });
 
     area.addEventListener("drop", event => {
+        if (isProcessingMove) {
+            event.preventDefault();
+            return;
+        }
+
         event.preventDefault();
         const playerName = event.dataTransfer.getData("text/plain");
         const player = document.querySelector(`[data-name="${playerName}"]`);
-
         const dropTarget = event.target.closest('.player');
 
         if (dropTarget && dropTarget !== player) {
-            // 選手交代の場合
             showReasonModalForSwap2(player, dropTarget, event.currentTarget);
         } else if (player && event.currentTarget !== player.parentElement) {
-            // 単独移動の場合
             showReasonModal(player, event.currentTarget);
         }
     });
 });
-
-// モーダルの確定ボタン処理を更新（単独移動の場合）
-confirmReasonBtn.addEventListener("click", () => {
-    const reason = moveReasonSelect.value;
-    if (!reason) {
-        alert("理由を選択してください");
-        return;
-    }
-
-    // 移動可能かチェック
-    if (!canEnterField(currentDraggedPlayer.dataset.name, targetArea)) {
-        reasonModal.style.display = "none";
-        currentDraggedPlayer = null;
-        targetArea = null;
-        return;
-    }
-
-    // RCまたは負傷でOUTした場合、forbiddenPlayersに追加
-    if (reason.includes('RC') || (reason.includes('負傷') && reason.includes('OUT'))) {
-        forbiddenPlayers.add(currentDraggedPlayer.dataset.name);
-    }
-
-    targetArea.appendChild(currentDraggedPlayer);
-    recordHistory(currentDraggedPlayer.dataset.name, targetArea.id, reason);
-
-    reasonModal.style.display = "none";
-    currentDraggedPlayer = null;
-    targetArea = null;
-});
-
 
 // キャンセルボタンの処理
 cancelReasonBtn.addEventListener("click", () => {
@@ -210,7 +373,6 @@ registerButton.addEventListener("click", () => {
         playerNamesInput.value = '';
     }
 });
-
 
 function saveHTML() {
     const contentElement = document.getElementById('history-list');
@@ -238,7 +400,7 @@ function saveHTML() {
 
     // 保留中の選手交代をフォーマット
     const pendingSubstitutionsText = pendingSubstitutions.map(sub => {
-        return `${sub.player1Name} ⇄ ${sub.player2Name} (${sub.reason})`;
+        return `${sub.player1Name} → ${sub.player2Name} (${sub.reason})`;
     }).join('\n');
 
     // 保留中の選手移動をフォーマット
@@ -255,9 +417,9 @@ function saveHTML() {
     const finalText = `日時:\n${formattedDate}\n\n` +
         `タイム:\n${stopWatchTime}\n\n` +
         `履歴:\n${historyLines.filter(line => !['追記', '削除'].includes(line.trim())).join('\n')}\n\n` +
-        `ベンチ:\n${benchText.split('\n').filter(line => line.trim() !== 'ベンチ').join('\n')}\n\n` +
-        `ピッチ:\n${fieldText.split('\n').filter(line => line.trim() !== 'ピッチ').join('\n')}\n\n` +
-        `ピッチ外:\n${tempOutText.split('\n').filter(line => line.trim() !== 'ピッチ外').join('\n')}\n\n` +
+        `ベンチ:\n${benchText.split('\n').filter(line => !['空席', 'ベンチ'].includes(line.trim())).join('\n')}\n\n` +
+        `ピッチ:\n${fieldText.split('\n').filter(line => !['空席', 'ピッチ'].includes(line.trim())).join('\n')}\n\n` +
+        `ピッチ外:\n${tempOutText.split('\n').filter(line => !['空席', 'ピッチ外'].includes(line.trim())).join('\n')}\n\n` +
         `禁止プレイヤー:\n${forbiddenPlayer.join(', ')}\n\n` +
         `保留中の選手交代:\n${pendingSubstitutionsText}\n\n` +
         `保留中の選手移動:\n${pendingMovesText}\n\n`;
@@ -270,8 +432,6 @@ function saveHTML() {
     link.click();
     URL.revokeObjectURL(link.href);
 }
-
-
 
 // リセットボタンの処理
 function resetContent() {
@@ -308,7 +468,6 @@ function resetContent() {
 
     console.log('全ての記録と表示、保留中の内容がリセットされました。');
 }
-
 
 
 // 理由選択ウィンドウを開く
@@ -413,7 +572,6 @@ function canEnterField(playerName, targetArea) {
     return true;
 }
 
-
 // B/C選手の交代をチェックする関数
 function isBCorC(name) {
     const lastChar = name[name.length - 1].toUpperCase();
@@ -450,7 +608,6 @@ function canEnterField(playerName, targetArea, replacingPlayer = null) {
     }
     return true;
 }
-
 
 // 保留中の操作を保存する配列
 let pendingSubstitutions = [];
@@ -497,7 +654,7 @@ function displayPendingOperations() {
     const subsArea = document.getElementById('pendingSubstitutions');
     subsArea.innerHTML = pendingSubstitutions.map((sub, index) => `
         <div class="pending-item">
-            <span>${sub.player1Name} ⇄ ${sub.player2Name} (${sub.reason})</span>
+            <span>${sub.player1Name} → ${sub.player2Name} (${sub.reason})</span>
             <div class="pending-buttons">
                 <button onclick="executePendingSub(${index})">実行</button>
                 <button onclick="deletePendingSub(${index})">削除</button>
@@ -517,8 +674,6 @@ function displayPendingOperations() {
         </div>
     `).join('');
 }
-
-
 
 
 // エリア名を取得する補助関数
@@ -559,6 +714,7 @@ function initializeHoldButtons() {
         updateAndSave();
     });
 
+
     // 単独移動の保留
     document.getElementById('holdReasonBtn').addEventListener('click', () => {
         const reason = moveReasonSelect.value;
@@ -566,17 +722,16 @@ function initializeHoldButtons() {
             alert("理由を選択してください");
             return;
         }
-
         pendingMoves.push({
             player: currentDraggedPlayer,
-            playerName: currentDraggedPlayer.dataset.name,
+            playerName: currentDraggedPlayer.dataset.name,  ///errorerror
             targetArea: targetArea.id,
+            targetSeat: targetSeat,    ///added
             reason: reason
         });
-        //console.log('wow pendingMoves after push:', pendingMoves);
 
         reasonModal.style.display = "none";
-        currentDraggedPlayer = null;
+        //currentDraggedPlayer = null;
         targetArea = null;
         displayPendingOperations();
 
@@ -584,54 +739,6 @@ function initializeHoldButtons() {
         updateAndSave();
     });
 }
-
-// 保留中の選手交代を実行
-function executePendingSub(index) {
-    const sub = pendingSubstitutions[index];
-
-    // 移動可能かチェック
-    if (!canEnterField(sub.player1.dataset.name, sub.player2.parentElement, sub.player2)) {
-        return;
-    }
-
-    // 位置の交換
-    const tempParent = sub.player1.parentElement;
-    sub.player2.parentElement.appendChild(sub.player1);
-    tempParent.appendChild(sub.player2);
-
-    // 履歴に記録
-    recordSubstitutionHistory(sub.player1Name, sub.player2Name, sub.reason);
-
-    // 保留リストから削除
-    pendingSubstitutions.splice(index, 1);
-    displayPendingOperations();
-
-    updateAndSave();
-}
-
-// 保留中の選手移動を実行
-function executePendingMove(index) {
-    const move = pendingMoves[index];
-
-    // 移動可能かチェック
-    if (!canEnterField(move.playerName, document.getElementById(move.targetArea))) {
-        return;
-    }
-
-    // 選手を移動
-    document.getElementById(move.targetArea).appendChild(move.player);
-
-    // 履歴に記録
-    recordHistory(move.playerName, move.targetArea, move.reason);
-
-    // 保留リストから削除
-    pendingMoves.splice(index, 1);
-    displayPendingOperations();
-
-    // 状態保存
-    updateAndSave();
-}
-
 
 // 保留中の選手交代を削除
 function deletePendingSub(index) {
@@ -744,33 +851,6 @@ function animatePlayerSwap(player1, player2) {
 }
 
 
-// 保留中の選手交代を実行する関数を更新
-function executePendingSub(index) {
-    const sub = pendingSubstitutions[index];
-
-    if (!canEnterField(sub.player1.dataset.name, sub.player2.parentElement, sub.player2)) {
-        return;
-    }
-
-    // アニメーション付きの選手交代を実行
-    animatePlayerSwap(sub.player1, sub.player2);
-
-    // 実際の位置交換を遅延実行
-    setTimeout(() => {
-        const tempParent = sub.player1.parentElement;
-        sub.player2.parentElement.appendChild(sub.player1);
-        tempParent.appendChild(sub.player2);
-
-        recordSubstitutionHistory(sub.player1Name, sub.player2Name, sub.reason);
-
-        pendingSubstitutions.splice(index, 1);
-        displayPendingOperations();
-    }, 500);
-
-    updateAndSave();
-}
-
-
 // 要素の位置を保持するための関数
 function getGridPosition(element) {
     const parent = element.parentElement;
@@ -778,71 +858,6 @@ function getGridPosition(element) {
     // area-title を除外して位置を取得
     const playerElements = children.filter(child => child.classList.contains('player'));
     return playerElements.indexOf(element);
-}
-
-
-// 保留中の選手交代を実行する関数を更新
-function executePendingSub(index) {
-    const sub = pendingSubstitutions[index];
-
-    if (!canEnterField(sub.player1.dataset.name, sub.player2.parentElement, sub.player2)) {
-        return;
-    }
-
-    // 交代前の位置を記録
-    const pos1 = getGridPosition(sub.player1);
-    const pos2 = getGridPosition(sub.player2);
-    const parent1 = sub.player1.parentElement;
-    const parent2 = sub.player2.parentElement;
-
-    // アニメーション付きの選手交代を実行
-    animatePlayerSwap(sub.player1, sub.player2);
-
-    // 実際の位置交換を遅延実行
-    setTimeout(() => {
-        const temp1 = sub.player1.cloneNode(true);
-        const temp2 = sub.player2.cloneNode(true);
-
-        sub.player1.remove();
-        sub.player2.remove();
-
-        insertAtPosition(parent2, temp1, pos2);
-        insertAtPosition(parent1, temp2, pos1);
-
-        recordSubstitutionHistory(sub.player1Name, sub.player2Name, sub.reason);
-
-        pendingSubstitutions.splice(index, 1);
-        displayPendingOperations();
-    }, 500);
-
-    updateAndSave();
-}
-
-
-function executePendingMove(index) {
-    const move = pendingMoves[index];
-
-    // 移動先のエリアを取得
-    const targetArea = document.getElementById(move.targetArea);
-
-    // 移動可能かを判定
-    if (!canEnterField(move.playerName, targetArea)) {
-        return; // 移動不可なら終了
-    }
-
-    // 選手を移動
-    move.player.remove();
-    insertAtPosition(targetArea, move.player);
-
-    // 履歴を記録
-    recordHistory(move.playerName, move.targetArea, move.reason);
-
-    // 保留中の操作を削除して表示を更新
-    pendingMoves.splice(index, 1);
-    displayPendingOperations();
-
-    // 状態保存
-    updateAndSave();
 }
 
 
@@ -862,7 +877,7 @@ confirmReasonBtn2.addEventListener("click", () => {
         return;
     }
 
-    if (reason.includes('RC') || (reason.includes('負傷') && reason.includes('OUT'))) {
+    if (reason.includes('戦術') || reason.includes('負傷')) {
         forbiddenPlayers.add(secondSelectedPlayer2.dataset.name);
     }
 
@@ -1032,55 +1047,6 @@ const STORAGE_KEYS = {
     PENDING_MOVES: 'pendingMoves',
 };
 
-// 状態を保存する関数
-function saveState() {
-    // 履歴の保存
-    const historyItems = Array.from(historyList.children).map(item => ({
-        text: item.querySelector('span').textContent,
-        timestamp: item.querySelector('span').textContent.split(':')[0]
-    }));
-    localStorage.setItem(STORAGE_KEYS.HISTORY, JSON.stringify(historyItems));
-
-    // エリアごとの選手の保存
-    ['bench', 'field', 'tempOut'].forEach(areaId => {
-        const area = document.getElementById(areaId);
-        const players = Array.from(area.getElementsByClassName('player')).map(player => ({
-            name: player.dataset.name,
-            position: getGridPosition(player)
-        }));
-        localStorage.setItem(STORAGE_KEYS[areaId.toUpperCase()], JSON.stringify(players));
-    });
-
-    // 禁止プレイヤーの保存
-    localStorage.setItem(STORAGE_KEYS.FORBIDDEN, JSON.stringify(Array.from(forbiddenPlayers)));
-
-    // 保留中の選手交代の保存
-    const serializedSubs = pendingSubstitutions.map(sub => ({
-        player1Name: sub.player1Name,
-        player2Name: sub.player2Name,
-        reason: sub.reason
-    }));
-
-
-    localStorage.setItem(STORAGE_KEYS.PENDING_SUBS, JSON.stringify(serializedSubs));
-    //console.log('Current pendingSubstitutions:', pendingSubstitutions);
-    //console.log('SerializedSubs:', serializedSubs);
-
-    // 保留中の選手移動の保存
-    const serializedMoves = pendingMoves.map(move => ({
-        playerName: move.playerName,
-        targetArea: move.targetArea,
-        reason: move.reason
-    }));
-
-    //const stopWatchTime = stopWatchTime
-
-    localStorage.setItem(STORAGE_KEYS.PENDING_MOVES, JSON.stringify(serializedMoves));
-    //console.log('vvv Current pendingMoves:', pendingMoves);//情報あり
-    //console.log('vvv Serialized pendingMoves:', serializedMoves);//情報消滅
-
-}
-
 // 状態を復元する関数
 function loadState() {
     // 履歴の復元
@@ -1147,9 +1113,6 @@ function loadState() {
     // 保留中の選手移動の復元
     const savedMoves = JSON.parse(localStorage.getItem(STORAGE_KEYS.PENDING_MOVES) || '[]');
 
-    //console.log('stopWatchTime', stopWatchTime);
-
-
     pendingMoves = savedMoves.map(move => {
         const player = document.querySelector(`[data-name="${move.playerName}"]`);
         return {
@@ -1166,7 +1129,6 @@ function loadState() {
 }
 
 ///////////////////////////////////////////////////////
-
 
 // 状態変更時に保存を実行する関数
 function updateAndSave() {
@@ -1209,13 +1171,6 @@ resetContent = function () {
     originalResetContent();
     localStorage.clear(); // ローカルストレージをクリア
 };
-
-
-
-
-///////////////////////////////////////////////
-///////////2025-01-01 21:50 //////////////////
-///////////////////////////////////////////////
 
 
 // 理由選択ウィンドウを開く関数を更新
@@ -1314,7 +1269,7 @@ function recordSubstitutionHistory(inPlayer, outPlayer, reason) {
     historyItem.className = "history-item";
 
     const details = document.createElement("span");
-    details.textContent = `${reason} ${timestamp} ${inPlayer} ⇄ ${outPlayer}`;
+    details.textContent = `${reason} ${timestamp} ${inPlayer} → ${outPlayer}`;
 
     // ボタンを格納するコンテナ
     const buttonContainer = document.createElement("div");
@@ -1325,7 +1280,7 @@ function recordSubstitutionHistory(inPlayer, outPlayer, reason) {
     appendButton.textContent = "追記";
     appendButton.className = "append-button";
     appendButton.addEventListener("click", () =>
-        openReasonWindow(`${inPlayer} ⇄ ${outPlayer}`)
+        openReasonWindow(`${inPlayer} → ${outPlayer}`)
     );
 
     // 削除ボタン
@@ -1404,7 +1359,7 @@ function loadState() {
         appendButton.addEventListener('click', () => {
             // 選手交代の場合と単独移動の場合で処理を分ける
             const text = item.text;
-            if (text.includes('⇄')) {
+            if (text.includes('→')) {
                 const players = text.split(' ').slice(-3).join(' ');
                 openReasonWindow(players);
             } else {
@@ -1430,11 +1385,6 @@ function loadState() {
     });
 
 }
-
-
-//////////////////////////////////////////////////////////////
-//////////////// 2024-01-01 23:00 ////////////////////////////
-//////////////////////////////////////////////////////////////
 
 
 // 選手の元の位置を保存するためのグローバルマップ
@@ -1546,11 +1496,6 @@ loadState = function () {
     playerPositions = new Map(Object.entries(savedPositions));
 };
 
-/////////////////////////////////////////////
-///////// 2024-01-01 0:00 ///////////////////
-/////////////////////////////////////////////
-
-
 // モーダル選択肢を動的に更新する関数
 function updateMoveReasonOptions(isMovingToField) {
     const moveReasonSelect = reasonModal.querySelector("#moveReason");
@@ -1560,6 +1505,7 @@ function updateMoveReasonOptions(isMovingToField) {
         // ピッチへの移動理由
         const toFieldReasons = [
             { value: "YC復帰", label: "YC復帰" },
+            { value: "RC復帰", label: "RC復帰" },
             { value: "FPRO復帰", label: "FPRO復帰" },
         ];
 
@@ -1608,42 +1554,45 @@ function showReasonModal(player, target) {
     reasonModal.style.display = "flex";
 }
 
-// モーダル確定ボタンの処理を更新
+// モーダルの確定ボタン処理を更新（単独移動の場合）
 confirmReasonBtn.addEventListener("click", () => {
     const reason = moveReasonSelect.value;
-    if (!currentDraggedPlayer || !targetArea) {
-        return;
-    }
-
     if (!reason) {
         alert("理由を選択してください");
         return;
     }
-
-    const playerName = currentDraggedPlayer.dataset.name;
-    const isToTempOut = targetArea.id === 'tempOut';
-    const isFromField = currentDraggedPlayer.parentElement.id === 'field';
-    const isToField = targetArea.id === 'field';
-
-    if (isToField && !canEnterField(playerName, targetArea)) {
+    // 移動可能かチェック
+    if (!canEnterField(currentDraggedPlayer.dataset.name, targetArea)) {  ///errorerror
         reasonModal.style.display = "none";
-        currentDraggedPlayer = null;
+        //currentDraggedPlayer = null;
         targetArea = null;
         return;
     }
 
-    if (isToTempOut && isFromField) {
-        setupPlaceholder(currentDraggedPlayer, targetArea);
-    } else if (placeholderPlayers.has(playerName)) {
-        returnToPlaceholder(currentDraggedPlayer, placeholderPlayers.get(playerName));
-    } else {
-        targetArea.appendChild(currentDraggedPlayer);
+    // 戦術または負傷でOUTした場合、forbiddenPlayersに追加、機能していない
+    if (reason.includes('戦術') || reason.includes('負傷')) {
+        forbiddenPlayers.add(currentDraggedPlayer.dataset.name);
     }
 
-    recordHistory(playerName, targetArea.id, reason);
+    targetArea.appendChild(currentDraggedPlayer);
+    recordHistory(currentDraggedPlayer.dataset.name, targetArea.id, reason);
     reasonModal.style.display = "none";
-    currentDraggedPlayer = null;
-    targetArea = null;
-    updateAndSave();
 });
 
+function getLocalStorageUsage() {
+    let total = 0;
+    for (let key in localStorage) {
+        if (localStorage.hasOwnProperty(key)) {
+            let value = localStorage[key];
+            // キーと値の長さを計算
+            total += key.length + value.length;
+        }
+    }
+    // バイトをKBに変換して表示
+    console.log(`使用容量: ${(total / 1024).toFixed(2)} KB`);
+    console.log(`最大容量: 約5 MB`);
+}
+
+getLocalStorageUsage();
+
+////////////////////////////////////////////
