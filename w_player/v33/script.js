@@ -31,8 +31,30 @@ let dragStartSeat = null;
 let isDragging = false;
 let isProcessingMove = false;
 
+// 状態確認用の関数
+function checkMoveState() {
+    console.log('Current state:', {
+        isProcessingMove,
+        currentDraggedPlayer,
+        dragStartSeat,
+        targetArea
+    });
+}
+
+// 状態をリセットする関数
+function clearMoveState() {
+    console.log('Clearing move state');
+    isProcessingMove = false;
+    currentDraggedPlayer = null;
+    dragStartSeat = null;
+    targetArea = null;
+
+    checkMoveState();  // リセット後の状態チェック
+}
+
 // 単独移動用のモーダル表示
 function showReasonModal(player, target) {
+    clearMoveState();
     currentDraggedPlayer = player;
     targetArea = target;
     reasonModal.style.display = "flex";
@@ -220,24 +242,44 @@ function dropPlayer(event) {
 
     updateAndSave();
 }
-
-// 選手の移動処理 - 修正版 使われているが失敗  add dragStartSeat
-function handlePlayerMove(player, targetSeat) {
+/* この部分はマルチラインコメントです。 
+// 選手の移動処理 - 修正版 修正02:30
+function handlePlayerMove(player, target) {
     if (isProcessingMove) return;
     isProcessingMove = true;
 
+    // 移動元の情報を取得
     const fromArea = dragStartSeat.closest('.area').id;
-    const toArea = targetSeat.closest('.area').id;
 
-    showReasonModal(player, targetSeat);
+    // targetがシートかエリアかを判定
+    const isTargetSeat = target.classList.contains('seat');
+    const targetArea = isTargetSeat ? target.closest('.area') : target;
+    const toArea = targetArea.id;
+
+    console.log('Move details:', {
+        isTargetSeat,
+        fromArea,
+        toArea,
+        target
+    });
+
+    showReasonModal(player, target);
 
     confirmReasonBtn.onclick = () => {
         // 移動元の席を空席状態に
-        //markSeatEmpty(dragStartSeat);  ///すでに空席なので不要
+        if (dragStartSeat) {
+            markSeatEmpty(dragStartSeat);
+        }
 
-        // 移動先の席に選手を配置
-        targetSeat.appendChild(player);
-        markSeatOccupied(targetSeat);
+        // 移動先の処理
+        if (isTargetSeat) {
+            // シートへの移動
+            target.appendChild(player);
+            markSeatOccupied(target);
+        } else {
+            // エリア（ベンチまたはピッチ外）への直接移動
+            targetArea.appendChild(player);
+        }
 
         // 履歴に記録
         addToHistory('move', {
@@ -254,26 +296,97 @@ function handlePlayerMove(player, targetSeat) {
         setTimeout(() => {
             isProcessingMove = false;
             currentDraggedPlayer = null;
-        }, 100);        
+        }, 100);
+    };
+}
+複数行にわたるコメントを記述する場合に便利です。 */
+
+// handlePlayerMove関数を修正
+function handlePlayerMove(player, target) {
+    console.log('handlePlayerMove started');
+    checkMoveState();  // 開始時の状態チェック
+
+    if (isProcessingMove) {
+        console.log('Move is already processing');
+        return;
+    }
+    isProcessingMove = true;
+
+    const fromArea = dragStartSeat.closest('.area').id;
+    const isTargetSeat = target.classList.contains('seat');
+    const targetArea = isTargetSeat ? target.closest('.area') : target;
+    const toArea = targetArea.id;
+
+    showReasonModal(player, target);
+
+    confirmReasonBtn.onclick = () => {
+        try {
+            console.log('Confirm button clicked');
+
+            if (dragStartSeat) {
+                markSeatEmpty(dragStartSeat);
+            }
+
+            if (isTargetSeat) {
+                target.appendChild(player);
+                markSeatOccupied(target);
+            } else {
+                targetArea.appendChild(player);
+            }
+
+            addToHistory('move', {
+                player: player.dataset.name,
+                reason: moveReasonSelect.value,
+                fromArea,
+                toArea
+            });
+
+            reasonModal.style.display = "none";
+            updateAndSave();
+
+        } catch (error) {
+            console.error('Error during move:', error);
+        } finally {
+            // 必ず状態をリセット
+            clearMoveState();
+        }
+    };
+
+    // キャンセルボタンの処理も確実に状態をリセット
+    cancelReasonBtn.onclick = () => {
+        console.log('Move cancelled');
+        clearMoveState();
+        reasonModal.style.display = "none";
     };
 }
 
 
 // 選手交代の処理 - 修正版
 function handlePlayerSwap(outgoingPlayer, incomingPlayer, targetSeat) {
-    const fromArea = dragStartSeat.closest('.area').id;
-    const toArea = targetSeat.closest('.area').id;
+    const fromArea = dragStartSeat.closest('.area').id; // 元のエリア
+    const toArea = targetSeat.closest('.area').id;     // 目標エリア
 
     showReasonModalForSwap2(outgoingPlayer, incomingPlayer, targetSeat);
 
     confirmReasonBtn2.onclick = () => {
-        // 選手の交換
-        targetSeat.appendChild(outgoingPlayer);
-        dragStartSeat.appendChild(incomingPlayer);
+        // ベンチの場合の特別処理
+        if (toArea === 'bench') {
+            // 選手を直接ベンチエリアに追加
+            document.getElementById('bench').appendChild(outgoingPlayer);
+        } else {
+            // 通常のエリアの場合は席に配置
+            targetSeat.appendChild(outgoingPlayer);
+            markSeatOccupied(targetSeat); // 席を占有状態に
+        }
 
-        // 両方の席を占有状態に
-        markSeatOccupied(targetSeat);
-        //markSeatOccupied(dragStartSeat);
+        if (fromArea === 'bench') {
+            // ベンチから選手を取り出し、エリアに配置
+            document.getElementById(toArea).appendChild(incomingPlayer);
+        } else {
+            // 通常のエリアの場合は席に配置
+            dragStartSeat.appendChild(incomingPlayer);
+            // markSeatOccupied(dragStartSeat); // 必要に応じて
+        }
 
         // 履歴に記録
         addToHistory('swap', {
@@ -288,6 +401,8 @@ function handlePlayerSwap(outgoingPlayer, incomingPlayer, targetSeat) {
         updateAndSave();
     };
 }
+
+
 
 // 選手交代の履歴記録を1つにまとめる
 function recordSubstitutionHistory(inPlayer, outPlayer, reason) {
@@ -1386,7 +1501,6 @@ function loadState() {
 
 }
 
-
 // 選手の元の位置を保存するためのグローバルマップ
 let playerPositions = new Map();
 
@@ -1496,6 +1610,8 @@ loadState = function () {
     playerPositions = new Map(Object.entries(savedPositions));
 };
 
+
+
 // モーダル選択肢を動的に更新する関数
 function updateMoveReasonOptions(isMovingToField) {
     const moveReasonSelect = reasonModal.querySelector("#moveReason");
@@ -1532,7 +1648,49 @@ function updateMoveReasonOptions(isMovingToField) {
     }
 }
 
+
+
+/* この部分はマルチラインコメントです。
+// モーダル選択肢を動的に更新する関数
+function updateMoveReasonOptions(isMovingToField) {
+    const moveReasonSelect = reasonModal.querySelector("#moveReason");
+    moveReasonSelect.innerHTML = ''; // 既存の選択肢をクリア
+
+    if (isMovingToField) {
+        // ピッチへの移動理由
+        const toFieldReasons = [
+            { value: "YC復帰", label: "YC復帰" },
+            { value: "RC復帰", label: "RC復帰" },
+            { value: "FPRO復帰", label: "FPRO復帰" },
+        ];
+
+        toFieldReasons.forEach(reason => {
+            const option = document.createElement("option");
+            option.value = reason.value;
+            option.textContent = reason.label;
+            moveReasonSelect.appendChild(option);
+        });
+    } else {
+        // ピッチ外への移動理由
+        const fromFieldReasons = [
+            { value: "YC", label: "YC" },
+            { value: "RC", label: "RC" },
+            { value: "FPRO", label: "FPRO" },
+        ];
+
+        fromFieldReasons.forEach(reason => {
+            const option = document.createElement("option");
+            option.value = reason.value;
+            option.textContent = reason.label;
+            moveReasonSelect.appendChild(option);
+        });
+    }
+}
+ 複数行にわたるコメントを記述する場合に便利です。 */
+
+//この関数が要
 // 単独移動用のモーダル表示関数を更新
+/* この部分はマルチラインコメントです。 
 function showReasonModal(player, target) {
     currentDraggedPlayer = player;
     targetArea = target;
@@ -1553,6 +1711,45 @@ function showReasonModal(player, target) {
 
     reasonModal.style.display = "flex";
 }
+複数行にわたるコメントを記述する場合に便利です。 */
+
+function showReasonModal(player, target) {
+    currentDraggedPlayer = player;
+    targetArea = target;
+
+    // target がシートかどうかをチェック
+    const targetSeat = target.classList.contains('seat') ? target : null;
+
+    // シートの場合、その親要素が field かどうかをチェック
+    const isMovingToField = targetSeat ?
+        targetSeat.closest('#field') !== null :
+        target.id === 'field';
+
+    console.log('Move details:', {
+        targetIsField: target.id === 'field',
+        targetIsSeat: targetSeat !== null,
+        isMovingToField: isMovingToField
+    });
+
+    // ピッチからの移動とピッチへの移動で選択肢を変更
+    updateMoveReasonOptions(isMovingToField);
+
+    // モーダルのタイトルを更新
+    const modalTitle = reasonModal.querySelector(".modal-title");
+    if (modalTitle) {
+        modalTitle.textContent = isMovingToField ?
+            "ピッチへの移動理由を選択" :
+            "ピッチ外への移動理由を選択";
+    }
+
+    // targetSeat が存在する場合は保存しておく
+    if (targetSeat) {
+        currentTargetSeat = targetSeat;
+    }
+
+    reasonModal.style.display = "flex";
+}
+
 
 // モーダルの確定ボタン処理を更新（単独移動の場合）
 confirmReasonBtn.addEventListener("click", () => {
