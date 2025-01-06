@@ -1,7 +1,8 @@
 
 /////////////////////////////////////////////////////////////////////
-//////// ピッチ外からピッチ内移動メニュー消えた v14 as baseline ////////////
-//////////////////////////////////////////////////////////////////////
+//////// v34_14 as baseline /////////////////////////////////////////
+//////// 禁止選手対応完了、localstorageが課題 ////////
+/////////////////////////////////////////////////////////////////////
 
 // DOM要素の取得
 const bench = document.getElementById("bench");
@@ -277,6 +278,7 @@ function handlePlayerMove(player, target) {
             }
 
             reasonModal.style.display = "none";
+
             updateAndSave();
 
         } catch (error) {
@@ -293,6 +295,8 @@ function handlePlayerMove(player, target) {
         clearMoveState();
         reasonModal.style.display = "none";
     };
+
+
 }
 
 
@@ -319,6 +323,7 @@ function handlePlayerSwap(outgoingPlayer, incomingPlayer, targetSeat) {
         }
 
         reasonModal2.style.display = "none";
+
         updateAndSave();
     };
 }
@@ -332,6 +337,8 @@ function recordSubstitutionHistory(inPlayer, outPlayer, reason) {
     // 一つの履歴項目として記録
     const details = document.createElement("span");
     details.textContent = `${reason} ${timestamp} ${inPlayer} → ${outPlayer}`;
+
+
 
     const appendButton = document.createElement("button");
     appendButton.textContent = "追記";
@@ -419,25 +426,10 @@ function saveHTML() {
     const benchText = bench ? bench.innerText : ''; // bench のテキスト
     const fieldText = field ? field.innerText : ''; // field のテキスト
     const tempOutText = tempOut ? tempOut.innerText : ''; // tempOut のテキスト
-
-    // 禁止プレイヤーリストを作成 (履歴情報に基づく)
-    const forbiddenPlayers = [];
     const historyLines = contentText.split('\n');
-    historyLines.forEach(line => {
-        if (line.includes('戦術') || line.includes('負傷')) {
-            const playerName = line.split(' ')[4]; // プレイヤー名を抽出
-            if (playerName && !forbiddenPlayers.includes(playerName)) {
-                forbiddenPlayers.push(playerName);
-            }
-        }
-        else if (line.includes('RC ')) {
-            const playerName = line.split(' ')[2]; // プレイヤー名を抽出
-            if (playerName && !forbiddenPlayers.includes(playerName)) {
-                forbiddenPlayers.push(playerName);
-            }
-        }        
-    });
-
+    // Setオブジェクトの内容を文字列化
+    const rcPlayersText = Array.from(rcPlayers).join(', ');
+    const outPlayersText = Array.from(outPlayers).join(', ');
     // 保留中の選手交代をフォーマット
     const pendingSubstitutionsText = pendingSubstitutions.map(sub => {
         return `${sub.player1Name} → ${sub.player2Name} (${sub.reason})`;
@@ -460,7 +452,8 @@ function saveHTML() {
         `ベンチ:\n${benchText.split('\n').filter(line => !['空席', 'ベンチ'].includes(line.trim())).join('\n')}\n\n` +
         `ピッチ:\n${fieldText.split('\n').filter(line => !['空席', 'ピッチ'].includes(line.trim())).join('\n')}\n\n` +
         `ピッチ外:\n${tempOutText.split('\n').filter(line => !['空席', 'ピッチ外'].includes(line.trim())).join('\n')}\n\n` +
-        `禁止プレイヤー:\n${forbiddenPlayers.join(', ')}\n\n` +
+        `RCプレイヤー:\n${rcPlayersText}\n\n` +
+        `OUTプレイヤー:\n${outPlayersText}\n\n` +
         `保留中の選手交代:\n${pendingSubstitutionsText}\n\n` +
         `保留中の選手移動:\n${pendingMovesText}\n\n`;
 
@@ -501,11 +494,10 @@ function resetContent() {
     if (pendingMovesArea) pendingMovesArea.innerHTML = '';
 
     // 禁止プレイヤーリストのリセット
-    forbiddenPlayers.clear();
-
+    rcPlayers.clear();
+    outPlayers.clear();
     // ボタンのリセット
     registerButton.disabled = false;
-
     console.log('全ての記録と表示、保留中の内容がリセットされました。');
 }
 
@@ -578,9 +570,13 @@ registerButton.addEventListener("click", () => {
 
 
 // 既存の変数宣言の後に追加
-let forbiddenPlayers = new Set(); // RCまたは負傷でOUTした選手を記録
 
+let rcPlayers = new Set();
+let outPlayers = new Set();
+let forbiddenPlayers = rcPlayers || outPlayers;
 
+console.log('rcPlayers', rcPlayers)
+console.log('outPlayers', outPlayers)
 
 // 選手名の最後の文字がBまたはCの数をカウントする関数
 function countBCPlayers(area) {
@@ -603,18 +599,15 @@ function isBCorC(name) {
 function canEnterField(playerName, targetArea, replacingPlayer = null) {
     // Fieldに入る場合のみチェックする
     if (targetArea.id === 'field') {
-        // 最初にforbiddenPlayersのチェックを行う
-        // 交代であっても、forbiddenPlayersは入場不可
-        if (forbiddenPlayers.has(playerName)) {
+        // 交代であっても、禁止Playersは入場不可
+        if (forbiddenPlayers.has(playerName) ) {
             alert('この選手は再びピッチに入ることはできません');
             return false;
         }
-
         // 既にFieldにいる場合は、移動を許可（Field内での移動）
         if (isPlayerOnField(playerName)) {
             return true;
         }
-
         const isIncomingBC = isBCorC(playerName);
 
         if (isIncomingBC) {
@@ -626,7 +619,6 @@ function canEnterField(playerName, targetArea, replacingPlayer = null) {
                     return isTargetPositionEmpty(targetArea);
                 }
             }
-
             // 現在のB/C選手のカウントをチェック
             const currentCount = countBCPlayers(field);
             if (currentCount >= 4) {
@@ -931,7 +923,7 @@ confirmReasonBtn2.addEventListener("click", () => {
     }
 
     if (reason.includes('戦術') || reason.includes('負傷')) {
-        forbiddenPlayers.add(secondSelectedPlayer2.dataset.name);
+        outPlayers.add(secondSelectedPlayer2.dataset.name);
     }
 
     // 交代前の位置と親要素を記録
@@ -1078,10 +1070,14 @@ function executePendingSub(index) {
         // 履歴を記録
         recordSubstitutionHistory(sub.player1Name, sub.player2Name, sub.reason);
 
+        if (sub.reason === '戦術' || sub.reason === '負傷') {
+            outPlayers.add(sub.player2Name);
+        }
         // 保留リストから削除
         pendingSubstitutions.splice(index, 1);
         displayPendingOperations();
     }, 500); // アニメーション時間に同期
+
 
     updateAndSave();
 }
@@ -1095,97 +1091,17 @@ const STORAGE_KEYS = {
     BENCH: 'benchPlayers',
     FIELD: 'fieldPlayers',
     TEMP_OUT: 'tempOutPlayers',
-    FORBIDDEN: 'forbiddenPlayers',
+    RCPLAYER: 'rcPlayers',
+    OUTPLAYER: 'outPlayers',
     PENDING_SUBS: 'pendingSubstitutions',
     PENDING_MOVES: 'pendingMoves',
 };
-
-// 状態を復元する関数
-function loadState() {
-    // 履歴の復元
-    const savedHistory = JSON.parse(localStorage.getItem(STORAGE_KEYS.HISTORY) || '[]');
-    historyList.innerHTML = '';
-    savedHistory.forEach(item => {
-        const historyItem = document.createElement('div');
-        historyItem.className = 'history-item';
-
-        const details = document.createElement('span');
-        details.textContent = item.text;
-
-        const appendButton = document.createElement('button');
-        appendButton.textContent = '追記';
-        appendButton.className = 'append-button';
-        appendButton.addEventListener('click', () =>
-            openReasonWindow(item.text.split(' ')[1])
-        );
-
-        historyItem.appendChild(details);
-        historyItem.appendChild(appendButton);
-        historyList.appendChild(historyItem);
-    });
-
-    // エリアごとの選手の復元
-    ['bench', 'field', 'tempOut'].forEach(areaId => {
-        const area = document.getElementById(areaId);
-        const savedPlayers = JSON.parse(localStorage.getItem(STORAGE_KEYS[areaId.toUpperCase()]) || '[]');
-
-        // エリアタイトルの保持
-        const areaTitle = area.querySelector('.area-title');
-        area.innerHTML = '';
-        area.appendChild(areaTitle);
-
-        // 選手の復元
-        savedPlayers.sort((a, b) => a.position - b.position).forEach(playerData => {
-            const player = createPlayerElement(playerData.name);
-            area.appendChild(player);
-        });
-    });
-
-    // 禁止プレイヤーの復元
-    const savedForbidden = JSON.parse(localStorage.getItem(STORAGE_KEYS.FORBIDDEN) || '[]');
-    forbiddenPlayers = new Set(savedForbidden);
-
-    // 保留中の選手交代の復元
-    const savedSubs = JSON.parse(localStorage.getItem(STORAGE_KEYS.PENDING_SUBS) || '[]');
-    //console.log('Saved pendingSubs:', savedSubs);
-
-
-    pendingSubstitutions = savedSubs.map(sub => {
-        const player1 = document.querySelector(`[data-name="${sub.player1Name}"]`);
-        const player2 = document.querySelector(`[data-name="${sub.player2Name}"]`);
-        return {
-            player1,
-            player2,
-            player1Name: sub.player1Name,
-            player2Name: sub.player2Name,
-            reason: sub.reason
-        };
-    });
-
-
-    // 保留中の選手移動の復元
-    const savedMoves = JSON.parse(localStorage.getItem(STORAGE_KEYS.PENDING_MOVES) || '[]');
-
-    pendingMoves = savedMoves.map(move => {
-        const player = document.querySelector(`[data-name="${move.playerName}"]`);
-        return {
-            player,
-            playerName: move.playerName,
-            targetArea: move.targetArea,
-            reason: move.reason
-        };
-    });
-
-
-    // 保留中の操作の表示を更新
-    displayPendingOperations();
-}
 
 ///////////////////////////////////////////////////////
 
 // 状態変更時に保存を実行する関数
 function updateAndSave() {
-    console.log('State is being saved');
+    //console.log('State is being saved');
     saveState();
     console.log('State saved successfully');
 }
@@ -1259,6 +1175,9 @@ function openReasonWindow(playerInfo) {
         if (selectedReason) {
             const timestamp = timeDisplay.textContent;
             recordHistory(playerInfo, "append", `${selectedReason} ${timestamp} ${playerInfo}`);
+            if (selectedReason === 'FPRO>>RC') {
+                rcPlayers.add(playerInfo);
+            }
         }
         document.body.removeChild(reasonWindow);
     });
@@ -1285,6 +1204,9 @@ function recordHistory(playerName, targetArea, reason) {
     } else {
         const timestamp = timeDisplay.textContent;
         details.textContent = `${reason} ${timestamp} ${playerName}`;
+    }
+    if (reason === 'RC') {
+        rcPlayers.add(playerName);
     }
 
     // ボタンを格納するコンテナ
@@ -1316,6 +1238,8 @@ function recordHistory(playerName, targetArea, reason) {
     historyList.appendChild(historyItem);
     historyList.scrollTop = historyList.scrollHeight;
 }
+
+
 
 // 選手交代の履歴記録関数も更新
 function recordSubstitutionHistory(inPlayer, outPlayer, reason) {
@@ -1375,7 +1299,8 @@ function saveState() {
         localStorage.setItem(STORAGE_KEYS[areaId.toUpperCase()], JSON.stringify(players));
     });
 
-    localStorage.setItem(STORAGE_KEYS.FORBIDDEN, JSON.stringify(Array.from(forbiddenPlayers)));
+    localStorage.setItem(STORAGE_KEYS.RCPLAYER, JSON.stringify(Array.from(rcPlayers)));
+    localStorage.setItem(STORAGE_KEYS.OUTPLAYER, JSON.stringify(Array.from(outPlayers)));
 
     const serializedSubs = pendingSubstitutions.map(sub => ({
         player1Name: sub.player1Name,
@@ -1502,7 +1427,7 @@ function insertAtPosition(parent, element, position, isReturn = false) {
     }
 }
 
-///1486
+
 // 単独移動の実行関数を更新
 function executePendingMove(index) {
     const move = pendingMoves[index];
@@ -1535,8 +1460,15 @@ function executePendingMove(index) {
     );
 
     recordHistory(move.playerName, move.targetArea, move.reason);
+
+    if (move.reason === 'RC') {
+        rcPlayers.add(move.playerName);
+    }
+
     pendingMoves.splice(index, 1);
     displayPendingOperations();
+
+
     updateAndSave();
 }
 
@@ -1650,8 +1582,8 @@ confirmReasonBtn.addEventListener("click", () => {
     }
 
     // 戦術または負傷でOUTした場合、禁止に追加
-    if (reason.includes('RC') && !reason.includes('替IN')) {
-        forbiddenPlayers.add(currentDraggedPlayer.dataset.name);
+    if (reason === 'RC') {
+        rcPlayers.add(currentDraggedPlayer.dataset.name);
     }
 
     targetArea.appendChild(currentDraggedPlayer);
