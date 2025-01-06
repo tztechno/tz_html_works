@@ -239,67 +239,9 @@ function dropPlayer(event) {
         // 交代の場合
         handlePlayerSwap(currentDraggedPlayer, targetPlayer, targetSeat);
     }
-
     updateAndSave();
 }
-/* この部分はマルチラインコメントです。 
-// 選手の移動処理 - 修正版 修正02:30
-function handlePlayerMove(player, target) {
-    if (isProcessingMove) return;
-    isProcessingMove = true;
 
-    // 移動元の情報を取得
-    const fromArea = dragStartSeat.closest('.area').id;
-
-    // targetがシートかエリアかを判定
-    const isTargetSeat = target.classList.contains('seat');
-    const targetArea = isTargetSeat ? target.closest('.area') : target;
-    const toArea = targetArea.id;
-
-    console.log('Move details:', {
-        isTargetSeat,
-        fromArea,
-        toArea,
-        target
-    });
-
-    showReasonModal(player, target);
-
-    confirmReasonBtn.onclick = () => {
-        // 移動元の席を空席状態に
-        if (dragStartSeat) {
-            markSeatEmpty(dragStartSeat);
-        }
-
-        // 移動先の処理
-        if (isTargetSeat) {
-            // シートへの移動
-            target.appendChild(player);
-            markSeatOccupied(target);
-        } else {
-            // エリア（ベンチまたはピッチ外）への直接移動
-            targetArea.appendChild(player);
-        }
-
-        // 履歴に記録
-        addToHistory('move', {
-            player: player.dataset.name,
-            reason: moveReasonSelect.value,
-            fromArea,
-            toArea
-        });
-
-        reasonModal.style.display = "none";
-        updateAndSave();
-
-        // 処理完了後にフラグをリセット
-        setTimeout(() => {
-            isProcessingMove = false;
-            currentDraggedPlayer = null;
-        }, 100);
-    };
-}
-複数行にわたるコメントを記述する場合に便利です。 */
 
 // handlePlayerMove関数を修正
 function handlePlayerMove(player, target) {
@@ -334,13 +276,6 @@ function handlePlayerMove(player, target) {
                 targetArea.appendChild(player);
             }
 
-            addToHistory('move', {
-                player: player.dataset.name,
-                reason: moveReasonSelect.value,
-                fromArea,
-                toArea
-            });
-
             reasonModal.style.display = "none";
             updateAndSave();
 
@@ -363,46 +298,30 @@ function handlePlayerMove(player, target) {
 
 // 選手交代の処理 - 修正版
 function handlePlayerSwap(outgoingPlayer, incomingPlayer, targetSeat) {
-    const fromArea = dragStartSeat.closest('.area').id; // 元のエリア
-    const toArea = targetSeat.closest('.area').id;     // 目標エリア
+    // `dragStartSeat` がエリア要素を持つかを確認
+    const fromAreaElement = dragStartSeat.closest('.area');
+    const toAreaElement = targetSeat.closest('.area');
+
+    const fromArea = fromAreaElement ? fromAreaElement.id : 'bench'; // デフォルトで 'bench' を設定
+    const toArea = toAreaElement ? toAreaElement.id : 'field';       // デフォルトで 'field' を設定
 
     showReasonModalForSwap2(outgoingPlayer, incomingPlayer, targetSeat);
 
     confirmReasonBtn2.onclick = () => {
-        // ベンチの場合の特別処理
-        if (toArea === 'bench') {
-            // 選手を直接ベンチエリアに追加
+        if (fromArea === 'bench' && toArea === 'field') {
             document.getElementById('bench').appendChild(outgoingPlayer);
-        } else {
-            // 通常のエリアの場合は席に配置
+        } else if (fromArea === 'tempOut' && toArea === 'field') {
+            document.getElementById('tempOut').appendChild(outgoingPlayer);
+        } else if (fromArea === 'field' && toArea === 'field') {
+            // P入替
             targetSeat.appendChild(outgoingPlayer);
             markSeatOccupied(targetSeat); // 席を占有状態に
         }
-
-        if (fromArea === 'bench') {
-            // ベンチから選手を取り出し、エリアに配置
-            document.getElementById(toArea).appendChild(incomingPlayer);
-        } else {
-            // 通常のエリアの場合は席に配置
-            dragStartSeat.appendChild(incomingPlayer);
-            // markSeatOccupied(dragStartSeat); // 必要に応じて
-        }
-
-        // 履歴に記録
-        addToHistory('swap', {
-            player1: outgoingPlayer.dataset.name,
-            player2: incomingPlayer.dataset.name,
-            reason: moveReasonSelect2.value,
-            fromArea,
-            toArea
-        });
 
         reasonModal2.style.display = "none";
         updateAndSave();
     };
 }
-
-
 
 // 選手交代の履歴記録を1つにまとめる
 function recordSubstitutionHistory(inPlayer, outPlayer, reason) {
@@ -502,15 +421,21 @@ function saveHTML() {
     const tempOutText = tempOut ? tempOut.innerText : ''; // tempOut のテキスト
 
     // 禁止プレイヤーリストを作成 (履歴情報に基づく)
-    const forbiddenPlayer = [];
+    const forbiddenPlayers = [];
     const historyLines = contentText.split('\n');
     historyLines.forEach(line => {
-        if (line.includes('RC') || line.includes('負傷OUT')) {
-            const playerName = line.split(' ')[2]; // プレイヤー名を抽出
-            if (playerName && !forbiddenPlayer.includes(playerName)) {
-                forbiddenPlayer.push(playerName);
+        if (line.includes('戦術') || line.includes('負傷')) {
+            const playerName = line.split(' ')[4]; // プレイヤー名を抽出
+            if (playerName && !forbiddenPlayers.includes(playerName)) {
+                forbiddenPlayers.push(playerName);
             }
         }
+        else if (line.includes('RC ')) {
+            const playerName = line.split(' ')[2]; // プレイヤー名を抽出
+            if (playerName && !forbiddenPlayers.includes(playerName)) {
+                forbiddenPlayers.push(playerName);
+            }
+        }        
     });
 
     // 保留中の選手交代をフォーマット
@@ -535,7 +460,7 @@ function saveHTML() {
         `ベンチ:\n${benchText.split('\n').filter(line => !['空席', 'ベンチ'].includes(line.trim())).join('\n')}\n\n` +
         `ピッチ:\n${fieldText.split('\n').filter(line => !['空席', 'ピッチ'].includes(line.trim())).join('\n')}\n\n` +
         `ピッチ外:\n${tempOutText.split('\n').filter(line => !['空席', 'ピッチ外'].includes(line.trim())).join('\n')}\n\n` +
-        `禁止プレイヤー:\n${forbiddenPlayer.join(', ')}\n\n` +
+        `禁止プレイヤー:\n${forbiddenPlayers.join(', ')}\n\n` +
         `保留中の選手交代:\n${pendingSubstitutionsText}\n\n` +
         `保留中の選手移動:\n${pendingMovesText}\n\n`;
 
@@ -655,6 +580,8 @@ registerButton.addEventListener("click", () => {
 // 既存の変数宣言の後に追加
 let forbiddenPlayers = new Set(); // RCまたは負傷でOUTした選手を記録
 
+
+
 // 選手名の最後の文字がBまたはCの数をカウントする関数
 function countBCPlayers(area) {
     const players = Array.from(area.getElementsByClassName('player'));
@@ -665,44 +592,29 @@ function countBCPlayers(area) {
     }).length;
 }
 
-// 選手がピッチに入ることができるかチェックする関数
-function canEnterField(playerName, targetArea) {
-    // RCまたは負傷でOUTした選手のチェック
-    if (forbiddenPlayers.has(playerName)) {
-        alert('この選手は再びピッチに入ることはできません');
-        return false;
-    }
-
-    // B/C制限のチェック（ピッチに入る場合のみ）
-    if (targetArea.id === 'field') {
-        const lastChar = playerName[playerName.length - 1].toUpperCase();
-        if (lastChar === 'B' || lastChar === 'C') {
-            const currentCount = countBCPlayers(field);
-            if (currentCount >= 4) {
-                alert('ピッチ上のB/C選手が4人を超えるため、この操作はできません');
-                return false;
-            }
-        }
-    }
-    return true;
-}
-
 // B/C選手の交代をチェックする関数
 function isBCorC(name) {
     const lastChar = name[name.length - 1].toUpperCase();
     return lastChar === 'B' || lastChar === 'C';
 }
 
-// 選手がピッチに入ることができるかチェックする関数を更新
-function canEnterField(playerName, targetArea, replacingPlayer = null) {
-    // RCまたは負傷でOUTした選手のチェック
-    if (forbiddenPlayers.has(playerName)) {
-        alert('この選手は再びピッチに入ることはできません');
-        return false;
-    }
+///////////////////////
 
-    // B/C制限のチェック（ピッチに入る場合のみ）
+function canEnterField(playerName, targetArea, replacingPlayer = null) {
+    // Fieldに入る場合のみチェックする
     if (targetArea.id === 'field') {
+        // 最初にforbiddenPlayersのチェックを行う
+        // 交代であっても、forbiddenPlayersは入場不可
+        if (forbiddenPlayers.has(playerName)) {
+            alert('この選手は再びピッチに入ることはできません');
+            return false;
+        }
+
+        // 既にFieldにいる場合は、移動を許可（Field内での移動）
+        if (isPlayerOnField(playerName)) {
+            return true;
+        }
+
         const isIncomingBC = isBCorC(playerName);
 
         if (isIncomingBC) {
@@ -711,18 +623,44 @@ function canEnterField(playerName, targetArea, replacingPlayer = null) {
                 const isReplacingBC = isBCorC(replacingPlayer.dataset.name);
                 // B/C選手同士の交代の場合は許可
                 if (isReplacingBC) {
-                    return true;
+                    return isTargetPositionEmpty(targetArea);
                 }
             }
+
+            // 現在のB/C選手のカウントをチェック
             const currentCount = countBCPlayers(field);
             if (currentCount >= 4) {
                 alert('ピッチ上のB/C選手が4人を超えるため、この操作はできません');
                 return false;
             }
         }
+
+        // 移動先の位置が空いているかチェック
+        return isTargetPositionEmpty(targetArea);
+    }
+
+    // Fieldから出る場合は常に許可
+    return true;
+}
+
+// Helper関数: 移動先の位置が空いているかチェック
+function isTargetPositionEmpty(targetArea) {
+    const targetPosition = targetArea.querySelector('.empty');
+    if (!targetPosition) {
+        alert('移動先に空きがありません');
+        return false;
     }
     return true;
 }
+
+// Helper関数: Playerが現在Fieldにいるかを確認
+function isPlayerOnField(playerName) {
+    return Array.from(field.querySelectorAll('.player')).some(
+        (player) => player.dataset.name === playerName
+    );
+}
+
+//////////////////
 
 // 保留中の操作を保存する配列
 let pendingSubstitutions = [];
@@ -1302,7 +1240,9 @@ function openReasonWindow(playerInfo) {
         "出血>>戦術",
         "出血>>負傷",
         "HIA>>戦術",
-        "HIA>>負傷"
+        "HIA>>負傷",
+        "FPRO>>YC", 
+        "FPRO>>RC",
     ];
     reasons.forEach(reason => {
         const option = document.createElement("option");
@@ -1481,6 +1421,7 @@ function loadState() {
                 const playerName = text.split(' ').slice(-1)[0];
                 openReasonWindow(playerName);
             }
+
         });
 
         // 削除ボタン
@@ -1561,12 +1502,19 @@ function insertAtPosition(parent, element, position, isReturn = false) {
     }
 }
 
+///1486
 // 単独移動の実行関数を更新
 function executePendingMove(index) {
     const move = pendingMoves[index];
     const player = move.player;
     const sourceArea = player.parentElement.id;
     const targetArea = document.getElementById(move.targetArea);
+
+    // forbidden playersのチェックを追加
+    if (forbiddenPlayers.has(player.dataset.name) && move.targetArea === 'field') {
+        alert('この選手は再びピッチに入ることはできません');
+        return;
+    }
 
     if (!canEnterField(move.playerName, targetArea)) {
         return;
@@ -1592,6 +1540,7 @@ function executePendingMove(index) {
     updateAndSave();
 }
 
+
 // 状態保存関数を更新
 const originalSaveState = saveState;
 saveState = function () {
@@ -1611,7 +1560,6 @@ loadState = function () {
 };
 
 
-
 // モーダル選択肢を動的に更新する関数
 function updateMoveReasonOptions(isMovingToField) {
     const moveReasonSelect = reasonModal.querySelector("#moveReason");
@@ -1621,8 +1569,8 @@ function updateMoveReasonOptions(isMovingToField) {
         // ピッチへの移動理由
         const toFieldReasons = [
             { value: "YC復帰", label: "YC復帰" },
-            { value: "RC復帰", label: "RC復帰" },
-            { value: "FPRO復帰", label: "FPRO復帰" },
+            { value: "YC替IN", label: "YC替IN" },
+            { value: "RC替IN", label: "RC替IN" },
         ];
 
         toFieldReasons.forEach(reason => {
@@ -1647,71 +1595,6 @@ function updateMoveReasonOptions(isMovingToField) {
         });
     }
 }
-
-
-
-/* この部分はマルチラインコメントです。
-// モーダル選択肢を動的に更新する関数
-function updateMoveReasonOptions(isMovingToField) {
-    const moveReasonSelect = reasonModal.querySelector("#moveReason");
-    moveReasonSelect.innerHTML = ''; // 既存の選択肢をクリア
-
-    if (isMovingToField) {
-        // ピッチへの移動理由
-        const toFieldReasons = [
-            { value: "YC復帰", label: "YC復帰" },
-            { value: "RC復帰", label: "RC復帰" },
-            { value: "FPRO復帰", label: "FPRO復帰" },
-        ];
-
-        toFieldReasons.forEach(reason => {
-            const option = document.createElement("option");
-            option.value = reason.value;
-            option.textContent = reason.label;
-            moveReasonSelect.appendChild(option);
-        });
-    } else {
-        // ピッチ外への移動理由
-        const fromFieldReasons = [
-            { value: "YC", label: "YC" },
-            { value: "RC", label: "RC" },
-            { value: "FPRO", label: "FPRO" },
-        ];
-
-        fromFieldReasons.forEach(reason => {
-            const option = document.createElement("option");
-            option.value = reason.value;
-            option.textContent = reason.label;
-            moveReasonSelect.appendChild(option);
-        });
-    }
-}
- 複数行にわたるコメントを記述する場合に便利です。 */
-
-//この関数が要
-// 単独移動用のモーダル表示関数を更新
-/* この部分はマルチラインコメントです。 
-function showReasonModal(player, target) {
-    currentDraggedPlayer = player;
-    targetArea = target;
-
-    // プレイヤーがピッチに移動するかどうかを判定
-    const isMovingToField = target.id === 'field';
-
-    // ピッチからの移動とピッチへの移動で選択肢を変更
-    updateMoveReasonOptions(isMovingToField);
-
-    // モーダルのタイトルを更新
-    const modalTitle = reasonModal.querySelector(".modal-title");
-    if (modalTitle) {
-        modalTitle.textContent = isMovingToField ?
-            "ピッチへの移動理由を選択" :
-            "ピッチ外への移動理由を選択";
-    }
-
-    reasonModal.style.display = "flex";
-}
-複数行にわたるコメントを記述する場合に便利です。 */
 
 function showReasonModal(player, target) {
     currentDraggedPlayer = player;
@@ -1766,8 +1649,8 @@ confirmReasonBtn.addEventListener("click", () => {
         return;
     }
 
-    // 戦術または負傷でOUTした場合、forbiddenPlayersに追加、機能していない
-    if (reason.includes('戦術') || reason.includes('負傷')) {
+    // 戦術または負傷でOUTした場合、禁止に追加
+    if (reason.includes('RC') && !reason.includes('替IN')) {
         forbiddenPlayers.add(currentDraggedPlayer.dataset.name);
     }
 
@@ -1775,6 +1658,8 @@ confirmReasonBtn.addEventListener("click", () => {
     recordHistory(currentDraggedPlayer.dataset.name, targetArea.id, reason);
     reasonModal.style.display = "none";
 });
+
+
 
 function getLocalStorageUsage() {
     let total = 0;
