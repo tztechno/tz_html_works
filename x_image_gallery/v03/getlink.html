@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>リンク付きペースト</title>
+</head>
+
+<body>
+    <h2>リンク付きテキストのペースト</h2>
+    <div contenteditable="true" id="editableBox"
+        style="border: 1px solid #ccc; padding: 10px; width: 400px; height: 200px; overflow-y: auto;">
+        ここにリンク付きテキストをペーストしてください
+    </div>
+
+    <button onclick="extractLinks()">リンクを抽出</button>
+    <pre id="output"></pre>
+
+    <script>
+        function extractLinks() {
+            const editableBox = document.getElementById('editableBox');
+            const output = document.getElementById('output');
+
+            // div内のリンクを抽出
+            const links = editableBox.querySelectorAll('a');
+            let result = '抽出したリンク:\n';
+
+            links.forEach(link => {
+                result += `テキスト: ${link.innerText}, URL: ${link.href}\n`;
+            });
+
+            // 結果を表示
+            output.textContent = result;
+        }
+    </script>
+</body>
+
+</html>
