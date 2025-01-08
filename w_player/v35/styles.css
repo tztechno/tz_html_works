@@ -1,0 +1,617 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.container {
+    margin-left: 400px;
+    margin-right: 20px;
+    display: flex;
+    justify-content: space-between;
+    width: 90%;
+    max-width: 1160px;
+    margin-top: 20px;
+}
+
+.area {
+    border: 2px dashed #ccc;
+    border-radius: 5px;
+    width: 440px;
+    max-height: 600px;
+    padding: 5px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    overflow-y: auto;
+    position: relative;
+}
+
+.list {
+    border: 2px dashed #ccc;
+    border-radius: 5px;
+    width: 30%;
+    height: 600px;
+    padding: 5px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    overflow-y: auto;
+}
+
+.area-title {
+    font-weight: bold;
+    margin-bottom: 5px;
+    text-align: center;
+    width: 100%;
+}
+
+.player {
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 5px;
+    margin: 5px;
+    cursor: grab;
+    width: 180px;
+    text-align: center;
+    font-size: 11px;
+}
+
+.player.red {
+    background-color: #ffcccc;
+    /* 赤の背景 */
+    color: red;
+    /* 赤の文字色 */
+}
+
+.player.gray {
+    background-color: #e0e0e0;
+    /* グレイの背景 */
+    color: gray;
+    /* グレイの文字色 */
+}
+
+.player.dragging {
+    opacity: 0.7;
+}
+
+.history {
+    border: 2px dashed #ccc;
+    margin-top: 0px;
+    padding: 10px;
+    width: 90%;
+    height: 590px;
+    max-width: 600px;
+    overflow-y: auto;
+    font-size: 14px;
+}
+
+.input-container {
+    margin-right: 120px;
+    margin-top: 20px;
+}
+
+.input-box {
+    padding: 5px;
+    width: 300px;
+}
+
+.register-btn {
+    padding: 5px 10px;
+    margin-top: 10px;
+    cursor: pointer;
+}
+
+
+
+.stopwatch {
+    margin-top: 4px;
+    font-size: 20px;
+    width: 340px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0px;
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    cursor: move;
+    height: 200px;
+}
+
+
+#timeDisplay {
+    font-size: 54px;
+    font-weight: bold;
+    color: #006747 !important;
+    text-shadow: 2px 2px 4px #FFD100 !important;
+}
+
+.buttons {
+    display: flex;
+    gap: 10px;
+    /* ボタン間の間隔 */
+}
+
+.stopwatch-btn {
+    padding: 5px 10px;
+    cursor: pointer;
+    margin-top: 0;
+}
+
+#reasonModal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.4);
+    justify-content: center;
+    align-items: center;
+}
+
+
+/* モーダル共通のベーススタイル */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.4);
+    justify-content: center;
+    align-items: center;
+}
+
+/* モーダルコンテンツの共通スタイル */
+.modal-content {
+    background-color: #fefefe;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 300px;
+    text-align: center;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* モーダル内の見出し */
+.modal-content h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: #333;
+}
+
+/* セレクトボックスのスタイル */
+.modal-content select {
+    width: 100%;
+    padding: 8px;
+    margin: 10px 0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+/* モーダル内のボタングループ */
+.modal-content .button-group {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+/* モーダル内のボタン */
+.modal-content button {
+    padding: 8px 20px;
+    margin: 5px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s;
+}
+
+/* 確定ボタン */
+.modal-content button#confirmReasonBtn {
+    background-color: #28a745;
+    color: white;
+}
+
+.modal-content button#confirmReasonBtn:hover {
+    background-color: #218838;
+}
+
+/* キャンセルボタン */
+.modal-content button#cancelReasonBtn {
+    background-color: #dc3545;
+    color: white;
+}
+
+.modal-content button#cancelReasonBtn:hover {
+    background-color: #c82333;
+}
+
+/* モーダル表示時のアニメーション */
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modal.show {
+    animation: modalFadeIn 0.3s ease-out;
+}
+
+
+
+
+/* 履歴項目のベース */
+.history-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px;
+    margin: 5px 0;
+    background-color: #f9f9f9;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* 詳細テキスト */
+.history-item span {
+    flex: 1;
+    font-size: 14px;
+    color: #333;
+}
+
+/* 追記ボタン */
+.append-button {
+    padding: 5px 10px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.append-button:hover {
+    background-color: #218838;
+}
+
+/* 理由選択ウィンドウ */
+.reason-window {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 20px;
+    width: 500px;
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    text-align: center;
+}
+
+/* 理由ウィンドウのボタン */
+.reason-window button {
+    margin: 5px;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+
+}
+
+.reason-window button:hover {
+    background-color: #0056b3;
+}
+
+/* 保留エリアのコンテナ */
+.pending-container {
+    position: fixed;
+    top: 270px;
+    left: 20px;
+    width: 360px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-height: 470px;
+    z-index: 100;
+}
+
+/* 個別の保留エリア */
+.pending-area {
+    background-color: rgba(255, 255, 255, 0.95);
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    max-height: 330px;
+    /* コンテナの半分の高さ */
+    overflow-y: auto;
+}
+
+/* スクロールバーのスタイル */
+.pending-area::-webkit-scrollbar {
+    width: 8px;
+}
+
+.pending-area::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.pending-area::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+.pending-area::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+.pending-area h3 {
+    margin: 0 0 15px 0;
+    color: #495057;
+    font-size: 16px;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    background-color: rgba(255, 255, 255, 0.95);
+    padding: 5px 0;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+/* 保留アイテム */
+.pending-item {
+    display: flex;
+    flex-direction: column;
+    /* ボタンを下に配置 */
+    background-color: white;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.pending-item span {
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.pending-buttons {
+    display: flex;
+    gap: 5px;
+    justify-content: flex-end;
+}
+
+/* ボタンスタイル */
+.pending-buttons button {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background-color 0.2s;
+}
+
+.pending-buttons button:first-child {
+    background-color: #28a745;
+    color: white;
+}
+
+.pending-buttons button:first-child:hover {
+    background-color: #218838;
+}
+
+.pending-buttons button:last-child {
+    background-color: #dc3545;
+    color: white;
+}
+
+.pending-buttons button:last-child:hover {
+    background-color: #c82333;
+}
+
+/* モーダルの保留ボタン */
+#holdReasonBtn,
+#holdReasonBtn2 {
+    background-color: #ffc107;
+    color: #000;
+    padding: 8px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin: 5px;
+}
+
+#holdReasonBtn:hover,
+#holdReasonBtn2:hover {
+    background-color: #e0a800;
+}
+
+
+
+/* 
+この部分はマルチラインコメントです。
+複数行にわたるコメントを記述する場合に便利です。
+*/
+
+
+
+.history-button-container {
+    display: flex;
+    gap: 8px;
+    margin-left: auto;
+}
+
+.history-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 5px;
+    border-bottom: 1px solid #ccc;
+}
+
+.append-button,
+.delete-button {
+    padding: 2px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.append-button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+}
+
+.delete-button {
+    background-color: #f44336;
+    color: white;
+    border: none;
+}
+
+.append-button:hover {
+    background-color: #45a049;
+}
+
+.delete-button:hover {
+    background-color: #da190b;
+}
+
+
+/* 空席のとき点線で枠を描画 */
+.seat {
+    width: 200px;
+    height: 37px;
+    border: 0px dashed #ccc;
+    display: flex;
+    justify-content: center;
+    /* 横方向の中央揃えはそのまま */
+    align-items: flex-start;
+    /* 縦方向を上揃えに変更 */
+    position: relative;
+}
+
+.seat.empty {
+    background-color: #f9f9f9;
+}
+
+.placeholder {
+    font-size: 12px;
+    color: #888;
+    text-align: center;
+    pointer-events: none;
+    /* ドラッグ操作に影響しないように設定 */
+}
+
+.seat .placeholder {
+    display: block;
+    /* デフォルトで表示 */
+}
+
+.seat.occupied .placeholder {
+    display: none;
+    /* 選手が座ると非表示に */
+}
+
+
+ /* /////////////////////////////////////////// */
+
+/* float-containerの初期スタイル */
+.float-container {
+    position: absolute;
+    right: 20px;
+    bottom: 20px;
+    width: 240px;
+    min-height: 240px;
+    background-color: rgba(255, 253, 208, 0.8);
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    cursor: move;
+    z-index: 2000;
+    /* 選手アイコンより高い値に設定 */
+    resize: both;
+    overflow: auto;
+}
+
+  .resizer {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      width: 10px;
+      height: 10px;
+      background: #ccc;
+      cursor: se-resize;
+      /* リサイズ用のカーソル */
+  }
+
+/* dashboardのスタイル */
+.dashboard {
+    padding: 10px;
+}
+
+.dashboard h3 {
+    margin: 0;
+    font-size: 16px;
+    color: #333;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 5px;
+}
+
+.dashboard ul {
+    list-style: none;
+    padding: 0;
+    margin: 10px 0 0 0;
+}
+
+.dashboard li {
+    margin: 5px 0;
+    font-size: 14px;
+    color: #555;
+}
+
+
+.position-change-form {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+select {
+    padding: 0.2rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
