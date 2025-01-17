@@ -59,7 +59,7 @@ https://tztechno.github.io/tz_html_works/r_qr_read/qr_generate.html
 
 https://tztechno.github.io/tz_html_works/s_lottery/lottery.html
 
-https://tztechno.github.io/tz_html_works/w_player/v37/index.html
+https://tztechno.github.io/tz_html_works/w_rugby_player/v37/index.html
 
 https://tztechno.github.io/tz_html_works/y_redirect/index.html
 
