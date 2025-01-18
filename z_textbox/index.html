@@ -41,9 +41,9 @@
     <script>
         // ボタンがクリックされたときの処理
         function displayInputContent() {
-            const inputBox = document.getElementById("textInput");
+            const inputBox = document.getElementById("text0"); // 正しいIDを指定
             const result = document.getElementById("result");
-            result.textContent = inputBox.value;
+            result.textContent = inputBox.value; // テキストエリアの値を結果エリアに表示
         }
     </script>
 </head>
@@ -51,9 +51,8 @@
 <body>
     <h1>テキスト入力とボタン押下</h1>
     <label for="text0">テキストを入力してください:</label><br>
-    <!-- テキストボックスを大きくし、横幅を半分にし、paddingも設ける -->
     <textarea id="text0"></textarea><br>
-    <button id="button" onclick="displayInputContent()">表示</button>
+    <button id="button0" onclick="displayInputContent()">表示</button>
     <!-- 結果表示エリア -->
     <p id="result"></p>
 </body>
