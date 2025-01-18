@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>手動入力</title>
+    <style>
+        /* 結果表示エリアのスタイル */
+        #result {
+            width: 50%;
+            /* 横幅を画面の半分に設定 */
+            padding: 10px;
+            /* 内側に10pxの余白を追加 */
+            border: 1px solid #ccc;
+            /* 枠線の色を指定 */
+            font-size: 16px;
+            /* フォントサイズを指定 */
+            box-sizing: border-box;
+            /* paddingも含めて幅を計算 */
+            margin-top: 20px;
+            /* 上部に少し余白を追加 */
+        }
+
+        /* テキストエリアのスタイル */
+        textarea {
+            width: 50%;
+            /* 横幅を画面の半分に設定 */
+            height: 150px;
+            /* 高さを150pxに設定 */
+            padding: 10px;
+            /* 内側に10pxの余白を追加 */
+            border: 1px solid #ccc;
+            /* 枠線の色を指定 */
+            font-size: 16px;
+            /* フォントサイズを指定 */
+            box-sizing: border-box;
+            /* paddingも含めて幅を計算 */
+        }
+    </style>
+    <script>
+        // ボタンがクリックされたときの処理
+        function displayInputContent() {
+            const inputBox = document.getElementById("textInput");
+            const result = document.getElementById("result");
+            result.textContent = inputBox.value;
+        }
+    </script>
+</head>
+
+<body>
+    <h1>テキスト入力とボタン押下</h1>
+    <label for="textInput">テキストを入力してください:</label><br>
+    <!-- テキストボックスを大きくし、横幅を半分にし、paddingも設ける -->
+    <textarea id="textInput"></textarea><br>
+    <button id="button" onclick="displayInputContent()">表示</button>
+    <!-- 結果表示エリア -->
+    <p id="result"></p>
+</body>
+
+</html>
