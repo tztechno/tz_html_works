@@ -24,6 +24,12 @@
       font-size: 18px;
       margin-top: 20px;
     }
+    #saved-texts {
+      margin-top: 20px;
+    }
+    .saved-text {
+      font-size: 18px;
+    }
   </style>
 </head>
 <body>
@@ -33,39 +39,53 @@
   <button onclick="saveText()">Save</button>
   <button onclick="resetText()">Reset</button>
 
-  <div id="saved-text"></div>
+  <div id="saved-texts"></div>
 
   <script>
-    // ページロード時にローカルストレージからテキストを取得
+    // ページロード時にローカルストレージから過去の入力内容を取得
     window.onload = function() {
-      const savedText = localStorage.getItem('savedText');
-      if (savedText) {
-        document.getElementById('saved-text').innerText = savedText;
-        document.getElementById('saved-text').style.color = 'black'; // 既存のテキストは黒色で表示
+      const savedTexts = localStorage.getItem('savedTexts');
+      if (savedTexts) {
+        const textsArray = JSON.parse(savedTexts); // ローカルストレージから取得したJSON文字列を配列に変換
+        displaySavedTexts(textsArray); // 保存されたテキストを表示
       }
     };
 
     function saveText() {
       const text = document.getElementById('text-input').value;
-      const savedText = localStorage.getItem('savedText');
+      if (text) {
+        const savedTexts = localStorage.getItem('savedTexts');
+        let textsArray = savedTexts ? JSON.parse(savedTexts) : [];
 
-      // 新しいテキストが既存の保存されたテキストと異なる場合のみ赤色で表示
-      if (text && text !== savedText) {
-        localStorage.setItem('savedText', text); // ローカルストレージに保存
-        document.getElementById('saved-text').innerText = text; // 画面に表示
-        document.getElementById('saved-text').style.color = 'red'; // 新しい内容なので赤色
-      } else if (text === savedText) {
-        // すでに保存されているテキストと一致する場合は黒色で表示
-        document.getElementById('saved-text').innerText = savedText;
-        document.getElementById('saved-text').style.color = 'black'; // 既存のテキストは黒色
+        // 新しいテキストを保存された内容に追加
+        textsArray.push(text);
+
+        // ローカルストレージに更新されたテキストを保存
+        localStorage.setItem('savedTexts', JSON.stringify(textsArray));
+
+        // テキストを表示
+        displaySavedTexts(textsArray);
       }
     }
 
+    function displaySavedTexts(textsArray) {
+      const savedTextsDiv = document.getElementById('saved-texts');
+      savedTextsDiv.innerHTML = ''; // 既存の表示をクリア
+
+      textsArray.forEach(text => {
+        const p = document.createElement('p');
+        p.classList.add('saved-text');
+        p.innerText = text;
+        p.style.color = 'black'; // 既存のテキストは黒色で表示
+        savedTextsDiv.appendChild(p);
+      });
+    }
+
     function resetText() {
-      // テキストエリアと表示を空にし、ローカルストレージもクリア
-      document.getElementById('text-input').value = '';
-      document.getElementById('saved-text').innerText = '';
-      localStorage.removeItem('savedText'); // ローカルストレージから削除
+      // ローカルストレージを削除し、表示もクリア
+      localStorage.removeItem('savedTexts');
+      document.getElementById('saved-texts').innerHTML = ''; // 画面上のテキストもクリア
+      document.getElementById('text-input').value = ''; // テキストエリアも空にする
     }
   </script>
 </body>
