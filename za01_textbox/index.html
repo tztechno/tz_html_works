@@ -29,10 +29,6 @@
     }
     .saved-text {
       font-size: 18px;
-      color: black; /* 既存のテキストは黒色 */
-    }
-    .new-text {
-      color: red; /* 新規のテキストは赤色 */
     }
   </style>
 </head>
@@ -48,33 +44,59 @@
   <script>
     // ページロード時にローカルストレージから過去の入力内容を取得
     window.onload = function() {
-      const savedTexts = localStorage.getItem('savedTexts');
+      const savedTexts = getSavedTexts();
       if (savedTexts) {
-        const textsArray = JSON.parse(savedTexts); // ローカルストレージから取得したJSON文字列を配列に変換
-        displaySavedTexts(textsArray, true); // 画面には隠す（過去の保存内容は黒色で非表示に）
+        displaySavedTexts(savedTexts);
       }
     };
+
+    // ローカルストレージにテキストを保存するためのset関数
+    function setSavedTexts(textsArray) {
+      localStorage.setItem('savedTexts', JSON.stringify(textsArray));
+    }
+
+    // ローカルストレージからテキストを取得する関数
+    function getSavedTexts() {
+      const savedTexts = localStorage.getItem('savedTexts');
+      return savedTexts ? JSON.parse(savedTexts) : [];
+    }
 
     function saveText() {
       const text = document.getElementById('text-input').value;
       if (text) {
-        const savedTexts = localStorage.getItem('savedTexts');
-        let textsArray = savedTexts ? JSON.parse(savedTexts) : [];
+        const textsArray = getSavedTexts();
 
         // 新しいテキストを保存された内容に追加
         textsArray.push(text);
 
         // ローカルストレージに更新されたテキストを保存
-        localStorage.setItem('savedTexts', JSON.stringify(textsArray));
+        setSavedTexts(textsArray);
 
-        // テキストを表示（新規のテキストは赤色）
-        displaySavedTexts(textsArray, false);
+        // テキストを表示
+        displaySavedTexts(textsArray);
       }
     }
 
-    function displaySavedTexts(textsArray, hideSaved) {
+    function displaySavedTexts(textsArray) {
       const savedTextsDiv = document.getElementById('saved-texts');
       savedTextsDiv.innerHTML = ''; // 既存の表示をクリア
 
-      // 画面には新しいテキストを赤色で表示し、過去のテキストは黒色で非表示
-      textsArray.forEach((
+      textsArray.forEach(text => {
+        const p = document.createElement('p');
+        p.classList.add('saved-text');
+        p.innerText = text;
+        p.style.color = 'black'; // 既存のテキストは黒色で表示
+        savedTextsDiv.appendChild(p);
+      });
+    }
+
+    function resetText() {
+      // ローカルストレージを削除し、表示もクリア
+      localStorage.removeItem('savedTexts');
+      document.getElementById('saved-texts').innerHTML = ''; // 画面上のテキストもクリア
+      document.getElementById('text-input').value = ''; // テキストエリアも空にする
+    }
+  </script>
+</body>
+</html>
+
