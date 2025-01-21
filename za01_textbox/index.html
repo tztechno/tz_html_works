@@ -1,102 +1,120 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Text Save App</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-    }
-    textarea {
-      width: 100%;
-      height: 100px;
-      padding: 10px;
-      font-size: 16px;
-    }
-    button {
-      padding: 10px 20px;
-      font-size: 16px;
-      margin: 10px 0;
-    }
-    p {
-      font-size: 18px;
-      margin-top: 20px;
-    }
-    #saved-texts {
-      margin-top: 20px;
-    }
-    .saved-text {
-      font-size: 18px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>テキスト保存アプリ</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+        .container {
+            border: 1px solid #ccc;
+            padding: 20px;
+            border-radius: 5px;
+        }
+        .input-area {
+            margin-bottom: 20px;
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+            margin-bottom: 10px;
+        }
+        .stats {
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+        }
+        .new-words {
+            color: red;
+            margin-top: 10px;
+            line-height: 1.5;
+        }
+        button {
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
 </head>
 <body>
-  <h1>Text Save App</h1>
-  <textarea id="text-input" placeholder="Enter text here"></textarea>
-  <br>
-  <button onclick="saveText()">Save</button>
-  <button onclick="resetText()">Reset</button>
+    <div class="container">
+        <h1>テキスト保存アプリ</h1>
+        
+        <div class="stats">
+            保存済み単語数: <span id="wordCount">0</span>
+        </div>
 
-  <div id="saved-texts"></div>
+        <div class="input-area">
+            <textarea id="inputText" placeholder="テキストを入力してください（1行に1つの単語）"></textarea>
+            <button onclick="saveText()">保存</button>
+        </div>
 
-  <script>
-    // ページロード時にローカルストレージから過去の入力内容を取得
-    window.onload = function() {
-      const savedTexts = getSavedTexts();
-      if (savedTexts) {
-        displaySavedTexts(savedTexts);
-      }
-    };
+        <div class="new-words">
+            <div id="newWords"></div>
+        </div>
+    </div>
 
-    // ローカルストレージにテキストを保存するためのset関数
-    function setSavedTexts(textsArray) {
-      localStorage.setItem('savedTexts', JSON.stringify(textsArray));
-    }
+    <script>
+        // ページ読み込み時に保存済み単語数を表示
+        window.onload = function() {
+            updateWordCount();
+        };
 
-    // ローカルストレージからテキストを取得する関数
-    function getSavedTexts() {
-      const savedTexts = localStorage.getItem('savedTexts');
-      return savedTexts ? JSON.parse(savedTexts) : [];
-    }
+        function saveText() {
+            const text = document.getElementById('inputText').value;
+            const words = text.split('\n').filter(word => word.trim() !== '');
+            const newWords = [];
 
-    function saveText() {
-      const text = document.getElementById('text-input').value;
-      if (text) {
-        const textsArray = getSavedTexts();
+            // 各単語を処理
+            words.forEach(word => {
+                const trimmedWord = word.trim();
+                if (trimmedWord) {
+                    // すでに保存されているか確認
+                    const isNew = !localStorage.getItem(trimmedWord);
+                    if (isNew) {
+                        newWords.push(trimmedWord);
+                    }
+                    // ローカルストレージに保存
+                    localStorage.setItem(trimmedWord, 'true');
+                }
+            });
 
-        // 新しいテキストを保存された内容に追加
-        textsArray.push(text);
+            // 新しい単語を表示
+            displayNewWords(newWords);
+            
+            // 保存済み単語数を更新
+            updateWordCount();
+            
+            // 入力欄をクリア
+            document.getElementById('inputText').value = '';
+        }
 
-        // ローカルストレージに更新されたテキストを保存
-        setSavedTexts(textsArray);
+        function updateWordCount() {
+            const count = localStorage.length;
+            document.getElementById('wordCount').textContent = count;
+        }
 
-        // テキストを表示
-        displaySavedTexts(textsArray);
-      }
-    }
-
-    function displaySavedTexts(textsArray) {
-      const savedTextsDiv = document.getElementById('saved-texts');
-      savedTextsDiv.innerHTML = ''; // 既存の表示をクリア
-
-      textsArray.forEach(text => {
-        const p = document.createElement('p');
-        p.classList.add('saved-text');
-        p.innerText = text;
-        p.style.color = 'black'; // 既存のテキストは黒色で表示
-        savedTextsDiv.appendChild(p);
-      });
-    }
-
-    function resetText() {
-      // ローカルストレージを削除し、表示もクリア
-      localStorage.removeItem('savedTexts');
-      document.getElementById('saved-texts').innerHTML = ''; // 画面上のテキストもクリア
-      document.getElementById('text-input').value = ''; // テキストエリアも空にする
-    }
-  </script>
+        function displayNewWords(words) {
+            const newWordsDiv = document.getElementById('newWords');
+            if (words.length > 0) {
+                newWordsDiv.innerHTML = '新しく追加された単語:<br>' + words.join('<br>');
+            } else {
+                newWordsDiv.innerHTML = '';
+            }
+        }
+    </script>
 </body>
 </html>
 
