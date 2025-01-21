@@ -37,6 +37,7 @@
         }
         button {
             padding: 8px 16px;
+            margin: 0 5px;
             background-color: #4CAF50;
             color: white;
             border: none;
@@ -45,6 +46,47 @@
         }
         button:hover {
             background-color: #45a049;
+        }
+        button.delete {
+            background-color: #f44336;
+        }
+        button.delete:hover {
+            background-color: #da190b;
+        }
+        button.show {
+            background-color: #2196F3;
+        }
+        button.show:hover {
+            background-color: #0b7dda;
+        }
+        .word-list {
+            margin-top: 20px;
+            display: none;
+        }
+        .word-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+        }
+        .word-item:hover {
+            background-color: #f5f5f5;
+        }
+        .control-buttons {
+            margin: 20px 0;
+        }
+        .delete-word-btn {
+            padding: 4px 8px;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.8em;
+        }
+        .delete-word-btn:hover {
+            background-color: #da190b;
         }
     </style>
 </head>
@@ -61,8 +103,18 @@
             <button onclick="saveText()">保存</button>
         </div>
 
+        <div class="control-buttons">
+            <button class="show" onclick="toggleWordList()">単語一覧表示/非表示</button>
+            <button class="delete" onclick="confirmDeleteAll()">全単語削除</button>
+        </div>
+
         <div class="new-words">
             <div id="newWords"></div>
+        </div>
+
+        <div id="wordList" class="word-list">
+            <h2>保存済み単語一覧</h2>
+            <div id="wordListContent"></div>
         </div>
     </div>
 
@@ -70,6 +122,7 @@
         // ページ読み込み時に保存済み単語数を表示
         window.onload = function() {
             updateWordCount();
+            updateWordList();
         };
 
         function saveText() {
@@ -77,27 +130,20 @@
             const words = text.split('\n').filter(word => word.trim() !== '');
             const newWords = [];
 
-            // 各単語を処理
             words.forEach(word => {
                 const trimmedWord = word.trim();
                 if (trimmedWord) {
-                    // すでに保存されているか確認
                     const isNew = !localStorage.getItem(trimmedWord);
                     if (isNew) {
                         newWords.push(trimmedWord);
                     }
-                    // ローカルストレージに保存
                     localStorage.setItem(trimmedWord, 'true');
                 }
             });
 
-            // 新しい単語を表示
             displayNewWords(newWords);
-            
-            // 保存済み単語数を更新
             updateWordCount();
-            
-            // 入力欄をクリア
+            updateWordList();
             document.getElementById('inputText').value = '';
         }
 
@@ -114,7 +160,62 @@
                 newWordsDiv.innerHTML = '';
             }
         }
+
+        function toggleWordList() {
+            const wordList = document.getElementById('wordList');
+            if (wordList.style.display === 'none' || !wordList.style.display) {
+                wordList.style.display = 'block';
+                updateWordList();
+            } else {
+                wordList.style.display = 'none';
+            }
+        }
+
+        function updateWordList() {
+            const wordListContent = document.getElementById('wordListContent');
+            wordListContent.innerHTML = '';
+            
+            const words = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                words.push(localStorage.key(i));
+            }
+            
+            words.sort();
+            
+            words.forEach(word => {
+                const wordItem = document.createElement('div');
+                wordItem.className = 'word-item';
+                
+                const wordText = document.createElement('span');
+                wordText.textContent = word;
+                
+                const deleteButton = document.createElement('button');
+                deleteButton.className = 'delete-word-btn';
+                deleteButton.textContent = '削除';
+                deleteButton.onclick = () => deleteWord(word);
+                
+                wordItem.appendChild(wordText);
+                wordItem.appendChild(deleteButton);
+                wordListContent.appendChild(wordItem);
+            });
+        }
+
+        function deleteWord(word) {
+            if (confirm(`「${word}」を削除してもよろしいですか？`)) {
+                localStorage.removeItem(word);
+                updateWordCount();
+                updateWordList();
+            }
+        }
+
+        function confirmDeleteAll() {
+            if (confirm('保存されている全ての単語を削除してもよろしいですか？')) {
+                localStorage.clear();
+                updateWordCount();
+                updateWordList();
+                document.getElementById('newWords').innerHTML = '';
+            }
+        }
     </script>
 </body>
 </html>
-
