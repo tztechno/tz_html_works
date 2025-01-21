@@ -49,13 +49,14 @@
       const text = document.getElementById('text-input').value;
       const savedText = localStorage.getItem('savedText');
 
-      // 新しいテキストが既存の保存されたテキストと異なる場合のみ更新
+      // 新しいテキストが既存の保存されたテキストと異なる場合のみ赤色で表示
       if (text && text !== savedText) {
         localStorage.setItem('savedText', text); // ローカルストレージに保存
         document.getElementById('saved-text').innerText = text; // 画面に表示
         document.getElementById('saved-text').style.color = 'red'; // 新しい内容なので赤色
       } else if (text === savedText) {
-        document.getElementById('saved-text').innerText = savedText; // 保存された内容を再表示
+        // すでに保存されているテキストと一致する場合は黒色で表示
+        document.getElementById('saved-text').innerText = savedText;
         document.getElementById('saved-text').style.color = 'black'; // 既存のテキストは黒色
       }
     }
