@@ -67,6 +67,8 @@ https://tztechno.github.io/tz_html_works/z_textbox/index.html
 
 https://tztechno.github.io/tz_html_works/za01_textbox/index.html
 
+https://github.com/tztechno/tz_html_works/zb01_latex/index.html
+
 
 ### latest
 ---
