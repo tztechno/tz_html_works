@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LaTeX 数式レンダラー</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.0/es5/tex-mml-chtml.js"></script>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+        }
+        h1 {
+            color: #2a5885;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        textarea {
+            width: 100%;
+            height: 150px;
+            padding: 12px;
+            border: 2px solid #ccc;
+            border-radius: 6px;
+            font-size: 16px;
+            resize: vertical;
+            font-family: monospace;
+        }
+        .output {
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 20px;
+            min-height: 100px;
+            background-color: #f9f9f9;
+            font-size: 18px;
+        }
+        .examples {
+            margin-top: 30px;
+            background-color: #f0f7ff;
+            padding: 15px;
+            border-radius: 6px;
+        }
+        .examples h3 {
+            margin-top: 0;
+            color: #2a5885;
+        }
+        .example-item {
+            cursor: pointer;
+            padding: 5px;
+            margin: 5px 0;
+            background-color: #e1ecf7;
+            border-radius: 4px;
+            display: inline-block;
+            margin-right: 10px;
+        }
+        .example-item:hover {
+            background-color: #d0e2f3;
+        }
+    </style>
+</head>
+<body>
+    <h1>LaTeX 数式レンダラー</h1>
+    <div class="container">
+        <textarea id="latexInput" placeholder="ここにLaTeX形式の数式を入力してください...例: E = mc^2"></textarea>
+        <div class="output" id="output">
+            <div id="mathOutput">結果がここに表示されます</div>
+        </div>
+    </div>
+
+    <div class="examples">
+        <h3>サンプル数式:</h3>
+        <div class="example-item" onclick="insertExample('E = mc^2')">E = mc^2</div>
+        <div class="example-item" onclick="insertExample('\\frac{-b \\pm \\sqrt{b^2-4ac}}{2a}')">二次方程式の解</div>
+        <div class="example-item" onclick="insertExample('\\int_{a}^{b} f(x) \\, dx')">積分</div>
+        <div class="example-item" onclick="insertExample('\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}')">和の公式</div>
+        <div class="example-item" onclick="insertExample('\\lim_{x \\to \\infty} \\frac{1}{x} = 0')">極限</div>
+        <div class="example-item" onclick="insertExample('\\begin{pmatrix} a & b \\\\ c & d \\end{pmatrix}')">行列</div>
+    </div>
+
+    <script>
+        const latexInput = document.getElementById('latexInput');
+        const mathOutput = document.getElementById('mathOutput');
+
+        // 初期テキストを設定
+        latexInput.value = 'E = mc^2';
+        renderLatex('E = mc^2');
+
+        // 入力されたLaTeXを処理
+        latexInput.addEventListener('input', function() {
+            renderLatex(this.value);
+        });
+
+        function renderLatex(latex) {
+            if (latex.trim() === '') {
+                mathOutput.innerHTML = '結果がここに表示されます';
+                return;
+            }
+            
+            // 数式表示用に$$で囲む
+            mathOutput.innerHTML = '$$' + latex + '$$';
+            
+            // MathJaxでレンダリング
+            MathJax.typeset();
+        }
+
+        function insertExample(example) {
+            latexInput.value = example;
+            renderLatex(example);
+        }
+    </script>
+</body>
+</html>
